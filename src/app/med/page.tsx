@@ -28,13 +28,15 @@ export default function MedPage() {
             
             {/* Featured Visual */}
             <div className="relative w-full mx-auto mt-12 aspect-[16/9] overflow-hidden rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-              <div className="w-full h-full bg-gradient-to-br from-blue-900 via-purple-900 to-yellow-600 flex items-center justify-center">
-                <div className="text-center">
-                  <h2 className="text-4xl md:text-6xl font-bold text-white mb-4">French Riviera & Beyond</h2>
-                  <p className="text-xl text-white/80">Legendary Hotels & Hidden Gems</p>
-                </div>
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
+              <iframe 
+                src="https://www.youtube.com/embed/8j0RzuJlWQM?autoplay=0&mute=1&controls=1&rel=0&modestbranding=1"
+                title="French Riviera Luxury Hotels"
+                className="w-full h-full"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
             </div>
           </div>
 
