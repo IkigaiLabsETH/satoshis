@@ -14,7 +14,7 @@ export default function MedPage() {
         <div className="space-y-16">
           {/* Hero Section */}
           <div className="text-center space-y-8">
-            <p className="uppercase tracking-[0.4em] text-yellow-500/90 text-sm mb-4 font-light font-satoshi">Luxury Hotels • French Riviera • Monte-Carlo</p>
+            <p className="uppercase tracking-[0.4em] text-yellow-500/90 text-sm mb-4 font-light font-satoshi">Luxury Hotels • French Riviera • Saint-Tropez • Monte-Carlo</p>
             <h1 className="text-center">
               <span className="text-6xl md:text-8xl font-bold text-yellow-500 tracking-tight [text-shadow:_0_1px_20px_rgba(234,179,8,0.3)] font-satoshi">
                 Mediterranean
@@ -30,8 +30,8 @@ export default function MedPage() {
             <div className="relative w-full mx-auto mt-12 aspect-[16/9] overflow-hidden rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
               <div className="w-full h-full bg-gradient-to-br from-blue-900 via-purple-900 to-yellow-600 flex items-center justify-center">
                 <div className="text-center">
-                  <h2 className="text-4xl md:text-6xl font-bold text-white mb-4">French Riviera & Monte-Carlo</h2>
-                  <p className="text-xl text-white/80">Seven Legendary Hotels</p>
+                  <h2 className="text-4xl md:text-6xl font-bold text-white mb-4">French Riviera & Beyond</h2>
+                  <p className="text-xl text-white/80">Legendary Hotels & Hidden Gems</p>
                 </div>
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
@@ -45,7 +45,7 @@ export default function MedPage() {
             </h3>
             <div className="space-y-4 text-gray-300">
               <p className="text-lg">
-                Discover seven of the most prestigious hotels on the French Riviera and in Monte-Carlo, each offering unique experiences that blend historical charm with modern luxury. From Belle Époque palaces to contemporary architectural marvels, these hotels represent the pinnacle of Mediterranean hospitality.
+                Discover the most prestigious hotels across the French Riviera, Saint-Tropez, and Monte-Carlo, each offering unique experiences that blend historical charm with modern luxury. From Belle Époque palaces to contemporary architectural marvels, these hotels represent the pinnacle of Mediterranean hospitality.
               </p>
               <div className="mt-6">
                 <h4 className="text-xl font-bold text-yellow-500 mb-4">Experience Highlights:</h4>
@@ -56,7 +56,15 @@ export default function MedPage() {
                   <li>Historical significance and cultural heritage</li>
                   <li>Exclusive concierge services</li>
                   <li>Panoramic Mediterranean views</li>
+                  <li>Eco-friendly and sustainable options</li>
+                  <li>Family-friendly amenities and activities</li>
                 </ul>
+              </div>
+              <div className="mt-6">
+                <h4 className="text-xl font-bold text-yellow-500 mb-4">Location & Accessibility:</h4>
+                <p className="text-lg">
+                  These hotels are spread across the French Riviera, including Cannes, Saint-Tropez, and nearby areas, with easy access via Nice C&ocirc;te d&apos;Azur Airport (NCE), about 30 minutes from Cannes and 1 hour from Saint-Tropez. Each hotel offers private transfers or is near train stations for convenience.
+                </p>
               </div>
             </div>
           </div>
@@ -431,6 +439,288 @@ export default function MedPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              <Card className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+                <CardHeader>
+                  <CardTitle className="font-epilogue text-xl text-yellow-400">Les Roches Rouges</CardTitle>
+                  <p className="text-white/60 font-satoshi text-sm">Saint-Raphaël</p>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-white/80 font-satoshi mb-4">Beaumier hotel with modernist heritage, seawater pool, and Michelin-starred dining since 1950s.</p>
+                  <div className="flex flex-col gap-2">
+                    <Link href="https://www.beaumier.com/en/properties/les-roches-rouges-hotel/" target="_blank">
+                      <Button className="bg-yellow-500 text-black font-bold px-4 py-2 rounded-none hover:bg-yellow-400 transition-all duration-300 w-full">
+                        View Hotel
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+                <CardHeader>
+                  <CardTitle className="font-epilogue text-xl text-yellow-400">Five Seas</CardTitle>
+                  <p className="text-white/60 font-satoshi text-sm">Cannes</p>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-white/80 font-satoshi mb-4">Global travel-inspired design with rooftop dining, spa, and central Cannes location since 2015.</p>
+                  <div className="flex flex-col gap-2">
+                    <Link href="https://www.fiveseashotel.com/en/" target="_blank">
+                      <Button className="bg-yellow-500 text-black font-bold px-4 py-2 rounded-none hover:bg-yellow-400 transition-all duration-300 w-full">
+                        View Hotel
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+                <CardHeader>
+                  <CardTitle className="font-epilogue text-xl text-yellow-400">Hotel La Ponche</CardTitle>
+                  <p className="text-white/60 font-satoshi text-sm">Saint-Tropez</p>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-white/80 font-satoshi mb-4">Historic boutique hotel with celebrity history, private beach, and authentic Provençal charm since 1950s.</p>
+                  <div className="flex flex-col gap-2">
+                    <Link href="https://laponche.com/en" target="_blank">
+                      <Button className="bg-yellow-500 text-black font-bold px-4 py-2 rounded-none hover:bg-yellow-400 transition-all duration-300 w-full">
+                        View Hotel
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+                <CardHeader>
+                  <CardTitle className="font-epilogue text-xl text-yellow-400">Byblos Saint-Tropez</CardTitle>
+                  <p className="text-white/60 font-satoshi text-sm">Saint-Tropez</p>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-white/80 font-satoshi mb-4">Legendary palace hotel with celebrity history, Michelin-starred dining, and private beach club since 1967.</p>
+                  <div className="flex flex-col gap-2">
+                    <Link href="https://www.byblos.com/en/" target="_blank">
+                      <Button className="bg-yellow-500 text-black font-bold px-4 py-2 rounded-none hover:bg-yellow-400 transition-all duration-300 w-full">
+                        View Hotel
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+                <CardHeader>
+                  <CardTitle className="font-epilogue text-xl text-yellow-400">Carlton Cannes</CardTitle>
+                  <p className="text-white/60 font-satoshi text-sm">Cannes</p>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-white/80 font-satoshi mb-4">Iconic Belle Epoque hotel with film festival history, private beach, and traditional French cuisine since 1911.</p>
+                  <div className="flex flex-col gap-2">
+                    <Link href="https://carltoncannes.com/en/" target="_blank">
+                      <Button className="bg-yellow-500 text-black font-bold px-4 py-2 rounded-none hover:bg-yellow-400 transition-all duration-300 w-full">
+                        View Hotel
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+                <CardHeader>
+                  <CardTitle className="font-epilogue text-xl text-yellow-400">MOB Hotel Cannes</CardTitle>
+                  <p className="text-white/60 font-satoshi text-sm">Le Cannet</p>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-white/80 font-satoshi mb-4">Sustainable luxury with eco-friendly practices, organic dining, and modern design near Cannes since 2024.</p>
+                  <div className="flex flex-col gap-2">
+                    <Link href="https://www.mobhotel.com/cannes_en/" target="_blank">
+                      <Button className="bg-yellow-500 text-black font-bold px-4 py-2 rounded-none hover:bg-yellow-400 transition-all duration-300 w-full">
+                        View Hotel
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Additional French Riviera Hotels */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
+              French Riviera & Saint-Tropez Collection
+            </h3>
+            <p className="text-base md:text-lg text-white/80 font-satoshi mb-8 text-center leading-relaxed">
+              Beyond the legendary seven, discover additional exceptional hotels across the French Riviera and Saint-Tropez, each offering unique experiences from historic charm to contemporary luxury.
+            </p>
+            <div className="space-y-8">
+              
+              {/* Les Roches Rouges */}
+              <div className="space-y-4">
+                <h4 className="text-xl font-bold text-yellow-500">Les Roches Rouges - Beaumier Hotel</h4>
+                <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                  <p className="text-white/80 font-satoshi mb-4">
+                    Located in Saint-Raphaël, this 5-star hotel offers direct access to the sea, near Nice C&ocirc;te d&apos;Azur Airport (12 km). Originally a 1950s structure, it is undergoing renovations in 2025 to enhance sea access, preserving its modernist heritage. Known for its pink-and-white façade and Italian interiors, it offers a 186 m² seawater pool and is pet-friendly for pets under 5 kg.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <h5 className="text-yellow-400 font-epilogue mb-2">Highlights:</h5>
+                      <ul className="text-white/80 font-satoshi list-disc list-inside">
+                        <li>67 rooms with contemporary design</li>
+                        <li>Two swimming pools (natural seawater)</li>
+                        <li>Mediterranean garden</li>
+                        <li>Spa with hammam and hot tub</li>
+                        <li>Private pontoon for sea arrivals</li>
+                        <li>Michelin-starred restaurant Récif</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-yellow-400 font-epilogue mb-2">Location:</h5>
+                      <p className="text-white/80 font-satoshi">Saint-Raphaël</p>
+                      <p className="text-white/60 font-satoshi text-sm mt-2">12 km from Nice Airport</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Five Seas */}
+              <div className="space-y-4">
+                <h4 className="text-xl font-bold text-yellow-500">Five Seas - Cannes Luxury</h4>
+                <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                  <p className="text-white/80 font-satoshi mb-4">
+                    In the heart of Cannes, steps from the Croisette and Palais des Festivals, accessible via Nice C&ocirc;te d&apos;Azur Airport (30 minutes by car). Known for its global travel-inspired design, with decor crafted by international craftsmen. Part of the Inwood Hotels group, it opened in 2015 and is noted for its intimate, authentic atmosphere.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <h5 className="text-yellow-400 font-epilogue mb-2">Highlights:</h5>
+                      <ul className="text-white/80 font-satoshi list-disc list-inside">
+                        <li>45 rooms and suites</li>
+                        <li>Rooftop restaurant and bar (Le Roof)</li>
+                        <li>Spa and swimming pool</li>
+                        <li>VIP access to private beach</li>
+                        <li>Modern cuisine with Mediterranean influences</li>
+                        <li>Central Cannes location</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-yellow-400 font-epilogue mb-2">Location:</h5>
+                      <p className="text-white/80 font-satoshi">Cannes, French Riviera</p>
+                      <p className="text-white/60 font-satoshi text-sm mt-2">30 minutes from Nice Airport</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Hotel La Ponche */}
+              <div className="space-y-4">
+                <h4 className="text-xl font-bold text-yellow-500">Hotel La Ponche - Saint-Tropez Boutique</h4>
+                <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                  <p className="text-white/80 font-satoshi mb-4">
+                    In the heart of Saint-Tropez, on the historic beach of La Ponche, near Nice C&ocirc;te d&apos;Azur Airport (1 hour by car). A 5-star boutique hotel since the 1950s, hosting celebrities like Brigitte Bardot and Boris Vian. Renovated by designer Fabrizio Casiraghi, it offers a private pontoon for sea access.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <h5 className="text-yellow-400 font-epilogue mb-2">Highlights:</h5>
+                      <ul className="text-white/80 font-satoshi list-disc list-inside">
+                        <li>21 rooms and 3 apartments</li>
+                        <li>Authentic Provençal decor</li>
+                        <li>Private beach access</li>
+                        <li>Piano bar with live music</li>
+                        <li>Spa with yoga and relaxation</li>
+                        <li>Mediterranean restaurant</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-yellow-400 font-epilogue mb-2">Location:</h5>
+                      <p className="text-white/80 font-satoshi">Saint-Tropez, French Riviera</p>
+                      <p className="text-white/60 font-satoshi text-sm mt-2">1 hour from Nice Airport</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Byblos Saint-Tropez */}
+              <div className="space-y-4">
+                <h4 className="text-xl font-bold text-yellow-500">Byblos Saint-Tropez - Legendary Palace</h4>
+                <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                  <p className="text-white/80 font-satoshi mb-4">
+                    In the heart of Saint-Tropez, near Place des Lices, accessible via Nice C&ocirc;te d&apos;Azur Airport (1 hour). Opened in 1967, a legendary palace hotel hosting celebrities like Mick Jagger, known for its neo-Provençal style and village-like atmosphere.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <h5 className="text-yellow-400 font-epilogue mb-2">Highlights:</h5>
+                      <ul className="text-white/80 font-satoshi list-disc list-inside">
+                        <li>91 rooms including 50 suites</li>
+                        <li>Two restaurants</li>
+                        <li>Cucina by Alain Ducasse (Michelin-starred)</li>
+                        <li>Private beach club on Pampelonne</li>
+                        <li>Spa and outdoor heated pool</li>
+                        <li>New rooftop bar in 2025</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-yellow-400 font-epilogue mb-2">Location:</h5>
+                      <p className="text-white/80 font-satoshi">Saint-Tropez, French Riviera</p>
+                      <p className="text-white/60 font-satoshi text-sm mt-2">1 hour from Nice Airport</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Carlton Cannes */}
+              <div className="space-y-4">
+                <h4 className="text-xl font-bold text-yellow-500">Carlton Cannes - Regent Hotel</h4>
+                <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                  <p className="text-white/80 font-satoshi mb-4">
+                    On La Croisette in Cannes, near the Palais des Festivals, accessible via Nice C&ocirc;te d&apos;Azur Airport (30 minutes). Built in 1911, an iconic Belle Epoque hotel, known for its role in the Cannes Film Festival and celebrity history.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <h5 className="text-yellow-400 font-epilogue mb-2">Highlights:</h5>
+                      <ul className="text-white/80 font-satoshi list-disc list-inside">
+                        <li>332 rooms and suites</li>
+                        <li>Three restaurants and two bars</li>
+                        <li>Private beach access</li>
+                        <li>Spa and fitness center</li>
+                        <li>Traditional French cuisine</li>
+                        <li>Iconic Belle Epoque architecture</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-yellow-400 font-epilogue mb-2">Location:</h5>
+                      <p className="text-white/80 font-satoshi">Cannes, French Riviera</p>
+                      <p className="text-white/60 font-satoshi text-sm mt-2">30 minutes from Nice Airport</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* MOB Hotel Cannes */}
+              <div className="space-y-4">
+                <h4 className="text-xl font-bold text-yellow-500">MOB Hotel Cannes - Sustainable Luxury</h4>
+                <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                  <p className="text-white/80 font-satoshi mb-4">
+                    In Le Cannet, near Cannes, 1.3 miles from Plage du Palais des Festivals, accessible via Nice C&ocirc;te d&apos;Azur Airport (15 miles). Opened in 2024, part of the MOB Hotel movement, focusing on sustainability and social responsibility, with a focus on eco-friendly practices.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <h5 className="text-yellow-400 font-epilogue mb-2">Highlights:</h5>
+                      <ul className="text-white/80 font-satoshi list-disc list-inside">
+                        <li>43 suites with sustainable materials</li>
+                        <li>Seasonal outdoor pool</li>
+                        <li>Organic restaurant</li>
+                        <li>Biocoop grocery store</li>
+                        <li>Patagonia boutique</li>
+                        <li>Eco-friendly practices</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-yellow-400 font-epilogue mb-2">Location:</h5>
+                      <p className="text-white/80 font-satoshi">Le Cannet, near Cannes</p>
+                      <p className="text-white/60 font-satoshi text-sm mt-2">15 miles from Nice Airport</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -475,6 +765,60 @@ export default function MedPage() {
                     <li>• Modernist design</li>
                     <li>• Contemporary amenities</li>
                     <li>• Panoramic views</li>
+                  </ul>
+                </div>
+                <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                  <h4 className="text-xl font-bold text-yellow-400 mb-4">For Sustainable Travel</h4>
+                  <p className="text-white/80 font-satoshi mb-4">MOB Hotel Cannes offers eco-friendly luxury with organic dining and sustainable practices for conscious travelers.</p>
+                  <ul className="text-white/60 font-satoshi text-sm">
+                    <li>• Eco-friendly practices</li>
+                    <li>• Organic dining</li>
+                    <li>• Sustainable materials</li>
+                  </ul>
+                </div>
+                <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                  <h4 className="text-xl font-bold text-yellow-400 mb-4">For Celebrity Glamour</h4>
+                  <p className="text-white/80 font-satoshi mb-4">Byblos Saint-Tropez and Hotel La Ponche offer legendary celebrity history and authentic Saint-Tropez charm.</p>
+                  <ul className="text-white/60 font-satoshi text-sm">
+                    <li>• Celebrity history</li>
+                    <li>• Authentic charm</li>
+                    <li>• Legendary status</li>
+                  </ul>
+                </div>
+                <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                  <h4 className="text-xl font-bold text-yellow-400 mb-4">For City Luxury</h4>
+                  <p className="text-white/80 font-satoshi mb-4">Anantara Plaza Nice offers Belle Époque elegance in the heart of Nice with rooftop dining and panoramic views.</p>
+                  <ul className="text-white/60 font-satoshi text-sm">
+                    <li>• Central Nice location</li>
+                    <li>• Rooftop bar with views</li>
+                    <li>• Historical charm</li>
+                  </ul>
+                </div>
+                <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                  <h4 className="text-xl font-bold text-yellow-400 mb-4">For Film Festival Glamour</h4>
+                  <p className="text-white/80 font-satoshi mb-4">Hôtel Martinez in Cannes offers Art Deco luxury with private beach access and proximity to the Palais des Festivals.</p>
+                  <ul className="text-white/60 font-satoshi text-sm">
+                    <li>• Croisette location</li>
+                    <li>• Private beach</li>
+                    <li>• Film festival history</li>
+                  </ul>
+                </div>
+                <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                  <h4 className="text-xl font-bold text-yellow-400 mb-4">For Monaco Elegance</h4>
+                  <p className="text-white/80 font-satoshi mb-4">Hôtel Hermitage Monte-Carlo offers Belle Époque grandeur with Eiffel-designed cupola and Michelin-starred dining.</p>
+                  <ul className="text-white/60 font-satoshi text-sm">
+                    <li>• Casino Square location</li>
+                    <li>• Eiffel architecture</li>
+                    <li>• Monaco exclusivity</li>
+                  </ul>
+                </div>
+                <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                  <h4 className="text-xl font-bold text-yellow-400 mb-4">For Secluded Privacy</h4>
+                  <p className="text-white/80 font-satoshi mb-4">Cap Estel in Èze offers an exclusive private peninsula with lush gardens and Mediterranean tranquility.</p>
+                  <ul className="text-white/60 font-satoshi text-sm">
+                    <li>• Private peninsula</li>
+                    <li>• Secluded location</li>
+                    <li>• Mediterranean views</li>
                   </ul>
                 </div>
               </div>
