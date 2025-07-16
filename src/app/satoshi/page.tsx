@@ -84,7 +84,7 @@ export default function SatoshiTestPage() {
 
       if (res.ok) {
         const data = await res.json();
-        setResponse(data.response || 'No response received');
+        setResponse(data.content || 'No response received');
       } else {
         setResponse('Error: Failed to get response from Satoshi');
       }
