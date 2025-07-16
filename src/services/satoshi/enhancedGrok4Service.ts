@@ -275,9 +275,7 @@ Provide your analysis with cryptographic honesty.`;
     const completion = await this.generateResponseWithTools(
       `Validate this crypto project: ${project}`,
       validatorPrompt,
-      0.7,
-      enhancedSatoshiTools,
-      { type: 'function', function: { name: 'validate_crypto_project' } }
+      0.7
     );
 
     return completion.choices[0]?.message?.content || 'Validation failed.';
@@ -293,9 +291,7 @@ Focus on Bitcoin-first perspective and decentralization metrics.`;
     const completion = await this.generateResponseWithTools(
       `Analyze ${symbol} for the ${timeframe} timeframe`,
       analystPrompt,
-      0.7,
-      enhancedSatoshiTools,
-      { type: 'function', function: { name: 'analyze_stock_bitcoin_first' } }
+      0.7
     );
 
     return completion.choices[0]?.message?.content || 'Analysis failed.';
@@ -311,9 +307,7 @@ Use analogies and metaphors that connect to Bitcoin principles.`;
     const completion = await this.generateResponseWithTools(
       `Explain ${topic} simply for ${audience}`,
       educatorPrompt,
-      0.8,
-      enhancedSatoshiTools,
-      { type: 'function', function: { name: 'simplify_concept' } }
+      0.8
     );
 
     return completion.choices[0]?.message?.content || 'Explanation failed.';
@@ -331,9 +325,7 @@ Provide constructive feedback with Bitcoin-first principles.`;
     const completion = await this.generateResponseWithTools(
       `Critique this design: ${design}`,
       designerPrompt,
-      0.7,
-      enhancedSatoshiTools,
-      { type: 'function', function: { name: 'design_critique' } }
+      0.7
     );
 
     return completion.choices[0]?.message?.content || 'Design critique failed.';
@@ -351,9 +343,7 @@ Create questions that provoke depth and emotion while staying true to Bitcoin pr
     const completion = await this.generateResponseWithTools(
       `Generate interview questions for ${subject}`,
       interviewerPrompt,
-      0.8,
-      enhancedSatoshiTools,
-      { type: 'function', function: { name: 'generate_interview_questions' } }
+      0.8
     );
 
     return completion.choices[0]?.message?.content || 'Interview questions generation failed.';
@@ -371,9 +361,7 @@ Focus on Bitcoin-first solutions and sovereign living principles.`;
     const completion = await this.generateResponseWithTools(
       `Write a whitepaper on ${topic}`,
       consultantPrompt,
-      0.7,
-      enhancedSatoshiTools,
-      { type: 'function', function: { name: 'write_whitepaper' } }
+      0.7
     );
 
     return completion.choices[0]?.message?.content || 'Whitepaper generation failed.';
@@ -390,8 +378,7 @@ Provide academic rigor and synthesis with Bitcoin-first perspective.`;
     const completion = await this.generateResponseWithTools(
       `Research ${topic}`,
       researcherPrompt,
-      0.6,
-      enhancedSatoshiTools
+      0.6
     );
 
     return completion.choices[0]?.message?.content || 'Research failed.';
