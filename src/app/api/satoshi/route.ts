@@ -23,10 +23,20 @@ export async function POST(request: NextRequest) {
     // Quick fallback for simple greetings to prevent timeouts
     const lowerMessage = message.toLowerCase();
     if (lowerMessage === 'gm' || lowerMessage === 'gm gm' || lowerMessage === 'hello' || lowerMessage === 'hi') {
+      const cycleStatus = `
+🎯 **BITCOIN CYCLE STATUS:**
+**Current Phase:** HOLD
+**Days Since Halving:** 452
+**Days Until Next Halving:** 1008
+**500-Day Strategy:** In HOLD phase - 68 days until SELL signal
+**Cycle Progress:** 90% through current cycle`;
+
       const quickResponse = `🎯 **Satoshi here!** 
 
 Current market context: BTC $118.7k (+2%), ETH $3,165 (+6%), SOL $165 (+4%)
 ETF flows strong: BTC +$403mn, ETH +$192mn
+
+${cycleStatus}
 
 What would you like to know about Bitcoin, crypto markets, or blockchain technology? I can analyze projects, explain concepts, research markets, or provide strategic insights.
 
