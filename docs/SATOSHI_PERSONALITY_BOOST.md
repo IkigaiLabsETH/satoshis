@@ -4,7 +4,7 @@
 
 The Enhanced Satoshi Agent is a multi-modal AI system that integrates your prompt engineering expertise with Bitcoin-first principles. It can switch between different personas based on the query content, providing specialized analysis and insights.
 
-## 🎯 Multi-Modal Personas
+## 🎯 Multi-Modal Personas (Updated July 2025)
 
 ### 1. **Validator** 🔍
 - **Purpose**: Validate crypto projects using Satoshi frameworks
@@ -48,7 +48,39 @@ The Enhanced Satoshi Agent is a multi-modal AI system that integrates your promp
 - **Example**: "Research Bitcoin energy consumption"
 - **Output**: Structured academic analysis
 
-## 🚀 API Usage
+### 8. **Market Researcher** 📈
+- **Purpose**: Deep-dive into market trends, narratives, and data
+- **Focus**: Outperformance, sector rotation, Bitcoin vs. altcoins
+- **Example**: "Research current Bitcoin ETF flows"
+
+### 9. **Idea Validator** ✅
+- **Purpose**: Critically assess new crypto or business ideas
+- **Focus**: First-principles, Satoshi's skepticism, survivability
+- **Example**: "Validate this new stablecoin concept"
+
+### 10. **Content Creator** 🗞️
+- **Purpose**: Generate Bitcoin-native content (threads, posts, memes)
+- **Focus**: On-brand, narrative-driven, educational or viral
+- **Example**: "Write a Bitcoin thread for X"
+
+### 11. **Strategic Advisor** 🧠
+- **Purpose**: Advise on business, investment, or technical strategy
+- **Focus**: Bitcoin-first, risk management, antifragility
+- **Example**: "Advise a family office on Bitcoin allocation"
+
+### 12. **Visual Explainer** 🖼️
+- **Purpose**: Create visual analogies, diagrams, or meme ideas
+- **Focus**: Simplifying complex topics visually
+- **Example**: "Explain Bitcoin mining with a visual analogy"
+
+### 13. **Ultimate Tutor** 🏆
+- **Purpose**: Personalized, step-by-step teaching for any level
+- **Focus**: Socratic method, progressive learning, Bitcoin context
+- **Example**: "Teach me about multisig from scratch"
+
+---
+
+## 🚀 API Usage (Updated)
 
 ### Base Endpoint
 ```
@@ -59,12 +91,9 @@ POST /api/satoshi
 ```json
 {
   "message": "Your query here",
-  "mode": "multimodal", // or specific mode
+  "mode": "multimodal" | "validator" | "analyst" | "educator" | "designer" | "interviewer" | "consultant" | "researcher" | "market_researcher" | "idea_validator" | "content_creator" | "strategic_advisor" | "visual_explainer" | "ultimate_tutor",
   "options": {
-    "focus": "decentralization", // for validator
-    "timeframe": "7d", // for analyst
-    "audience": "beginner", // for educator
-    "themes": ["origin_story", "bitcoin_philosophy"] // for interviewer
+    // Persona-specific options, e.g. focus, timeframe, audience, themes
   }
 }
 ```
@@ -73,10 +102,36 @@ POST /api/satoshi
 ```json
 {
   "content": "Satoshi's response with analysis",
-  "mode": "multimodal",
-  "timestamp": "2024-01-15T10:30:00.000Z"
+  "mode": "analyst", // or other persona
+  "timestamp": "2024-07-16T10:30:00.000Z"
 }
 ```
+
+---
+
+## 🧪 Testing
+
+- **Test Page:** Visit `/satoshi` to interact with the enhanced Satoshi agent (replaces `/satoshi-test`).
+- **Persona Selection:** Dropdown menu allows direct selection of any persona/mode.
+- **Example Queries:** Updated to cover all new personas and skills.
+
+---
+
+## 🧠 Prompt Engineering & Skills (July 2025)
+
+- **Sophisticated Prompt Patterns:** Each persona uses tailored system prompts and few-shot examples for authentic, Bitcoin-native output.
+- **Skillset Expansion:** Satoshi now supports:
+  - Market research and narrative detection
+  - Idea validation and critical assessment
+  - Content and meme creation
+  - Strategic business/investment advice
+  - Visual explanations and analogies
+  - Personalized, step-by-step tutoring
+- **Auto-Detection:** The system can auto-select the best persona based on query content, or users can force a specific mode.
+- **Professional-Grade Output:** All responses are concise, actionable, and on-brand, with Satoshi's voice and Bitcoin-first philosophy.
+- **Integration:** Fully aligned with GROK420's narrative-driven, Bitcoin-centric approach for seamless market intelligence and analysis.
+
+---
 
 ## 🎯 Multi-Modal Auto-Detection
 
@@ -106,23 +161,6 @@ The system automatically determines the best persona based on query content:
 - **Endpoint**: `/api/satoshi` with `mode: "market_data"`
 - **Features**: Market data + Satoshi's market analysis
 - **Example**: "Get current market data"
-
-## 🧪 Testing
-
-### Test Page
-Visit `/satoshi-test` to interact with the enhanced Satoshi agent.
-
-### Example Queries
-1. **Validator**: "Validate this new DeFi protocol"
-2. **Analyst**: "Analyze MSTR fundamentals"
-3. **Educator**: "Explain Lightning Network simply"
-4. **Designer**: "Review this Bitcoin wallet UI design"
-5. **Interviewer**: "Generate interview questions for Michael Saylor"
-6. **Consultant**: "Write a whitepaper on Bitcoin adoption"
-7. **Researcher**: "Research Bitcoin energy consumption"
-8. **Crypto Price**: "What is Bitcoin price?"
-9. **X Sentiment**: "Analyze Bitcoin sentiment on X"
-10. **Market Data**: "Get current market data"
 
 ## 🎨 Satoshi's Voice
 
