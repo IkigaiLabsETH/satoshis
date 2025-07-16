@@ -17,6 +17,12 @@ export default function SatoshiTestPage() {
     { value: 'interviewer', label: 'Interviewer' },
     { value: 'consultant', label: 'Consultant' },
     { value: 'researcher', label: 'Researcher' },
+    { value: 'market_researcher', label: 'Market Researcher' },
+    { value: 'idea_validator', label: 'Idea Validator' },
+    { value: 'content_creator', label: 'Content Creator' },
+    { value: 'strategic_advisor', label: 'Strategic Advisor' },
+    { value: 'visual_explainer', label: 'Visual Explainer' },
+    { value: 'ultimate_tutor', label: 'Ultimate Tutor' },
     { value: 'crypto_price', label: 'Crypto Price' },
     { value: 'x_sentiment', label: 'X Sentiment' }
   ];
@@ -59,7 +65,13 @@ export default function SatoshiTestPage() {
     'Explain Bitcoin\'s UTXO model vs account-based systems',
     'Research Bitcoin\'s adoption in authoritarian regimes',
     'Design a Bitcoin-based identity verification system',
-    'Consult on Bitcoin node operation and network health'
+    'Consult on Bitcoin node operation and network health',
+    'Conduct market research on Bitcoin mining industry',
+    'Validate this startup idea: Bitcoin Lightning payments app',
+    'Create a newsletter about Bitcoin adoption trends',
+    'Analyze the strategic decision to invest in Bitcoin mining',
+    'Generate a visual diagram of Bitcoin\'s network architecture',
+    'Conduct comprehensive research on Bitcoin\'s energy debate'
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {

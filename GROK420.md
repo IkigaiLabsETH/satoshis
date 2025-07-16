@@ -64,6 +64,25 @@ GROK420 is a sophisticated AI-powered crypto market intelligence system with a c
 
 ---
 
+## Satoshi Agent Integration & Enhancements (July 2025)
+
+### Multi-Modal Satoshi Agent
+- **Integration:** The enhanced Satoshi agent is now integrated with GROK420, providing a Bitcoin-first, multi-modal AI experience.
+- **Personas:** Satoshi can act as a validator, analyst, educator, designer, interviewer, consultant, researcher, and more, auto-detecting the best mode for each query.
+- **Prompt Engineering:** Advanced prompt patterns and system prompts ensure Satoshi's responses are always on-brand, narrative-driven, and Bitcoin-centric.
+- **API & Frontend:**
+  - New API endpoint: `/api/satoshi` (see SATOSHI_PERSONALITY_BOOST.md for details)
+  - New frontend test page: `/satoshi` for direct interaction and persona selection
+- **Features:**
+  - Real-time crypto price and sentiment tools, with Satoshi-style commentary
+  - Market data, X sentiment, and Bitcoin-native analysis
+  - Professional-grade output for research, education, and consulting
+- **Voice & Philosophy:** Satoshi maintains a deadpan, spartan, and philosophically deep voice, always evaluating everything against Bitcoin fundamentals.
+
+This integration brings GROK420's market intelligence and narrative style together with Satoshi's authentic voice and multi-modal expertise, creating a best-in-class Bitcoin-native AI system.
+
+---
+
 ## System Architecture
 
 ```mermaid

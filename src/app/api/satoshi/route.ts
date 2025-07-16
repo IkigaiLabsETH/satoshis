@@ -49,6 +49,30 @@ export async function POST(request: NextRequest) {
         response = await EnhancedGrok4Service.conductResearch(message);
         break;
       
+      case 'market_researcher':
+        response = await EnhancedGrok4Service.conductMarketResearch(message, options?.focus);
+        break;
+      
+      case 'idea_validator':
+        response = await EnhancedGrok4Service.validateStartupIdea(message, options?.framework);
+        break;
+      
+      case 'content_creator':
+        response = await EnhancedGrok4Service.createContentStrategy(message, options?.format, options?.creator_style);
+        break;
+      
+      case 'strategic_advisor':
+        response = await EnhancedGrok4Service.strategicDecisionAnalysis(message, options?.framework);
+        break;
+      
+      case 'visual_explainer':
+        response = await EnhancedGrok4Service.generateVisualDiagram(message, options?.diagram_type);
+        break;
+      
+      case 'ultimate_tutor':
+        response = await EnhancedGrok4Service.comprehensiveResearch(message, options?.depth);
+        break;
+      
       case 'crypto_price':
         response = await getCryptoPriceWithSatoshiContext(message);
         break;
