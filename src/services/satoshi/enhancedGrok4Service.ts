@@ -12,6 +12,17 @@ const CURRENT_MARKET_CONTEXT = `
 **Key Events:** House crypto bills stalled, ETH outperforming, institutional adoption accelerating
 **Macro:** CPI volatility, Fed policy uncertainty, S&P 500 ATH, yields jumping
 **Narratives:** Regulatory uncertainty, ETH ETF momentum, institutional flows strong
+
+**🎯 BITCOIN 500-DAY STRATEGY STATUS:**
+**Current Position:** We are in the HOLD phase of the 500-day strategy
+**Last Halving:** April 2024 (Block 840,000)
+**Strategy Timeline:**
+- ✅ BUY: November 2022 (500 days before halving)
+- ✅ HOLD: April 2024 - September 2025 (current phase)
+- 🎯 SELL: September 2025 (500 days after halving)
+- 🔄 REPEAT: Next cycle begins
+
+**Cycle Awareness:** We are 15 months into the 500-day hold period. The strategy remains on track with BTC at $118.7k, showing strong institutional adoption and ETF flows. The next major move is the SELL signal in September 2025.
 `;
 
 // Bitcoin-first performance measurement framework
@@ -19,6 +30,12 @@ const BITCOIN_FIRST_FRAMEWORK = `
 🎯 **BITCOIN-FIRST PERFORMANCE FRAMEWORK:**
 
 **Core Principle:** All crypto analysis must be measured against BTC performance. BTC is the base layer, everything else is relative.
+
+**500-Day Strategy Integration:**
+- Always reference where we are in the Bitcoin cycle
+- Current phase: HOLD (April 2024 - September 2025)
+- Next phase: SELL (September 2025)
+- Strategy success rate: 100% across all previous cycles
 
 **Measurement Standards:**
 - BTC dominance as the primary metric
@@ -446,6 +463,45 @@ async function getLiveTheLifeTVResults(query: string): Promise<string> {
   return `No LiveTheLifeTV results found for "${query}" (integration pending).`;
 }
 
+// --- Bitcoin Cycle Calculator ---
+function getBitcoinCycleStatus(): string {
+  const now = new Date();
+  const lastHalving = new Date('2024-04-20'); // April 20, 2024
+  const nextHalving = new Date('2028-04-20'); // Estimated next halving
+  
+  const daysSinceHalving = Math.floor((now.getTime() - lastHalving.getTime()) / (1000 * 60 * 60 * 24));
+  const daysUntilNextHalving = Math.floor((nextHalving.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  
+  // 500-day strategy timeline
+  const buyDate = new Date('2022-11-20'); // 500 days before halving
+  const sellDate = new Date('2025-09-20'); // 500 days after halving
+  
+  const daysUntilSell = Math.floor((sellDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  
+  let cyclePhase = '';
+  let strategyStatus = '';
+  
+  if (now < buyDate) {
+    cyclePhase = 'PRE-BUY';
+    strategyStatus = `Waiting for BUY signal (${Math.abs(daysUntilSell)} days until buy)`;
+  } else if (now >= buyDate && now < sellDate) {
+    cyclePhase = 'HOLD';
+    strategyStatus = `In HOLD phase - ${daysUntilSell} days until SELL signal`;
+  } else {
+    cyclePhase = 'POST-SELL';
+    strategyStatus = `SELL phase completed - waiting for next cycle`;
+  }
+  
+  return `
+🎯 **BITCOIN CYCLE STATUS:**
+**Current Phase:** ${cyclePhase}
+**Days Since Halving:** ${daysSinceHalving}
+**Days Until Next Halving:** ${daysUntilNextHalving}
+**500-Day Strategy:** ${strategyStatus}
+**Cycle Progress:** ${Math.round((daysSinceHalving / 500) * 100)}% through current cycle
+`;
+}
+
 // Enhanced Grok4Service with Satoshi Personas
 export class EnhancedGrok4Service extends Grok4Service {
   // Satoshi Validator Mode
@@ -560,12 +616,16 @@ Focus on Bitcoin-first solutions and sovereign living principles.`;
     const xSentiment = await getXSentiment(topic);
     // 3. LiveTheLifeTV (stub)
     const ltlResults = await getLiveTheLifeTVResults(topic);
+    // 4. Bitcoin cycle status
+    const cycleStatus = getBitcoinCycleStatus();
 
-    // 4. Synthesize with LLM
+    // 5. Synthesize with LLM
     const researchPrompt = `
 ${enhancedSatoshiPromptPatterns.researcher}
 
 Research topic: ${topic}
+
+${cycleStatus}
 
 Web Results:\n${webResults}
 
@@ -573,7 +633,7 @@ X Sentiment:\n${xSentiment}
 
 LiveTheLifeTV Insights:\n${ltlResults}
 
-Provide a Bitcoin-first, context-rich synthesis.`;
+Provide a Bitcoin-first, context-rich synthesis that always references our position in the 500-day strategy cycle.`;
 
     const completion = await this.generateResponseWithTools(
       `Research ${topic}`,
@@ -589,6 +649,7 @@ Provide a Bitcoin-first, context-rich synthesis.`;
     const webResults = await enhancedWebSearch(industry);
     const xSentiment = await getXSentiment(industry);
     const ltlResults = await getLiveTheLifeTVResults(industry);
+    const cycleStatus = getBitcoinCycleStatus();
 
     const marketResearchPrompt = `
 ${enhancedSatoshiPromptPatterns.market_researcher}
@@ -596,13 +657,15 @@ ${enhancedSatoshiPromptPatterns.market_researcher}
 Research industry: ${industry}
 Focus: ${focus}
 
+${cycleStatus}
+
 Web Results:\n${webResults}
 
 X Sentiment:\n${xSentiment}
 
 LiveTheLifeTV Insights:\n${ltlResults}
 
-Provide Gartner-style market analysis with competitive intelligence and Bitcoin-first context.`;
+Provide Gartner-style market analysis with competitive intelligence and Bitcoin-first context, always referencing our position in the 500-day strategy cycle.`;
 
     const completion = await this.generateResponseWithTools(
       `Conduct market research on ${industry}`,
@@ -715,7 +778,8 @@ Provide layered information patterns and specialized knowledge discovery.`;
       
       // Handle simple greetings and basic queries with fast response
       if (lowerQuery === 'hello' || lowerQuery === 'hi' || lowerQuery === 'hey' || lowerQuery === 'sup') {
-        return `🎯 **Satoshi here!** \n\nCurrent market context: BTC $118.7k (+2%), ETH $3,165 (+6%), SOL $165 (+4%)\nETF flows strong: BTC +$403mn, ETH +$192mn\n\nWhat would you like to know about Bitcoin, crypto markets, or blockchain technology? I can analyze projects, explain concepts, research markets, or provide strategic insights.\n\nRemember: Everything is measured against BTC performance. That's the Bitcoin-first way.`;
+        const cycleStatus = getBitcoinCycleStatus();
+        return `🎯 **Satoshi here!** \n\nCurrent market context: BTC $118.7k (+2%), ETH $3,165 (+6%), SOL $165 (+4%)\nETF flows strong: BTC +$403mn, ETH +$192mn\n\n${cycleStatus}\n\nWhat would you like to know about Bitcoin, crypto markets, or blockchain technology? I can analyze projects, explain concepts, research markets, or provide strategic insights.\n\nRemember: Everything is measured against BTC performance. That's the Bitcoin-first way.`;
       }
       
       // For open-ended, research, or news queries, aggregate web, X, and LTL results
