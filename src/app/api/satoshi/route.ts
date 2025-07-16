@@ -3,6 +3,9 @@ import { EnhancedGrok4Service } from '@/services/satoshi/enhancedGrok4Service';
 import { getCryptoPriceWithSatoshiContext, getXSentimentWithSatoshiAnalysis, getMarketDataWithSatoshiContext } from '@/services/satoshi/enhancedCryptoPrice';
 import { logger } from '@/lib/logger';
 
+// Configure API route timeout for Satoshi API calls
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -17,78 +20,185 @@ export async function POST(request: NextRequest) {
 
     logger.info('Satoshi API request:', { message, mode, options });
 
+    // Quick fallback for simple greetings to prevent timeouts
+    const lowerMessage = message.toLowerCase();
+    if (lowerMessage === 'gm' || lowerMessage === 'gm gm' || lowerMessage === 'hello' || lowerMessage === 'hi') {
+      const quickResponse = `🎯 **Satoshi here!** 
+
+Current market context: BTC $118.7k (+2%), ETH $3,165 (+6%), SOL $165 (+4%)
+ETF flows strong: BTC +$403mn, ETH +$192mn
+
+What would you like to know about Bitcoin, crypto markets, or blockchain technology? I can analyze projects, explain concepts, research markets, or provide strategic insights.
+
+Remember: Everything is measured against BTC performance. That's the Bitcoin-first way.`;
+
+      return NextResponse.json({
+        content: quickResponse,
+        mode: 'multimodal',
+        timestamp: new Date().toISOString()
+      });
+    }
+
     let response: string;
+
+    // Add timeout wrapper for all Satoshi operations
+    const satoshiTimeout = 30000; // 30 second timeout
 
     // Handle different modes based on the enhanced Satoshi capabilities
     switch (mode) {
       case 'validator':
-        response = await EnhancedGrok4Service.validateCryptoProject(message, options?.focus);
+        response = await Promise.race([
+          EnhancedGrok4Service.validateCryptoProject(message, options?.focus),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi validator timeout')), satoshiTimeout)
+          )
+        ]);
         break;
       
       case 'analyst':
-        response = await EnhancedGrok4Service.analyzeStock(message, options?.timeframe);
+        response = await Promise.race([
+          EnhancedGrok4Service.analyzeStock(message, options?.timeframe),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi analyst timeout')), satoshiTimeout)
+          )
+        ]);
         break;
       
       case 'educator':
-        response = await EnhancedGrok4Service.simplifyConcept(message, options?.audience);
+        response = await Promise.race([
+          EnhancedGrok4Service.simplifyConcept(message, options?.audience),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi educator timeout')), satoshiTimeout)
+          )
+        ]);
         break;
       
       case 'designer':
-        response = await EnhancedGrok4Service.critiqueDesign(message, options?.focus);
+        response = await Promise.race([
+          EnhancedGrok4Service.critiqueDesign(message, options?.focus),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi designer timeout')), satoshiTimeout)
+          )
+        ]);
         break;
       
       case 'interviewer':
-        response = await EnhancedGrok4Service.generateInterviewQuestions(message, options?.themes);
+        response = await Promise.race([
+          EnhancedGrok4Service.generateInterviewQuestions(message, options?.themes),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi interviewer timeout')), satoshiTimeout)
+          )
+        ]);
         break;
       
       case 'consultant':
-        response = await EnhancedGrok4Service.writeWhitepaper(message, options?.structure);
+        response = await Promise.race([
+          EnhancedGrok4Service.writeWhitepaper(message, options?.structure),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi consultant timeout')), satoshiTimeout)
+          )
+        ]);
         break;
       
       case 'researcher':
-        response = await EnhancedGrok4Service.conductResearch(message);
+        response = await Promise.race([
+          EnhancedGrok4Service.conductResearch(message),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi researcher timeout')), 15000) // Reduced timeout for research
+          )
+        ]);
         break;
       
       case 'market_researcher':
-        response = await EnhancedGrok4Service.conductMarketResearch(message, options?.focus);
+        response = await Promise.race([
+          EnhancedGrok4Service.conductMarketResearch(message, options?.focus),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi market researcher timeout')), 15000) // Reduced timeout for research
+          )
+        ]);
         break;
       
       case 'idea_validator':
-        response = await EnhancedGrok4Service.validateStartupIdea(message, options?.framework);
+        response = await Promise.race([
+          EnhancedGrok4Service.validateStartupIdea(message, options?.framework),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi idea validator timeout')), 20000) // Moderate timeout
+          )
+        ]);
         break;
       
       case 'content_creator':
-        response = await EnhancedGrok4Service.createContentStrategy(message, options?.format, options?.creator_style);
+        response = await Promise.race([
+          EnhancedGrok4Service.createContentStrategy(message, options?.format, options?.creator_style),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi content creator timeout')), 20000) // Moderate timeout
+          )
+        ]);
         break;
       
       case 'strategic_advisor':
-        response = await EnhancedGrok4Service.strategicDecisionAnalysis(message, options?.framework);
+        response = await Promise.race([
+          EnhancedGrok4Service.strategicDecisionAnalysis(message, options?.framework),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi strategic advisor timeout')), 20000) // Moderate timeout
+          )
+        ]);
         break;
       
       case 'visual_explainer':
-        response = await EnhancedGrok4Service.generateVisualDiagram(message, options?.diagram_type);
+        response = await Promise.race([
+          EnhancedGrok4Service.generateVisualDiagram(message, options?.diagram_type),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi visual explainer timeout')), 20000) // Moderate timeout
+          )
+        ]);
         break;
       
       case 'ultimate_tutor':
-        response = await EnhancedGrok4Service.comprehensiveResearch(message, options?.depth);
+        response = await Promise.race([
+          EnhancedGrok4Service.comprehensiveResearch(message, options?.depth),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi ultimate tutor timeout')), 15000) // Reduced timeout for research
+          )
+        ]);
         break;
       
       case 'crypto_price':
-        response = await getCryptoPriceWithSatoshiContext(message);
+        response = await Promise.race([
+          getCryptoPriceWithSatoshiContext(message),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi crypto price timeout')), satoshiTimeout)
+          )
+        ]);
         break;
       
       case 'x_sentiment':
-        response = await getXSentimentWithSatoshiAnalysis(message);
+        response = await Promise.race([
+          getXSentimentWithSatoshiAnalysis(message),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi X sentiment timeout')), satoshiTimeout)
+          )
+        ]);
         break;
       
       case 'market_data':
-        response = await getMarketDataWithSatoshiContext();
+        response = await Promise.race([
+          getMarketDataWithSatoshiContext(),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi market data timeout')), satoshiTimeout)
+          )
+        ]);
         break;
       
       case 'multimodal':
       default:
         // Use the multi-modal approach to automatically determine the best persona
-        response = await EnhancedGrok4Service.satoshiMultiModal(message);
+        response = await Promise.race([
+          EnhancedGrok4Service.satoshiMultiModal(message),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi multimodal timeout')), satoshiTimeout)
+          )
+        ]);
         break;
     }
 
@@ -102,6 +212,17 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     logger.error('Satoshi API error:', error);
+    
+    // Handle timeout errors specifically
+    if (error instanceof Error && error.message.includes('timeout')) {
+      return NextResponse.json(
+        { 
+          error: 'Satoshi is taking too long to respond. Please try again or rephrase your question.',
+          details: error.message
+        },
+        { status: 504 }
+      );
+    }
     
     return NextResponse.json(
       { 

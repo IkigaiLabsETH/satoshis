@@ -64,14 +64,23 @@ interface CoinGeckoPrice {
 export class Grok4Service {
   static async chatCompletion(request: Grok4Request): Promise<ChatCompletion> {
     try {
-      const completion = await client.chat.completions.create({
-        model: "grok-4", // Fixed: use correct model name
-        messages: request.messages,
-        temperature: request.temperature || 0.7,
-        max_tokens: request.max_tokens || 1000,
-        ...(request.tools ? { tools: request.tools } : {}),
-        ...(request.tool_choice ? { tool_choice: request.tool_choice } : {}),
-      });
+      // Add timeout to prevent hanging API calls
+      const grok4Timeout = 25000; // 25 second timeout
+      
+      const completion = await Promise.race([
+        client.chat.completions.create({
+          model: "grok-4", // Fixed: use correct model name
+          messages: request.messages,
+          temperature: request.temperature || 0.7,
+          max_tokens: request.max_tokens || 1000,
+          ...(request.tools ? { tools: request.tools } : {}),
+          ...(request.tool_choice ? { tool_choice: request.tool_choice } : {}),
+        }),
+        new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('Grok4 API timeout')), grok4Timeout)
+        )
+      ]);
+      
       return completion;
     } catch (error) {
       logger.error("Grok4 API error:", error);

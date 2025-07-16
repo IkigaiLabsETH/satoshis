@@ -1,6 +1,7 @@
-import { Grok4Service } from '@/app/api/grok4/grok4';
+import { Grok4Service, enhancedWebSearch, getXSentiment } from '@/app/api/grok4/grok4';
 import type { ChatCompletionTool } from "openai/resources/chat/completions";
 import { getCryptoPriceWithSatoshiContext } from './enhancedCryptoPrice';
+import { logger } from '@/lib/logger';
 
 // Current macro and crypto news context (updated regularly)
 const CURRENT_MARKET_CONTEXT = `
@@ -438,6 +439,13 @@ export const enhancedSatoshiTools: ChatCompletionTool[] = [
   }
 ];
 
+// --- LiveTheLifeTV Search Utility (stub) ---
+async function getLiveTheLifeTVResults(query: string): Promise<string> {
+  // TODO: Replace with real API call or scraping logic
+  // For now, return a placeholder
+  return `No LiveTheLifeTV results found for "${query}" (integration pending).`;
+}
+
 // Enhanced Grok4Service with Satoshi Personas
 export class EnhancedGrok4Service extends Grok4Service {
   // Satoshi Validator Mode
@@ -544,31 +552,57 @@ Focus on Bitcoin-first solutions and sovereign living principles.`;
     return completion.choices[0]?.message?.content || 'Whitepaper generation failed.';
   }
 
-  // Satoshi Researcher Mode
+  // Satoshi Researcher Mode (now aggregates web, X, and LTL results)
   static async conductResearch(topic: string): Promise<string> {
-    const researcherPrompt = `${enhancedSatoshiPromptPatterns.researcher}
+    // 1. Web search
+    const webResults = await enhancedWebSearch(topic);
+    // 2. X sentiment
+    const xSentiment = await getXSentiment(topic);
+    // 3. LiveTheLifeTV (stub)
+    const ltlResults = await getLiveTheLifeTVResults(topic);
+
+    // 4. Synthesize with LLM
+    const researchPrompt = `
+${enhancedSatoshiPromptPatterns.researcher}
 
 Research topic: ${topic}
 
-Provide comprehensive academic analysis with proper citations and structure.`;
+Web Results:\n${webResults}
+
+X Sentiment:\n${xSentiment}
+
+LiveTheLifeTV Insights:\n${ltlResults}
+
+Provide a Bitcoin-first, context-rich synthesis.`;
 
     const completion = await this.generateResponseWithTools(
       `Research ${topic}`,
-      researcherPrompt,
+      researchPrompt,
       0.7
     );
 
     return completion.choices[0]?.message?.content || 'Research failed.';
   }
 
-  // Market Research Mode
+  // Market Research Mode (now aggregates web, X, and LTL results)
   static async conductMarketResearch(industry: string, focus: string = 'market_overview'): Promise<string> {
-    const marketResearchPrompt = `${enhancedSatoshiPromptPatterns.market_researcher}
+    const webResults = await enhancedWebSearch(industry);
+    const xSentiment = await getXSentiment(industry);
+    const ltlResults = await getLiveTheLifeTVResults(industry);
+
+    const marketResearchPrompt = `
+${enhancedSatoshiPromptPatterns.market_researcher}
 
 Research industry: ${industry}
 Focus: ${focus}
 
-Provide Gartner-style market analysis with competitive intelligence.`;
+Web Results:\n${webResults}
+
+X Sentiment:\n${xSentiment}
+
+LiveTheLifeTV Insights:\n${ltlResults}
+
+Provide Gartner-style market analysis with competitive intelligence and Bitcoin-first context.`;
 
     const completion = await this.generateResponseWithTools(
       `Conduct market research on ${industry}`,
@@ -670,34 +704,50 @@ Provide layered information patterns and specialized knowledge discovery.`;
 
   // Multi-Modal Satoshi - Determines which persona to use based on query
   static async satoshiMultiModal(query: string): Promise<string> {
-    const lowerQuery = query.toLowerCase();
-    
-    // Handle common Bitcoin/crypto greetings and price queries
-    if (lowerQuery === 'gm' || lowerQuery === 'gm gm' || lowerQuery.includes('bitcoin price') || lowerQuery.includes('btc price') || 
-        lowerQuery.includes('crypto price') || lowerQuery.includes('market') || lowerQuery.includes('price')) {
-      return getCryptoPriceWithSatoshiContext(query);
-    }
-    
-    // Determine persona based on query content
-    if (lowerQuery.includes('validate') || lowerQuery.includes('project') || lowerQuery.includes('crypto')) {
-      return this.validateCryptoProject(query);
-    } else if (lowerQuery.includes('analyze') || lowerQuery.includes('stock') || lowerQuery.includes('mstr') || lowerQuery.includes('coin')) {
-      const symbol = this.extractStockSymbol(query);
-      return this.analyzeStock(symbol);
-    } else if (lowerQuery.includes('explain') || lowerQuery.includes('what is') || lowerQuery.includes('how does')) {
-      const topic = this.extractTopic(query);
-      return this.simplifyConcept(topic);
-    } else if (lowerQuery.includes('design') || lowerQuery.includes('ui') || lowerQuery.includes('ux')) {
-      return this.critiqueDesign(query);
-    } else if (lowerQuery.includes('interview') || lowerQuery.includes('questions')) {
-      const subject = this.extractSubject(query);
-      return this.generateInterviewQuestions(subject);
-    } else if (lowerQuery.includes('whitepaper') || lowerQuery.includes('report')) {
-      const topic = this.extractTopic(query);
-      return this.writeWhitepaper(topic);
-    } else {
-      // Default to research mode
-      return this.conductResearch(query);
+    try {
+      const lowerQuery = query.toLowerCase();
+      
+      // Handle common Bitcoin/crypto greetings and price queries with fast response
+      if (lowerQuery === 'gm' || lowerQuery === 'gm gm' || lowerQuery.includes('bitcoin price') || lowerQuery.includes('btc price') || 
+          lowerQuery.includes('crypto price') || lowerQuery.includes('market') || lowerQuery.includes('price')) {
+        return getCryptoPriceWithSatoshiContext(query);
+      }
+      
+      // Handle simple greetings and basic queries with fast response
+      if (lowerQuery === 'hello' || lowerQuery === 'hi' || lowerQuery === 'hey' || lowerQuery === 'sup') {
+        return `🎯 **Satoshi here!** \n\nCurrent market context: BTC $118.7k (+2%), ETH $3,165 (+6%), SOL $165 (+4%)\nETF flows strong: BTC +$403mn, ETH +$192mn\n\nWhat would you like to know about Bitcoin, crypto markets, or blockchain technology? I can analyze projects, explain concepts, research markets, or provide strategic insights.\n\nRemember: Everything is measured against BTC performance. That's the Bitcoin-first way.`;
+      }
+      
+      // For open-ended, research, or news queries, aggregate web, X, and LTL results
+      if (lowerQuery.includes('research') || lowerQuery.includes('news') || lowerQuery.includes('trend') || lowerQuery.includes('adoption') || lowerQuery.includes('sentiment')) {
+        // Use the enhanced research aggregation
+        return this.conductResearch(query);
+      }
+      
+      // Determine persona based on query content with optimized routing
+      if (lowerQuery.includes('validate') || lowerQuery.includes('project') || lowerQuery.includes('crypto')) {
+        return this.validateCryptoProject(query);
+      } else if (lowerQuery.includes('analyze') || lowerQuery.includes('stock') || lowerQuery.includes('mstr') || lowerQuery.includes('coin')) {
+        const symbol = this.extractStockSymbol(query);
+        return this.analyzeStock(symbol);
+      } else if (lowerQuery.includes('explain') || lowerQuery.includes('what is') || lowerQuery.includes('how does')) {
+        const topic = this.extractTopic(query);
+        return this.simplifyConcept(topic);
+      } else if (lowerQuery.includes('design') || lowerQuery.includes('ui') || lowerQuery.includes('ux')) {
+        return this.critiqueDesign(query);
+      } else if (lowerQuery.includes('interview') || lowerQuery.includes('questions')) {
+        const subject = this.extractSubject(query);
+        return this.generateInterviewQuestions(subject);
+      } else if (lowerQuery.includes('whitepaper') || lowerQuery.includes('report')) {
+        const topic = this.extractTopic(query);
+        return this.writeWhitepaper(topic);
+      } else {
+        // Default to research mode for complex queries
+        return this.conductResearch(query);
+      }
+    } catch (error) {
+      logger.error('Satoshi multimodal error:', error);
+      return `🎯 **Satoshi Error Response**\n\nI encountered an issue processing your request: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease try rephrasing your question or ask something simpler like \"gm\" for a market update.`;
     }
   }
 
