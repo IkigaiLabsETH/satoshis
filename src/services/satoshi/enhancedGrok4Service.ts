@@ -1,5 +1,6 @@
 import { Grok4Service } from '@/app/api/grok4/grok4';
 import type { ChatCompletionTool } from "openai/resources/chat/completions";
+import { getCryptoPriceWithSatoshiContext } from './enhancedCryptoPrice';
 
 // Enhanced Tools for Satoshi with Bitcoin-first capabilities
 export const enhancedSatoshiTools: ChatCompletionTool[] = [
@@ -729,6 +730,12 @@ Provide layered information patterns and specialized knowledge discovery.`;
   // Multi-Modal Satoshi - Determines which persona to use based on query
   static async satoshiMultiModal(query: string): Promise<string> {
     const lowerQuery = query.toLowerCase();
+    
+    // Handle common Bitcoin/crypto greetings and price queries
+    if (lowerQuery === 'gm' || lowerQuery === 'gm gm' || lowerQuery.includes('bitcoin price') || lowerQuery.includes('btc price') || 
+        lowerQuery.includes('crypto price') || lowerQuery.includes('market') || lowerQuery.includes('price')) {
+      return getCryptoPriceWithSatoshiContext(query);
+    }
     
     // Determine persona based on query content
     if (lowerQuery.includes('validate') || lowerQuery.includes('project') || lowerQuery.includes('crypto')) {

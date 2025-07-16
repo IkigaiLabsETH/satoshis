@@ -4,10 +4,16 @@ import { logger } from '@/lib/logger';
 // Enhanced Crypto Price Function with Satoshi Context
 export async function getCryptoPriceWithSatoshiContext(query: string): Promise<string> {
   try {
-    const priceData = await getCryptoPrice(query);
+    // Handle "gm" and "gm gm" by defaulting to Bitcoin
+    let processedQuery = query;
+    if (query.toLowerCase() === 'gm' || query.toLowerCase() === 'gm gm') {
+      processedQuery = 'bitcoin price';
+    }
+    
+    const priceData = await getCryptoPrice(processedQuery);
     
     // Add Satoshi-style commentary based on the cryptocurrency
-    const satoshiCommentary = generateSatoshiCommentary(query);
+    const satoshiCommentary = generateSatoshiCommentary(processedQuery);
     
     return priceData + satoshiCommentary;
   } catch (error) {

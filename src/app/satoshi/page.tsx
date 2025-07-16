@@ -96,12 +96,20 @@ export default function SatoshiTestPage() {
 
       if (res.ok) {
         const data = await res.json();
-        setResponse(data.content || 'No response received');
+        
+        if (data.content) {
+          setResponse(data.content);
+        } else if (data.error) {
+          setResponse(`Error: ${data.error}`);
+        } else {
+          setResponse('No response content received from Satoshi');
+        }
       } else {
-        setResponse('Error: Failed to get response from Satoshi');
+        const errorData = await res.json().catch(() => ({}));
+        setResponse(`Error: ${res.status} - ${errorData.error || 'Failed to get response from Satoshi'}`);
       }
-    } catch {
-      setResponse('Error: Failed to connect to Satoshi API');
+    } catch (error) {
+      setResponse(`Error: Failed to connect to Satoshi API - ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
