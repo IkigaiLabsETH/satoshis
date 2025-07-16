@@ -1,5 +1,10 @@
 # What's New: July 2024
 
+- **Major Code Refactoring (July 2025):** The massive 2500+ line `route.ts` file has been refactored into modular service components for better maintainability, testing, and performance. The codebase is now organized into focused service modules:
+  - `services/marketData.ts` - BTC price, market data, crypto stocks
+  - `services/finnhubService.ts` - All Finnhub API calls and rate limiting
+  - `services/queryHandlers.ts` - Query classification and handlers
+  - `services/utils.ts` - Rate limiting, validation, response helpers
 - All Finnhub-powered sections (insider sentiment, transactions, earnings, news, profile, macro, IPO, market status) now use a short, punchy, human, crypto-native analyst narrative style.
 - Data dumps and tables are gone unless specifically requested; every section leads with a narrative, weaves in key data points, and ends with a strong, opinionated closer.
 - The system now omits any section or data point that is missing, zero, or adds no value (e.g., no more $0.00M totals, no 'Data unavailable' fields).
@@ -19,6 +24,17 @@ GROK420 is a sophisticated AI-powered crypto market intelligence system with a c
 ---
 
 ## Recent Developments (May–July 2024)
+
+### **Major Code Refactoring (July 2024)**
+- **Service Module Architecture:** The massive 2500+ line `route.ts` file has been refactored into focused service modules for better maintainability, testing, and performance:
+  - `services/marketData.ts` - BTC price fetching, market data aggregation, crypto stocks analysis
+  - `services/finnhubService.ts` - All Finnhub API calls with rate limiting and error handling
+  - `services/queryHandlers.ts` - Query classification, stock symbol extraction, price prediction
+  - `services/utils.ts` - Rate limiting, validation, response helpers, performance tracking
+- **Improved Code Organization:** Each service module has a single responsibility, making the codebase easier to maintain, test, and extend
+- **Enhanced Performance:** Service modules can be optimized independently, with better caching and error handling
+- **Better Testing:** Individual service modules can be unit tested in isolation
+- **Type Safety:** All TypeScript interfaces are properly defined with no `any` types
 
 ### **Backend & API Evolution**
 - **Big Narrative Refactor (July 2024):** All Finnhub-powered sections (insider sentiment, transactions, earnings, news, profile, macro, IPO, market status) now use a short, punchy, human, crypto-native analyst narrative style. Data dumps and tables are gone unless specifically requested; every section leads with a narrative, weaves in key data points, and ends with a strong, opinionated closer. The system omits any section or data point that is missing, zero, or adds no value (e.g., no more $0.00M totals, no 'Data unavailable' fields). Macro, IPO, and market status sections are now also narrative-driven. Analyst output is always on-brand, never robotic or generic.
@@ -69,6 +85,16 @@ graph TB
         Auth[Authentication]
         CORS[CORS Handling]
         Validation[Input Validation]
+    end
+    
+    %% Service Modules (NEW)
+    subgraph "🛠️ Service Modules"
+        MarketData[Market Data Service]
+        FinnhubService[Finnhub Service]
+        QueryHandlers[Query Handlers]
+        UtilsService[Utils Service]
+        ImageService[Image Service]
+        ConversationService[Conversation Service]
     end
     
     %% Grok 4 Core System
@@ -152,7 +178,16 @@ graph TB
     Route --> RateLimit
     RateLimit --> Auth
     Auth --> Validation
-    Validation --> Grok4
+    Validation --> MarketData
+    Validation --> FinnhubService
+    Validation --> QueryHandlers
+    Validation --> UtilsService
+    
+    %% Service to Grok 4
+    MarketData --> Grok4
+    FinnhubService --> Grok4
+    QueryHandlers --> Grok4
+    UtilsService --> Grok4
     
     %% Grok 4 to Tools
     Grok4 --> Tools
@@ -221,6 +256,7 @@ graph TB
     %% Styling
     classDef frontend fill:#e1f5fe,stroke:#01579b,stroke-width:2px
     classDef api fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef services fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
     classDef grok fill:#fff3e0,stroke:#e65100,stroke-width:2px
     classDef tools fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
     classDef data fill:#fce4ec,stroke:#880e4f,stroke-width:2px
@@ -229,6 +265,7 @@ graph TB
     
     class UI,Stream,Error,Copy,Session,Accessibility frontend
     class Route,RateLimit,Auth,CORS,Validation api
+    class MarketData,FinnhubService,QueryHandlers,UtilsService,ImageService,ConversationService services
     class Grok4,Tools,Prompt,Streaming,Fallback grok
     class PriceTool,SentimentTool,SearchTool,MarketTool,StockTool,GMHandler tools
     class CoinGecko,Finnhub,TwitterAPI,WebSearch,Mempool,BTCPrice,Altcoins,CryptoStocks,MacroContext,XSentiment,Narrative,Layer1s,DeFi,Emerging,Memes,AICompute,Stablecoins,BitcoinHoldings,Exchanges,Mining,Payments,TechGiants,Specialized data
@@ -238,14 +275,30 @@ graph TB
 
 ## Core Architecture
 
-### 1. **Grok 4 API Integration**
+### 1. **Service Module Architecture (NEW)**
+The codebase has been refactored into focused service modules for better maintainability:
+
+#### **Service Modules:**
+- **`services/marketData.ts`**: BTC price fetching, market data aggregation, crypto stocks analysis
+- **`services/finnhubService.ts`**: All Finnhub API calls with rate limiting and error handling
+- **`services/queryHandlers.ts`**: Query classification, stock symbol extraction, price prediction
+- **`services/utils.ts`**: Rate limiting, validation, response helpers, performance tracking
+
+#### **Benefits of Service Architecture:**
+- **Single Responsibility**: Each service has a focused purpose
+- **Better Testing**: Individual modules can be unit tested
+- **Improved Performance**: Services can be optimized independently
+- **Enhanced Maintainability**: Changes isolated to specific services
+- **Type Safety**: Better TypeScript organization with no `any` types
+
+### 2. **Grok 4 API Integration**
 - **Base URL**: `https://api.x.ai/v1`
 - **Model**: `grok-4` (latest XAI model)
 - **Authentication**: Bearer token via `XAI_API_KEY`
 - **Streaming Support**: Real-time responses with tool calling
 - **Tool Integration**: Function calling for enhanced capabilities
 
-### 2. **Tool-Augmented Intelligence**
+### 3. **Tool-Augmented Intelligence**
 The system uses function calling to enhance Grok 4's capabilities:
 
 #### **Available Tools:**
@@ -255,7 +308,7 @@ The system uses function calling to enhance Grok 4's capabilities:
 - `get_stock_price`: Real-time stock and crypto stock prices (via Finnhub)
 - `get_market_data`: Comprehensive market data for multiple cryptocurrencies
 
-### 3. **Fine-Tuned Asset Tracking (IMPLEMENTED)**
+### 4. **Fine-Tuned Asset Tracking (IMPLEMENTED)**
 
 #### **🎯 Most Tracked Altcoins (Fully Implemented):**
 - **Major Layer 1s**: BTC, ETH, SOL, SUI
@@ -295,6 +348,67 @@ The system uses function calling to enhance Grok 4's capabilities:
 ---
 
 ## Implementation Details
+
+### **Service Module Implementation (NEW)**
+
+#### **Market Data Service (`services/marketData.ts`)**
+```typescript
+// BTC Price fetching with caching and retry logic
+export async function getFastBTCPrice(retryCount = 0): Promise<number | null>
+
+// BTC outperformers and altcoin tables
+export async function getBTCOutperformersAndAltcoinTables(period: "24h" | "7d" | "ytd"): Promise<{ btcOutperformersTable: string; btcChange: number; label: string }>
+
+// Crypto stocks data with narrative generation
+export async function getCryptoStocksData(btcChange: number): Promise<string>
+```
+
+#### **Finnhub Service (`services/finnhubService.ts`)**
+```typescript
+// Rate limiting and API management
+export async function waitForFinnhubRateLimit(): Promise<void>
+
+// Insider sentiment analysis
+export async function getInsiderSentiment(symbol: string, from?: string, to?: string): Promise<string>
+
+// Company earnings analysis
+export async function getCompanyEarnings(symbol: string): Promise<string>
+
+// Market status and trading information
+export async function getMarketStatus(exchange: string = 'US'): Promise<string>
+```
+
+#### **Query Handlers Service (`services/queryHandlers.ts`)**
+```typescript
+// Query classification
+export function isGMQuery(q: string): boolean
+export function isPricePredictionQuery(q: string): boolean
+export function needsWebSearch(query: string): boolean
+
+// Stock symbol extraction
+export function extractPrioritizedStockSymbols(query: string): string[]
+
+// Price prediction handler
+export async function handlePricePrediction(message: string, systemPrompt?: string, temperature?: number): Promise<string>
+```
+
+#### **Utils Service (`services/utils.ts`)**
+```typescript
+// Rate limiting and client management
+export function checkRateLimit(clientId: string): boolean
+export function getClientId(request: Request): string
+
+// Request validation and sanitization
+export function sanitizeMessage(message: string): string
+export async function validateRequest(request: Request): Promise<RequestData>
+
+// Response helpers
+export function createErrorResponse(message: string, status: number = 500): Response
+export function createSuccessResponse(content: string): Response
+
+// Performance tracking
+export class PerformanceTracker
+```
 
 ### **System Prompts & Prompt Engineering Best Practices (ENHANCED)**
 ```typescript
@@ -364,10 +478,11 @@ const ENHANCED_TOOLS: ChatCompletionTool[] = [
 ---
 
 ## Code Quality & TypeScript
-- All explicit `any` types have been replaced with specific interfaces (e.g., `CoinGeckoCoin`, `StockResult`).
-- Unused variables and interfaces have been removed.
-- All linter and TypeScript errors have been resolved.
-- Calls to undefined functions have been removed or commented out.
+- **Service Module Architecture**: All code is now organized into focused service modules
+- **Type Safety**: All explicit `any` types have been replaced with specific interfaces
+- **Linting**: All ESLint warnings fixed with explicit interfaces and proper type definitions
+- **Performance**: Service modules can be optimized independently
+- **Testing**: Individual service modules can be unit tested in isolation
 
 ---
 
@@ -375,11 +490,13 @@ const ENHANCED_TOOLS: ChatCompletionTool[] = [
 - The route provides real-time Bitcoin price, curated altcoins and stocks, and market sentiment from X.
 - Backend asset lists are perfectly aligned with the frontend.
 - All major changes are committed and pushed at each step.
+- Service modules are properly organized and documented.
 - Recommendations for further improvements (e.g., direct backend X data integration) are documented in the roadmap.
 
 ---
 
 ## Roadmap & Next Steps
+- **Additional Service Modules**: Image generation, conversation management, tools service
 - **Direct Backend X Data Integration:** For even more robust sentiment and narrative analysis.
 - **Technical Analysis Tools:** RSI, MACD, Bollinger Bands, etc.
 - **Portfolio Management:** Position tracking and P&L.
@@ -807,9 +924,10 @@ const reader = stream.body?.getReader();
 
 GROK420 represents a cutting-edge approach to crypto market intelligence, combining the power of Grok 4's real-time X data integration with sophisticated tool-augmented intelligence. The system provides comprehensive market analysis, sentiment insights, and actionable trading intelligence while maintaining high performance, security, and scalability.
 
-The fine-tuned asset tracking ensures users get insights on the most relevant cryptocurrencies and stocks, while the modular architecture allows for continuous improvement and feature expansion. With its focus on real-time data, X sentiment analysis, and comprehensive market coverage, GROK420 is positioned to be a leading platform for crypto market intelligence.
+The fine-tuned asset tracking ensures users get insights on the most relevant cryptocurrencies and stocks, while the modular service architecture allows for continuous improvement and feature expansion. With its focus on real-time data, X sentiment analysis, and comprehensive market coverage, GROK420 is positioned to be a leading platform for crypto market intelligence.
 
 ### **Key Achievements:**
+- ✅ **Service Module Architecture**: Refactored 2500+ line route into focused service modules
 - ✅ **Real-time Market Data**: Bitcoin, 24 altcoins, 17 crypto stocks
 - ✅ **X Sentiment Analysis**: Tweet analysis and key points extraction
 - ✅ **Comprehensive GM Reports**: Morning market briefings with network stats
@@ -824,8 +942,11 @@ The fine-tuned asset tracking ensures users get insights on the most relevant cr
 - ✅ **Enhanced Tool Definitions**: Improved descriptions and parameter definitions
 - ✅ **Streaming Response Support**: Real-time updates without truncation
 - ✅ **Curated Asset Lists**: Perfect alignment with frontend components
+- ✅ **Type Safety**: All TypeScript interfaces properly defined
+- ✅ **Code Quality**: All linter errors resolved
 
 ### **Next Steps:**
+- 🚀 **Additional Service Modules**: Image generation, conversation management, tools service
 - 🚀 **Technical Analysis Tools**: RSI, MACD, Bollinger Bands
 - 🚀 **Portfolio Management**: Position tracking and P&L
 - 🚀 **Real-time Alerts**: Price and sentiment notifications
