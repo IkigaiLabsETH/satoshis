@@ -642,8 +642,8 @@ export default function Grok420Page() {
               </form>
               {/* Image Prompt Dialog */}
               {showImageDialog && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/60">
-                  <form onSubmit={e => handleImageGenerate(e)} className="bg-[#222] border-2 border-yellow-500 rounded-lg p-4 sm:p-8 shadow-lg flex flex-col items-center w-[95vw] max-w-xs sm:max-w-md">
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/80 backdrop-blur-md">
+                  <form onSubmit={e => handleImageGenerate(e)} className="bg-[#222] border-2 border-yellow-500 rounded-lg p-4 sm:p-8 shadow-lg flex flex-col items-center w-[95vw] max-w-2xl sm:max-w-4xl">
                     <h2 className="text-lg sm:text-xl font-bold text-yellow-500 mb-4">Generate Art</h2>
                     <div className="flex flex-wrap gap-2 mb-4 w-full">
                       {samplePrompts.map((prompt, idx) => (
