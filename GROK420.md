@@ -1,17 +1,6 @@
 # What's New: July 2024
 
-- **Major Code Refactoring (July 2025):** The massive 2500+ line `route.ts` file has been refactored into modular service components for better maintainability, testing, and performance. The codebase is now organized into focused service modules:
-  - `services/marketData.ts` - BTC price, market data, crypto stocks
-  - `services/finnhubService.ts` - All Finnhub API calls and rate limiting
-  - `services/queryHandlers.ts` - Query classification and handlers
-  - `services/utils.ts` - Rate limiting, validation, response helpers
-- All Finnhub-powered sections (insider sentiment, transactions, earnings, news, profile, macro, IPO, market status) now use a short, punchy, human, crypto-native analyst narrative style.
-- Data dumps and tables are gone unless specifically requested; every section leads with a narrative, weaves in key data points, and ends with a strong, opinionated closer.
-- The system now omits any section or data point that is missing, zero, or adds no value (e.g., no more $0.00M totals, no 'Data unavailable' fields).
-- Macro, IPO, and market status sections are now also narrative-driven.
-- The codebase was refactored to ensure all function hoisting/linter errors are resolved.
-- Analyst output is now always on-brand, never robotic or generic.
-- See below for full details and architecture.
+- **Hallucination Prevention (July 2024):** Both Grok 4 and Satoshi AI now feature robust anti-hallucination systems. The system prompts enforce strict truthfulness, never allow made-up facts, and require live data for all claims. A new `verify_fact` tool is integrated into both systems, which checks any factual claim against live APIs and web search, returning a confidence level and explicit recommendations. All responses are now verified or clearly disclaim uncertainty. This eliminates hallucinations and ensures only accurate, source-backed information is provided across all AI interactions.
 
 ---
 
@@ -963,6 +952,9 @@ The fine-tuned asset tracking ensures users get insights on the most relevant cr
 - ✅ **Curated Asset Lists**: Perfect alignment with frontend components
 - ✅ **Type Safety**: All TypeScript interfaces properly defined
 - ✅ **Code Quality**: All linter errors resolved
+- ✅ **Anti-Hallucination Protection**: Both Grok 4 and Satoshi AI systems protected against fact fabrication
+- ✅ **Fact Verification Tool**: Live API checking and confidence scoring for all claims
+- ✅ **Multi-Modal Truthfulness**: All 13 Satoshi personas inherit anti-hallucination protocols
 
 ### **Next Steps:**
 - 🚀 **Additional Service Modules**: Image generation, conversation management, tools service

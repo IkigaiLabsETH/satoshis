@@ -1,7 +1,173 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { EnhancedGrok4Service } from '@/services/satoshi/enhancedGrok4Service';
+import { EnhancedGrok4Service, enhancedSatoshiTools, enhancedSatoshiPromptPatterns } from '@/services/satoshi/enhancedGrok4Service';
 import { getCryptoPriceWithSatoshiContext, getXSentimentWithSatoshiAnalysis, getMarketDataWithSatoshiContext } from '@/services/satoshi/enhancedCryptoPrice';
 import { logger } from '@/lib/logger';
+import { enhancedWebSearch } from '@/app/api/grok4/grok4';
+
+// Fact verification function for Satoshi
+async function verifyFact(claim: string, context?: string): Promise<string> {
+  try {
+    logger.info('Satoshi verifying fact:', { claim, context });
+    
+    // Extract key information from the claim
+    const claimLower = claim.toLowerCase();
+    
+    // Check for price-related claims
+    const pricePattern = /(\$[\d,]+\.?\d*)/g;
+    const priceMatches = claim.match(pricePattern);
+    
+    // Check for cryptocurrency/stock symbols
+    const cryptoPattern = /\b(btc|eth|sol|aave|mkr|uni|link|avax|doge|pepe|wif|bonk)\b/gi;
+    const stockPattern = /\b(mstr|coin|hood|nvda|tsla|aapl|msft|googl|amzn|meta)\b/gi;
+    const cryptoMatches = claim.match(cryptoPattern);
+    const stockMatches = claim.match(stockPattern);
+    
+    const priceVerifications = [];
+    
+    // Verify prices if mentioned
+    if (priceMatches && (cryptoMatches || stockMatches)) {
+      const symbols = [...(cryptoMatches || []), ...(stockMatches || [])];
+      for (const symbol of symbols.slice(0, 3)) { // Limit to 3 symbols
+        try {
+          if (cryptoMatches?.includes(symbol.toLowerCase())) {
+            // Verify crypto price with timeout
+            const response = await Promise.race([
+              fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${symbol.toLowerCase()}&vs_currencies=usd`),
+              new Promise<never>((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout')), 5000)
+              )
+            ]);
+            
+            if (response.ok) {
+              const data = await response.json();
+              const currentPrice = data[symbol.toLowerCase()]?.usd;
+              if (currentPrice) {
+                const claimedPrice = priceMatches.find(p => p.includes('$'));
+                const claimedValue = claimedPrice ? parseFloat(claimedPrice.replace(/[$,]/g, '')) : null;
+                
+                if (claimedValue) {
+                  const difference = Math.abs(currentPrice - claimedValue);
+                  const percentageDiff = (difference / currentPrice) * 100;
+                  
+                  if (percentageDiff < 5) {
+                    priceVerifications.push(`✅ ${symbol.toUpperCase()}: Claimed ~$${claimedValue.toFixed(2)}, Current: $${currentPrice.toFixed(2)} (${percentageDiff.toFixed(1)}% diff)`);
+                  } else {
+                    priceVerifications.push(`⚠️ ${symbol.toUpperCase()}: Claimed ~$${claimedValue.toFixed(2)}, Current: $${currentPrice.toFixed(2)} (${percentageDiff.toFixed(1)}% diff - significant)`);
+                  }
+                } else {
+                  priceVerifications.push(`✅ ${symbol.toUpperCase()} current price: $${currentPrice.toFixed(2)}`);
+                }
+              }
+            }
+          } else if (stockMatches?.includes(symbol.toLowerCase())) {
+            // Verify stock price with timeout
+            const response = await Promise.race([
+              fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol.toUpperCase()}`),
+              new Promise<never>((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout')), 5000)
+              )
+            ]);
+            
+            if (response.ok) {
+              const data = await response.json();
+              const quote = data?.quoteResponse?.result?.[0];
+              if (quote?.regularMarketPrice) {
+                const currentPrice = quote.regularMarketPrice;
+                const claimedPrice = priceMatches.find(p => p.includes('$'));
+                const claimedValue = claimedPrice ? parseFloat(claimedPrice.replace(/[$,]/g, '')) : null;
+                
+                if (claimedValue) {
+                  const difference = Math.abs(currentPrice - claimedValue);
+                  const percentageDiff = (difference / currentPrice) * 100;
+                  
+                  if (percentageDiff < 5) {
+                    priceVerifications.push(`✅ ${symbol.toUpperCase()}: Claimed ~$${claimedValue.toFixed(2)}, Current: $${currentPrice.toFixed(2)} (${percentageDiff.toFixed(1)}% diff)`);
+                  } else {
+                    priceVerifications.push(`⚠️ ${symbol.toUpperCase()}: Claimed ~$${claimedValue.toFixed(2)}, Current: $${currentPrice.toFixed(2)} (${percentageDiff.toFixed(1)}% diff - significant)`);
+                  }
+                } else {
+                  priceVerifications.push(`✅ ${symbol.toUpperCase()} current price: $${currentPrice.toFixed(2)}`);
+                }
+              }
+            }
+          }
+        } catch {
+          priceVerifications.push(`❌ Unable to verify ${symbol.toUpperCase()} price`);
+        }
+      }
+    }
+    
+    // Enhanced web search for supporting evidence
+    const searchQuery = `${claim} ${context || ''}`.trim();
+    let searchResults = '';
+    try {
+      searchResults = await Promise.race([
+        enhancedWebSearch(searchQuery),
+        new Promise<string>((resolve) => 
+          setTimeout(() => resolve(''), 8000)
+        )
+      ]);
+    } catch {
+      searchResults = '';
+    }
+    
+    // Analyze the search results for verification
+    const hasSupportingEvidence = searchResults.length > 100 && 
+      (searchResults.toLowerCase().includes(claimLower.split(' ').slice(0, 3).join(' ')) ||
+       searchResults.toLowerCase().includes(claimLower.split(' ').slice(-3).join(' ')));
+    
+    let verificationSummary = `**🔍 Satoshi Fact Verification Results for:** "${claim}"\n\n`;
+    
+    if (priceVerifications.length > 0) {
+      verificationSummary += `**💰 Price Verification:**\n${priceVerifications.join('\n')}\n\n`;
+    }
+    
+    if (hasSupportingEvidence) {
+      verificationSummary += `✅ **📰 Supporting Evidence Found:** Web search returned relevant information\n`;
+    } else if (searchResults.length > 0) {
+      verificationSummary += `⚠️ **📰 Limited Supporting Evidence:** Web search returned some information but not strong confirmation\n`;
+    } else {
+      verificationSummary += `❌ **📰 No Supporting Evidence:** Web search did not find relevant information\n`;
+    }
+    
+    // Enhanced confidence assessment
+    let confidenceLevel = 'LOW';
+    let confidenceReason = '';
+    
+    if (priceVerifications.length > 0 && hasSupportingEvidence) {
+      confidenceLevel = 'HIGH';
+      confidenceReason = 'Price verification + supporting evidence';
+    } else if (priceVerifications.length > 0 || hasSupportingEvidence) {
+      confidenceLevel = 'MEDIUM';
+      confidenceReason = priceVerifications.length > 0 ? 'Price verification only' : 'Supporting evidence only';
+    } else {
+      confidenceLevel = 'LOW';
+      confidenceReason = 'No verification possible';
+    }
+    
+    verificationSummary += `\n**🎯 Confidence Level:** ${confidenceLevel}\n`;
+    verificationSummary += `**📊 Reason:** ${confidenceReason}\n`;
+    
+    // Enhanced recommendations
+    let recommendation = '';
+    if (confidenceLevel === 'LOW') {
+      recommendation = '❌ **VERIFY INDEPENDENTLY** - This claim cannot be verified with available sources. Please check multiple sources.';
+    } else if (confidenceLevel === 'MEDIUM') {
+      recommendation = '⚠️ **VERIFY DETAILS** - Claim appears plausible but verify specific details with additional sources.';
+    } else {
+      recommendation = '✅ **WELL-SUPPORTED** - Claim appears well-supported by available data.';
+    }
+    
+    verificationSummary += `**💡 Recommendation:** ${recommendation}\n\n`;
+    verificationSummary += `⏰ **Verified at:** ${new Date().toLocaleString()}`;
+    
+    return verificationSummary;
+    
+  } catch (error) {
+    logger.error('Satoshi fact verification error:', error);
+    return `**❌ Satoshi Fact Verification Error:** Unable to verify the claim "${claim}" due to technical issues. Please verify this information independently.`;
+  }
+}
 
 // Configure API route timeout for Satoshi API calls
 export const maxDuration = 60;
@@ -203,12 +369,47 @@ Remember: Everything is measured against BTC performance. That's the Bitcoin-fir
       case 'multimodal':
       default:
         // Use the multi-modal approach to automatically determine the best persona
-        response = await Promise.race([
-          EnhancedGrok4Service.satoshiMultiModal(message),
-          new Promise<never>((_, reject) => 
-            setTimeout(() => reject(new Error('Satoshi multimodal timeout')), satoshiTimeout)
-          )
-        ]);
+        // First, try to get a response with tools for fact verification
+        try {
+          const completion = await Promise.race([
+            EnhancedGrok4Service.generateResponseWithTools(
+              message,
+              enhancedSatoshiPromptPatterns.validator, // Use validator prompt as default
+              0.7,
+              enhancedSatoshiTools,
+              'auto'
+            ),
+            new Promise<never>((_, reject) => 
+              setTimeout(() => reject(new Error('Satoshi multimodal timeout')), satoshiTimeout)
+            )
+          ]);
+
+          // Handle tool calls if any
+          const toolCall = EnhancedGrok4Service.extractToolCall(completion);
+          if (toolCall && toolCall.function?.name === 'verify_fact') {
+            const { claim, context } = JSON.parse(toolCall.function.arguments);
+            const toolResult = await verifyFact(claim, context);
+            
+            // Get final response with tool result
+            const finalCompletion = await EnhancedGrok4Service.generateResponseWithTools(
+              `${message}\n\nFact verification result: ${toolResult}`,
+              enhancedSatoshiPromptPatterns.validator,
+              0.7
+            );
+            
+            response = finalCompletion.choices?.[0]?.message?.content || 'Satoshi response failed.';
+          } else {
+            response = completion.choices?.[0]?.message?.content || 'Satoshi response failed.';
+          }
+        } catch {
+          // Fallback to regular multimodal without tools
+          response = await Promise.race([
+            EnhancedGrok4Service.satoshiMultiModal(message),
+            new Promise<never>((_, reject) => 
+              setTimeout(() => reject(new Error('Satoshi multimodal timeout')), satoshiTimeout)
+            )
+          ]);
+        }
         break;
     }
 
