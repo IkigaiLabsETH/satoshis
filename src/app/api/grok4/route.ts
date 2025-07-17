@@ -298,18 +298,15 @@ function isGMQuery(q: string): boolean {
 }
 
 function isPricePredictionQuery(q: string): boolean {
-  const priceKeywords = [
-    'price', 'value', 'worth', 'cost', 'how much',
-    'current price', 'current value', 'price of', 'value of',
-    'bitcoin price', 'btc price', 'eth price', 'ethereum price'
-  ];
+  // Only trigger for actual prediction requests, not simple price queries
+  const hasPredictionKeyword = /price target|prediction|end of q4|end of year|forecast|target|what will|going to|expect|projection/i.test(q);
   
-  const queryLower = q.toLowerCase();
-  const hasPriceKeyword = priceKeywords.some(keyword => queryLower.includes(keyword));
-  const hasPredictionKeyword = /price target|prediction|end of q4|end of year|forecast|target/i.test(q);
-  const hasCryptoMention = /bitcoin|btc|ethereum|eth|crypto|cryptocurrency/i.test(q);
+  // Check for specific prediction patterns
+  const isPredictionQuery = hasPredictionKeyword || 
+    /what.*price.*(will|going|expect|target)/i.test(q) ||
+    /(will|going|expect).*price.*(be|reach|hit)/i.test(q);
   
-  return (hasPriceKeyword && hasCryptoMention) || hasPredictionKeyword;
+  return isPredictionQuery;
 }
 
 // BTC Price fetching with better error handling and retry logic
