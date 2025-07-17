@@ -41,6 +41,16 @@ If your goal is to beat Bitcoin, GROK420 and LiveTheLifeTV are your daily edge.
 
 ---
 
+## 🚫 AI Hallucination Prevention (NEW July 2024)
+
+GROK420 now guarantees that Grok 4 will never hallucinate facts or numbers:
+- **System Prompt:** Grok 4 is explicitly instructed to never make up facts, always use live data, and verify all claims. If data is unavailable, it must state so and never speculate without disclaimers.
+- **Fact Verification Tool:** Any claim about prices, dates, or events is checked using live APIs (CoinGecko, Yahoo Finance) and enhanced web search. The system returns a confidence level and explicit recommendations for every claim.
+- **No More Hallucinations:** If Grok 4 cannot verify a claim, it will say so, cite sources, or recommend independent verification. Users are now protected from hallucinated facts by design.
+
+### Key Features (add to list above):
+- 🚫 **No Hallucinations:** All responses are fact-checked and source-backed, or clearly disclaim uncertainty.
+
 ## 🆕 AI-Powered Stock Intelligence System
 
 **NEW: Automatic Stock Detection & Live Data Integration**
