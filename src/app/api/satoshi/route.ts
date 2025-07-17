@@ -321,6 +321,46 @@ Remember: Everything is measured against BTC performance. That's the Bitcoin-fir
         ]);
         break;
       
+      case 'enhanced_viral_creator':
+        response = await Promise.race([
+          EnhancedGrok4Service.createEnhancedViralContent(
+            message, 
+            options?.platform || 'X', 
+            options?.content_type || 'thread',
+            options?.business_context
+          ),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi enhanced viral creator timeout')), 30000) // Extended timeout for enhanced content
+          )
+        ]);
+        break;
+      
+      case 'platform_adaptation':
+        response = await Promise.race([
+          EnhancedGrok4Service.adaptContentForPlatform(
+            message, 
+            options?.target_platform || 'X', 
+            options?.content_type || 'post'
+          ),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi platform adaptation timeout')), 20000)
+          )
+        ]);
+        break;
+      
+      case 'multi_platform_strategy':
+        response = await Promise.race([
+          EnhancedGrok4Service.createMultiPlatformStrategy(
+            message, 
+            options?.platforms || ['X', 'LinkedIn', 'Instagram'],
+            options?.business_context
+          ),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi multi-platform strategy timeout')), 25000)
+          )
+        ]);
+        break;
+      
       case 'strategic_advisor':
         response = await Promise.race([
           EnhancedGrok4Service.strategicDecisionAnalysis(message, options?.framework),
@@ -467,6 +507,9 @@ export async function GET() {
       researcher: 'Conduct academic research',
       content_creator: 'Create general content with Satoshi voice',
       viral_creator: 'Create viral content with enhanced writing style for X/Twitter',
+      enhanced_viral_creator: 'Create viral content with platform-specific psychology and natural writing',
+      platform_adaptation: 'Adapt existing content for different platforms',
+      multi_platform_strategy: 'Create comprehensive multi-platform content strategy',
       crypto_price: 'Get crypto prices with Satoshi commentary',
       x_sentiment: 'Analyze X sentiment with Satoshi perspective',
       market_data: 'Get market data with Satoshi context',
@@ -483,6 +526,9 @@ export async function GET() {
       'Academic research',
       'Content creation with Satoshi voice',
       'Viral content creation with enhanced writing style',
+      'Enhanced viral content with platform-specific psychology',
+      'Platform-specific content adaptation',
+      'Multi-platform content strategy',
       'Enhanced crypto price data',
       'X sentiment analysis',
       'Market data with context'
@@ -492,7 +538,17 @@ export async function GET() {
       analyst: 'POST /api/satoshi {"message": "Analyze MSTR", "mode": "analyst"}',
       educator: 'POST /api/satoshi {"message": "Explain Lightning Network", "mode": "educator"}',
       viral_creator: 'POST /api/satoshi {"message": "Bitcoin ETF flows", "mode": "viral_creator", "options": {"platform": "X", "content_type": "thread"}}',
+      enhanced_viral_creator: 'POST /api/satoshi {"message": "Bitcoin ETF flows", "mode": "enhanced_viral_creator", "options": {"platform": "X", "content_type": "thread", "business_context": {"industry": "Crypto", "targetAudience": "Bitcoin investors", "mainGoal": "Education"}}}',
+      platform_adaptation: 'POST /api/satoshi {"message": "Your content here", "mode": "platform_adaptation", "options": {"target_platform": "LinkedIn", "content_type": "post"}}',
+      multi_platform_strategy: 'POST /api/satoshi {"message": "Bitcoin adoption", "mode": "multi_platform_strategy", "options": {"platforms": ["X", "LinkedIn", "Instagram"], "business_context": {"industry": "Crypto", "mainGoal": "Education"}}}',
       multimodal: 'POST /api/satoshi {"message": "What do you think about this new crypto project?"}'
+    },
+    platforms: {
+      'X': 'Twitter/X platform with thread and tweet optimization',
+      'LinkedIn': 'Professional platform with thought leadership focus',
+      'Instagram': 'Visual platform with story and post optimization',
+      'TikTok': 'Short-form video platform with trend integration',
+      'YouTube': 'Long-form video platform with title and description optimization'
     }
   });
 } 
