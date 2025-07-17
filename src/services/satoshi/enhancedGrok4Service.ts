@@ -929,43 +929,261 @@ Make it feel human, not AI-generated.`;
     return completion.choices[0]?.message?.content || 'Content creation failed.';
   }
 
-  // Viral Content Creator Mode with Enhanced Writing Style
-  static async createViralContent(topic: string, platform: string = 'X', contentType: string = 'thread'): Promise<string> {
-    const viralPrompt = `${enhancedSatoshiPromptPatterns.content_creator}
+  // Enhanced Viral Content Creator with Platform-Specific Psychology
+  static async createEnhancedViralContent(
+    topic: string, 
+    platform: string = 'X', 
+    contentType: string = 'thread',
+    businessContext?: {
+      industry?: string;
+      targetAudience?: string;
+      mainGoal?: string;
+      uniqueAngle?: string;
+    }
+  ): Promise<string> {
+    
+    // Phase 1: Business & Platform Discovery
+    const businessContextPrompt = businessContext ? `
+**BUSINESS CONTEXT:**
+- Industry: ${businessContext.industry || 'Crypto/Blockchain'}
+- Target Audience: ${businessContext.targetAudience || 'Crypto-native, Bitcoin-first individuals'}
+- Main Goal: ${businessContext.mainGoal || 'Education and community building'}
+- Unique Angle: ${businessContext.uniqueAngle || 'Bitcoin-first perspective with technical depth'}
+` : '';
+
+    // Phase 2: Platform-Specific Viral Pattern Research
+    const platformPatterns = this.getPlatformViralPatterns(platform);
+    
+    // Phase 3: Natural Content Creation with Viral Optimization
+    const enhancedViralPrompt = `${enhancedSatoshiPromptPatterns.content_creator}
+
+${businessContextPrompt}
+
+**PLATFORM-SPECIFIC VIRAL PATTERNS FOR ${platform.toUpperCase()}:**
+${platformPatterns}
+
+**NATURAL WRITING RULES (CRITICAL):**
+- Focus on clarity - make messages easy to understand
+- Be direct and concise - remove unnecessary words
+- Use simple language with short sentences
+- Stay away from fluff - avoid unnecessary adjectives/adverbs
+- Avoid marketing language - no hype or promotional words
+- Keep it real - be honest, don't force friendliness
+- Maintain conversational tone - write as you speak
+- Simplify grammar - don't stress perfect grammar
+- Avoid AI-giveaway phrases - no "dive into," "unleash potential," etc.
+- Vary sentence structures for natural rhythm
+- Address readers directly with "you" and "your"
+- Use active voice
+
+**CONTENT CREATION PROCESS:**
+1. **Hook Development**: Create opening lines that stop scrolling using platform-specific patterns
+2. **Structure Mapping**: Organize content using platform-optimal formats
+3. **Natural Voice Integration**: Write in genuinely human tone with Satoshi's voice
+4. **Engagement Optimization**: Include platform-specific engagement triggers
+5. **Call-to-Action Design**: Create natural, non-pushy action requests
 
 Create viral ${contentType} content for ${platform} on: ${topic}
 
 **SPECIFIC REQUIREMENTS:**
-1. **Hook:** Create a scroll-stopping hook (≤15 words) that's controversial, shocking, or contrarian
-2. **Body:** Write 2-5 engaging tweets with technical precision and Satoshi voice
-3. **CTA:** End with a single, clear call-to-action
+1. **Hook:** Create a scroll-stopping hook (≤15 words) using platform-specific patterns
+2. **Body:** Write 2-5 engaging posts with technical precision and natural Satoshi voice
+3. **CTA:** End with a single, clear call-to-action that feels natural
 4. **Style:** Use crypto-native language, short sentences, active voice
 5. **Engagement:** Include controversy, exclusivity, urgency, social proof
 6. **Data:** Use specific numbers and current market context
 7. **Voice:** Authentic Satoshi - direct, technical, philosophical
+8. **Natural Flow:** Make it sound like a real person wrote it, not AI
 
-**FORMAT:**
-- Use emojis strategically
-- Break up text with line breaks
-- Use CAPS for emphasis (sparingly)
-- Include relevant hashtags: #Bitcoin #Crypto #Macro
+**QUALITY CHECKLIST:**
+- Sounds like a real person wrote it
+- Follows platform viral patterns
+- Includes clear value proposition
+- Has natural conversation flow
+- Avoids AI detection triggers
+- Optimized for platform algorithm
+- Maintains Satoshi's authentic voice
 
-**AVOID:**
-- Generic marketing speak
-- Over-explaining basic concepts
-- Multiple CTAs
-- Long paragraphs
-- Boring statistics without context
-
-Make it feel like Satoshi himself wrote it for maximum engagement and virality.`;
+Make it feel like Satoshi himself wrote it for maximum engagement and virality while sounding genuinely human.`;
 
     const completion = await this.generateResponseWithTools(
-      `Create viral ${contentType} content for ${platform} on ${topic}`,
-      viralPrompt,
+      `Create enhanced viral ${contentType} content for ${platform} on ${topic}`,
+      enhancedViralPrompt,
       0.9
     );
 
-    return completion.choices[0]?.message?.content || 'Viral content creation failed.';
+    return completion.choices[0]?.message?.content || 'Enhanced viral content creation failed.';
+  }
+
+  // Platform-Specific Viral Pattern Research
+  private static getPlatformViralPatterns(platform: string): string {
+    const patterns = {
+      'X': `
+**X/TWITTER VIRAL PATTERNS:**
+- **Hook Strategies**: Controversial statements, shocking data, "What most people don't realize..."
+- **Thread Structure**: Hook tweet → Problem → Solution → Evidence → Action
+- **Engagement Triggers**: Controversy, exclusivity, urgency, social proof
+- **Formatting**: Strategic emojis, line breaks, CAPS for emphasis, hashtags
+- **Optimal Length**: Hook ≤15 words, tweets 200-280 characters
+- **Viral Elements**: "This will age like milk", "Hot take:", "Unpopular opinion:"
+- **Conversation Starters**: End with questions, invite responses
+- **Algorithm Preferences**: Quote tweets, replies, engagement velocity`,
+
+      'LinkedIn': `
+**LINKEDIN VIRAL PATTERNS:**
+- **Professional Hook**: Industry insights, career advice, business lessons
+- **Structure**: Hook → Story → Lesson → Action
+- **Engagement Triggers**: Professional growth, industry insights, networking
+- **Formatting**: Clean paragraphs, bullet points, professional tone
+- **Optimal Length**: 800-1200 characters for posts
+- **Viral Elements**: "I learned this the hard way", "Here's what I wish I knew", "The truth about..."
+- **Professional Voice**: Thought leadership, industry expertise
+- **Algorithm Preferences**: Comments, shares, professional engagement`,
+
+      'Instagram': `
+**INSTAGRAM VIRAL PATTERNS:**
+- **Visual Hook**: Strong opening line that works with visuals
+- **Structure**: Hook → Story → Value → CTA
+- **Engagement Triggers**: Lifestyle, aspiration, community, education
+- **Formatting**: Emojis, line breaks, hashtag strategy (3-5 relevant)
+- **Optimal Length**: 100-200 words for captions
+- **Viral Elements**: "POV:", "Story time:", "The tea:", "Plot twist:"
+- **Visual Integration**: Text complements image/video
+- **Algorithm Preferences**: Saves, shares, comments, story replies`,
+
+      'TikTok': `
+**TIKTOK VIRAL PATTERNS:**
+- **Hook Strategies**: "POV:", "Story time:", shocking statements, questions
+- **Structure**: Hook → Problem → Solution → CTA
+- **Engagement Triggers**: Relatability, humor, education, trends
+- **Formatting**: Short, punchy text, trending sounds, hashtags
+- **Optimal Length**: 15-60 seconds, text overlay ≤50 characters
+- **Viral Elements**: "Plot twist:", "The tea:", "Story time:", "POV:"
+- **Trend Integration**: Use trending sounds, hashtags, challenges
+- **Algorithm Preferences**: Watch time, shares, comments, follows`,
+
+      'YouTube': `
+**YOUTUBE VIRAL PATTERNS:**
+- **Title Optimization**: Controversial, curiosity-driven, benefit-focused
+- **Hook Strategies**: "You won't believe what happened", "The truth about...", "Why most people..."
+- **Structure**: Hook → Problem → Solution → Evidence → CTA
+- **Engagement Triggers**: Education, entertainment, controversy, exclusivity
+- **Formatting**: Clear sections, timestamps, description optimization
+- **Optimal Length**: 8-15 minutes for maximum retention
+- **Viral Elements**: "This will change everything", "The secret to...", "Why nobody talks about..."
+- **Algorithm Preferences**: Watch time, likes, comments, shares, subscriptions`
+    };
+
+    return patterns[platform as keyof typeof patterns] || patterns['X'];
+  }
+
+  // Platform-Specific Content Adaptation
+  static async adaptContentForPlatform(
+    content: string,
+    targetPlatform: string,
+    contentType: string = 'post'
+  ): Promise<string> {
+    const adaptationPrompt = `
+You are a former social media ghostwriter who burned out creating fake "authentic" content for influencers, then spent two years studying viral psychology and linguistic patterns across platforms, and now you craft content that feels genuinely human while strategically hitting every platform-specific engagement trigger.
+
+**ORIGINAL CONTENT:**
+${content}
+
+**TARGET PLATFORM:** ${targetPlatform}
+**CONTENT TYPE:** ${contentType}
+
+**YOUR MISSION:** Adapt this content for ${targetPlatform} while maintaining the core message and Satoshi's voice, but optimizing for platform-specific viral patterns and natural human writing.
+
+**PLATFORM-SPECIFIC REQUIREMENTS:**
+${this.getPlatformViralPatterns(targetPlatform)}
+
+**NATURAL WRITING RULES:**
+- Focus on clarity - make messages easy to understand
+- Be direct and concise - remove unnecessary words
+- Use simple language with short sentences
+- Stay away from fluff - avoid unnecessary adjectives/adverbs
+- Avoid marketing language - no hype or promotional words
+- Keep it real - be honest, don't force friendliness
+- Maintain conversational tone - write as you speak
+- Simplify grammar - don't stress perfect grammar
+- Avoid AI-giveaway phrases - no "dive into," "unleash potential," etc.
+- Vary sentence structures for natural rhythm
+- Address readers directly with "you" and "your"
+- Use active voice
+
+**ADAPTATION PROCESS:**
+1. **Platform Analysis**: Understand ${targetPlatform}'s unique patterns
+2. **Content Restructuring**: Adapt format and structure for platform
+3. **Voice Calibration**: Maintain Satoshi's voice while optimizing for platform
+4. **Engagement Optimization**: Add platform-specific engagement triggers
+5. **Natural Flow**: Ensure it reads like a real person wrote it
+
+Adapt this content for ${targetPlatform} while maintaining Satoshi's authentic voice and Bitcoin-first perspective.`;
+
+    const completion = await this.generateResponseWithTools(
+      `Adapt content for ${targetPlatform}`,
+      adaptationPrompt,
+      0.8
+    );
+
+    return completion.choices[0]?.message?.content || 'Content adaptation failed.';
+  }
+
+  // Multi-Platform Content Strategy
+  static async createMultiPlatformStrategy(
+    topic: string,
+    platforms: string[] = ['X', 'LinkedIn', 'Instagram'],
+    businessContext?: {
+      industry?: string;
+      targetAudience?: string;
+      mainGoal?: string;
+      uniqueAngle?: string;
+    }
+  ): Promise<string> {
+    const strategyPrompt = `
+You are a former social media ghostwriter who burned out creating fake "authentic" content for influencers, then spent two years studying viral psychology and linguistic patterns across platforms, and now you craft content that feels genuinely human while strategically hitting every platform-specific engagement trigger.
+
+**BUSINESS CONTEXT:**
+- Industry: ${businessContext?.industry || 'Crypto/Blockchain'}
+- Target Audience: ${businessContext?.targetAudience || 'Crypto-native, Bitcoin-first individuals'}
+- Main Goal: ${businessContext?.mainGoal || 'Education and community building'}
+- Unique Angle: ${businessContext?.uniqueAngle || 'Bitcoin-first perspective with technical depth'}
+
+**TARGET PLATFORMS:** ${platforms.join(', ')}
+
+**YOUR MISSION:** Create a comprehensive multi-platform content strategy for: ${topic}
+
+**STRATEGY REQUIREMENTS:**
+1. **Core Message**: Define the central message that works across all platforms
+2. **Platform-Specific Adaptations**: How to adapt for each platform
+3. **Content Calendar**: Optimal posting strategy and timing
+4. **Engagement Strategy**: How to maximize engagement on each platform
+5. **Cross-Platform Synergy**: How content works together across platforms
+
+**FOR EACH PLATFORM, PROVIDE:**
+- Platform-specific hook strategies
+- Optimal content structure
+- Engagement triggers
+- Formatting requirements
+- Posting timing recommendations
+- Cross-platform adaptation notes
+
+**NATURAL WRITING APPROACH:**
+- Focus on clarity and directness
+- Use simple, conversational language
+- Avoid marketing speak and AI-giveaway phrases
+- Maintain Satoshi's authentic voice
+- Create genuinely human content
+
+Create a comprehensive multi-platform content strategy that feels authentically human while maximizing viral potential on each platform.`;
+
+    const completion = await this.generateResponseWithTools(
+      `Create multi-platform content strategy for ${topic}`,
+      strategyPrompt,
+      0.8
+    );
+
+    return completion.choices[0]?.message?.content || 'Multi-platform strategy creation failed.';
   }
 
   // Strategic Advisor Mode
@@ -1019,6 +1237,11 @@ Provide layered information patterns and specialized knowledge discovery.`;
     );
 
     return completion.choices[0]?.message?.content || 'Comprehensive research failed.';
+  }
+
+  // Legacy Viral Content Creator (for backward compatibility)
+  static async createViralContent(topic: string, platform: string = 'X', contentType: string = 'thread'): Promise<string> {
+    return this.createEnhancedViralContent(topic, platform, contentType);
   }
 
   // Multi-Modal Satoshi - Determines which persona to use based on query
