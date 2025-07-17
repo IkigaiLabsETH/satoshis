@@ -312,6 +312,15 @@ Remember: Everything is measured against BTC performance. That's the Bitcoin-fir
         ]);
         break;
       
+      case 'viral_creator':
+        response = await Promise.race([
+          EnhancedGrok4Service.createViralContent(message, options?.platform || 'X', options?.content_type || 'thread'),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Satoshi viral creator timeout')), 25000) // Longer timeout for creative content
+          )
+        ]);
+        break;
+      
       case 'strategic_advisor':
         response = await Promise.race([
           EnhancedGrok4Service.strategicDecisionAnalysis(message, options?.framework),
@@ -456,6 +465,8 @@ export async function GET() {
       interviewer: 'Generate insightful interview questions',
       consultant: 'Write strategic whitepapers',
       researcher: 'Conduct academic research',
+      content_creator: 'Create general content with Satoshi voice',
+      viral_creator: 'Create viral content with enhanced writing style for X/Twitter',
       crypto_price: 'Get crypto prices with Satoshi commentary',
       x_sentiment: 'Analyze X sentiment with Satoshi perspective',
       market_data: 'Get market data with Satoshi context',
@@ -470,6 +481,8 @@ export async function GET() {
       'Interview question generation',
       'Whitepaper writing',
       'Academic research',
+      'Content creation with Satoshi voice',
+      'Viral content creation with enhanced writing style',
       'Enhanced crypto price data',
       'X sentiment analysis',
       'Market data with context'
@@ -478,6 +491,7 @@ export async function GET() {
       validator: 'POST /api/satoshi {"message": "Validate this DeFi protocol", "mode": "validator"}',
       analyst: 'POST /api/satoshi {"message": "Analyze MSTR", "mode": "analyst"}',
       educator: 'POST /api/satoshi {"message": "Explain Lightning Network", "mode": "educator"}',
+      viral_creator: 'POST /api/satoshi {"message": "Bitcoin ETF flows", "mode": "viral_creator", "options": {"platform": "X", "content_type": "thread"}}',
       multimodal: 'POST /api/satoshi {"message": "What do you think about this new crypto project?"}'
     }
   });
