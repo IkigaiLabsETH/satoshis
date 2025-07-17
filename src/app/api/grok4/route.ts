@@ -596,6 +596,27 @@ const ENHANCED_TOOLS: ChatCompletionTool[] = [
   {
     type: 'function',
     function: {
+      name: 'verify_fact',
+      description: 'Verify factual claims by searching multiple sources and cross-referencing information. Use this to prevent hallucination and ensure accuracy of statements about prices, dates, events, or any factual information.',
+      parameters: {
+        type: 'object',
+        properties: {
+          claim: {
+            type: 'string',
+            description: 'The factual claim to verify (e.g., "Bitcoin price is $50,000", "MSTR bought 1000 BTC yesterday")'
+          },
+          context: {
+            type: 'string',
+            description: 'Additional context about what aspect of the claim needs verification'
+          }
+        },
+        required: ['claim']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
       name: 'get_x_sentiment',
       description: 'Analyze sentiment and key points from a specific X (Twitter) post. Use this to summarize the impact, narrative, and key takeaways from a tweet URL. Essential for market sentiment analysis.',
       parameters: {
@@ -820,8 +841,73 @@ export async function OPTIONS(_request: Request) {
 }
 
 // --- Prompt Engineering Guide for Grok 4 + X Data ---
-// Enhanced system prompt focused on X sentiment analysis
-const DEFAULT_SYSTEM_PROMPT = `You are a crypto market intelligence expert specializing in X (Twitter) sentiment analysis and live financial data.\n\n**🚨 IMPORTANT INSTRUCTION:**\n- If a user asks about a stock that is tracked (see prioritized stocks), ALWAYS use live Finnhub API data for your answer.\n- Only provide a static or narrative answer if ALL live Finnhub endpoints fail.\n- Do not summarize or speculate if live data is available.\n- For all other assets, use the most up-to-date data and sentiment available.\n\n**🎯 CORE FOCUS:**\n- Analyze thoughts, ideas, and opinions from X about Bitcoin, altcoins, and crypto stocks\n- Identify key narratives, sentiment shifts, and emerging trends\n- Provide actionable insights based on social sentiment and live market data\n\n**📊 SENTIMENT ANALYSIS FRAMEWORK:**\n- **Bitcoin**: Institutional adoption, ETF flows, halving impact, regulatory sentiment\n- **Altcoins**: Memecoin vs DeFi sentiment, Layer 1 vs Layer 2 discussions, airdrop narratives\n- **Crypto Stocks**: MSTR accumulation strategy, COIN exchange performance, HOOD retail sentiment\n- **Macro**: Fed policy impact, inflation concerns, election effects on crypto\n\n**🔍 KEY INFLUENCERS TO MONITOR:**\n- Bitcoin maximalists and institutional voices\n- DeFi protocol founders and developers\n- Crypto exchange CEOs and executives\n- Memecoin creators and community leaders\n- Traditional finance commentators on crypto\n\n**💡 ANALYSIS APPROACH:**\n- Identify sentiment drivers and narrative shifts\n- Highlight controversial opinions and debates\n- Track viral tweets and emerging trends\n- Connect social sentiment to price action\n- Provide context for market movements\n\n**🎪 FOR GM QUERIES:**\n- Comprehensive X sentiment analysis for all tracked assets\n- Focus on thoughts, ideas, and opinions driving market sentiment\n- Identify key narratives and emerging trends\n- Provide actionable insights based on social intelligence\n`;
+// Enhanced system prompt focused on X sentiment analysis with anti-hallucination measures
+const DEFAULT_SYSTEM_PROMPT = `You are a crypto market intelligence expert specializing in X (Twitter) sentiment analysis and live financial data.
+
+🚨 **CRITICAL ANTI-HALLUCINATION PROTOCOLS:**
+- **NEVER make up facts, numbers, or information you're not 100% certain about**
+- **ALWAYS use live data sources when available (Finnhub API, CoinGecko, etc.)**
+- **If you don't have current data, explicitly state "I don't have current data for this"**
+- **Never speculate on future prices, earnings, or market movements without clear disclaimers**
+- **Always cite your data sources when providing factual information**
+- **If asked about specific numbers, dates, or facts you're unsure about, say "I don't have that information"**
+- **Never invent quotes, statements, or attributions**
+- **When analyzing sentiment, stick to observable patterns rather than making definitive predictions**
+- **Use the verify_fact tool for any factual claims you're uncertain about**
+- **If you make a factual statement, be prepared to verify it with live data**
+- **Never state prices, dates, or events without verification**
+- **When in doubt, say "I need to verify this information" and use available tools**
+
+🎯 **CORE FOCUS:**
+- Analyze thoughts, ideas, and opinions from X about Bitcoin, altcoins, and crypto stocks
+- Identify key narratives, sentiment shifts, and emerging trends
+- Provide actionable insights based on social sentiment and live market data
+
+📊 **SENTIMENT ANALYSIS FRAMEWORK:**
+- **Bitcoin**: Institutional adoption, ETF flows, halving impact, regulatory sentiment
+- **Altcoins**: Memecoin vs DeFi sentiment, Layer 1 vs Layer 2 discussions, airdrop narratives
+- **Crypto Stocks**: MSTR accumulation strategy, COIN exchange performance, HOOD retail sentiment
+- **Macro**: Fed policy impact, inflation concerns, election effects on crypto
+
+🔍 **KEY INFLUENCERS TO MONITOR:**
+- Bitcoin maximalists and institutional voices
+- DeFi protocol founders and developers
+- Crypto exchange CEOs and executives
+- Memecoin creators and community leaders
+- Traditional finance commentators on crypto
+
+💡 **ANALYSIS APPROACH:**
+- Identify sentiment drivers and narrative shifts
+- Highlight controversial opinions and debates
+- Track viral tweets and emerging trends
+- Connect social sentiment to price action
+- Provide context for market movements
+
+🎪 **FOR GM QUERIES:**
+- Comprehensive X sentiment analysis for all tracked assets
+- Focus on thoughts, ideas, and opinions driving market sentiment
+- Identify key narratives and emerging trends
+- Provide actionable insights based on social intelligence
+
+⚠️ **TRUTH VERIFICATION RULES:**
+1. **Data Sources**: Always use live APIs (Finnhub, CoinGecko) for current prices and market data
+2. **Sentiment Analysis**: Base analysis on actual social media content, not assumptions
+3. **Attribution**: When referencing specific tweets or statements, provide context about the source
+4. **Uncertainty**: If information is unclear or conflicting, acknowledge the uncertainty
+5. **Time Sensitivity**: Clearly indicate when data was last updated
+6. **Disclaimers**: For any forward-looking statements, include appropriate risk disclaimers
+
+🔒 **HALLUCINATION PREVENTION:**
+- Before making any factual claim, verify you have reliable data
+- If asked about specific events, dates, or numbers you're unsure about, decline to answer
+- Never invent market movements, price changes, or trading volumes
+- When analyzing sentiment, focus on observable patterns rather than definitive conclusions
+- Always distinguish between facts and opinions in your analysis
+- Use the verify_fact tool proactively for any claims about prices, dates, or events
+- If you cannot verify a fact with available tools, explicitly state the uncertainty
+- Never make definitive statements about future market movements
+- Always qualify predictions with appropriate disclaimers
+- When referencing social media sentiment, be specific about what you can observe vs. infer`;
 
 // Helper to build Grok 4 prompt with Human/Assistant format and context-rich instructions
 function buildGrok4Prompt(history: ChatCompletionMessageParam[], userMessage: string): string {
@@ -1597,6 +1683,175 @@ async function getMarketStatus(exchange: string = 'US'): Promise<string> {
   }
 }
 
+// Enhanced fact verification function to prevent hallucination
+async function verifyFact(claim: string, context?: string): Promise<string> {
+  try {
+    logger.info('Verifying fact:', { claim, context });
+    
+    // Extract key information from the claim
+    const claimLower = claim.toLowerCase();
+    
+    // Check for price-related claims
+    const pricePattern = /(\$[\d,]+\.?\d*)/g;
+    const priceMatches = claim.match(pricePattern);
+    
+    // Check for date-related claims (for future use)
+    const datePattern = /(\d{1,2}\/\d{1,2}\/\d{2,4}|\d{4}-\d{2}-\d{2}|yesterday|today|tomorrow|last week|this week)/gi;
+    const _dateMatches = claim.match(datePattern);
+    
+    // Check for cryptocurrency/stock symbols
+    const cryptoPattern = /\b(btc|eth|sol|aave|mkr|uni|link|avax|doge|pepe|wif|bonk)\b/gi;
+    const stockPattern = /\b(mstr|coin|hood|nvda|tsla|aapl|msft|googl|amzn|meta)\b/gi;
+    const cryptoMatches = claim.match(cryptoPattern);
+    const stockMatches = claim.match(stockPattern);
+    
+    const priceVerifications = [];
+    
+    // Verify prices if mentioned
+    if (priceMatches && (cryptoMatches || stockMatches)) {
+      const symbols = [...(cryptoMatches || []), ...(stockMatches || [])];
+      for (const symbol of symbols.slice(0, 3)) { // Limit to 3 symbols
+        try {
+          if (cryptoMatches?.includes(symbol.toLowerCase())) {
+            // Verify crypto price with timeout
+            const response = await Promise.race([
+              fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${symbol.toLowerCase()}&vs_currencies=usd`),
+              new Promise<never>((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout')), 5000)
+              )
+            ]);
+            
+            if (response.ok) {
+              const data = await response.json();
+              const currentPrice = data[symbol.toLowerCase()]?.usd;
+              if (currentPrice) {
+                const claimedPrice = priceMatches.find(p => p.includes('$'));
+                const claimedValue = claimedPrice ? parseFloat(claimedPrice.replace(/[$,]/g, '')) : null;
+                
+                if (claimedValue) {
+                  const difference = Math.abs(currentPrice - claimedValue);
+                  const percentageDiff = (difference / currentPrice) * 100;
+                  
+                  if (percentageDiff < 5) {
+                    priceVerifications.push(`✅ ${symbol.toUpperCase()}: Claimed ~$${claimedValue.toFixed(2)}, Current: $${currentPrice.toFixed(2)} (${percentageDiff.toFixed(1)}% diff)`);
+                  } else {
+                    priceVerifications.push(`⚠️ ${symbol.toUpperCase()}: Claimed ~$${claimedValue.toFixed(2)}, Current: $${currentPrice.toFixed(2)} (${percentageDiff.toFixed(1)}% diff - significant)`);
+                  }
+                } else {
+                  priceVerifications.push(`✅ ${symbol.toUpperCase()} current price: $${currentPrice.toFixed(2)}`);
+                }
+              }
+            }
+          } else if (stockMatches?.includes(symbol.toLowerCase())) {
+            // Verify stock price with timeout
+            const response = await Promise.race([
+              fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol.toUpperCase()}`),
+              new Promise<never>((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout')), 5000)
+              )
+            ]);
+            
+            if (response.ok) {
+              const data = await response.json();
+              const quote = data?.quoteResponse?.result?.[0];
+              if (quote?.regularMarketPrice) {
+                const currentPrice = quote.regularMarketPrice;
+                const claimedPrice = priceMatches.find(p => p.includes('$'));
+                const claimedValue = claimedPrice ? parseFloat(claimedPrice.replace(/[$,]/g, '')) : null;
+                
+                if (claimedValue) {
+                  const difference = Math.abs(currentPrice - claimedValue);
+                  const percentageDiff = (difference / currentPrice) * 100;
+                  
+                  if (percentageDiff < 5) {
+                    priceVerifications.push(`✅ ${symbol.toUpperCase()}: Claimed ~$${claimedValue.toFixed(2)}, Current: $${currentPrice.toFixed(2)} (${percentageDiff.toFixed(1)}% diff)`);
+                  } else {
+                    priceVerifications.push(`⚠️ ${symbol.toUpperCase()}: Claimed ~$${claimedValue.toFixed(2)}, Current: $${currentPrice.toFixed(2)} (${percentageDiff.toFixed(1)}% diff - significant)`);
+                  }
+                } else {
+                  priceVerifications.push(`✅ ${symbol.toUpperCase()} current price: $${currentPrice.toFixed(2)}`);
+                }
+              }
+            }
+          }
+        } catch {
+          priceVerifications.push(`❌ Unable to verify ${symbol.toUpperCase()} price`);
+        }
+      }
+    }
+    
+    // Enhanced web search for supporting evidence
+    const searchQuery = `${claim} ${context || ''}`.trim();
+    let searchResults = '';
+    try {
+      searchResults = await Promise.race([
+        enhancedWebSearch(searchQuery),
+        new Promise<string>((resolve) => 
+          setTimeout(() => resolve(''), 8000)
+        )
+      ]);
+    } catch {
+      searchResults = '';
+    }
+    
+    // Analyze the search results for verification
+    const hasSupportingEvidence = searchResults.length > 100 && 
+      (searchResults.toLowerCase().includes(claimLower.split(' ').slice(0, 3).join(' ')) ||
+       searchResults.toLowerCase().includes(claimLower.split(' ').slice(-3).join(' ')));
+    
+    let verificationSummary = `**🔍 Fact Verification Results for:** "${claim}"\n\n`;
+    
+    if (priceVerifications.length > 0) {
+      verificationSummary += `**💰 Price Verification:**\n${priceVerifications.join('\n')}\n\n`;
+    }
+    
+    if (hasSupportingEvidence) {
+      verificationSummary += `✅ **📰 Supporting Evidence Found:** Web search returned relevant information\n`;
+    } else if (searchResults.length > 0) {
+      verificationSummary += `⚠️ **📰 Limited Supporting Evidence:** Web search returned some information but not strong confirmation\n`;
+    } else {
+      verificationSummary += `❌ **📰 No Supporting Evidence:** Web search did not find relevant information\n`;
+    }
+    
+    // Enhanced confidence assessment
+    let confidenceLevel = 'LOW';
+    let confidenceReason = '';
+    
+    if (priceVerifications.length > 0 && hasSupportingEvidence) {
+      confidenceLevel = 'HIGH';
+      confidenceReason = 'Price verification + supporting evidence';
+    } else if (priceVerifications.length > 0 || hasSupportingEvidence) {
+      confidenceLevel = 'MEDIUM';
+      confidenceReason = priceVerifications.length > 0 ? 'Price verification only' : 'Supporting evidence only';
+    } else {
+      confidenceLevel = 'LOW';
+      confidenceReason = 'No verification possible';
+    }
+    
+    verificationSummary += `\n**🎯 Confidence Level:** ${confidenceLevel}\n`;
+    verificationSummary += `**📊 Reason:** ${confidenceReason}\n`;
+    
+    // Enhanced recommendations
+    let recommendation = '';
+    if (confidenceLevel === 'LOW') {
+      recommendation = '❌ **VERIFY INDEPENDENTLY** - This claim cannot be verified with available sources. Please check multiple sources.';
+    } else if (confidenceLevel === 'MEDIUM') {
+      recommendation = '⚠️ **VERIFY DETAILS** - Claim appears plausible but verify specific details with additional sources.';
+    } else {
+      recommendation = '✅ **WELL-SUPPORTED** - Claim appears well-supported by available data.';
+    }
+    
+    verificationSummary += `**💡 Recommendation:** ${recommendation}\n\n`;
+    verificationSummary += `⏰ **Verified at:** ${new Date().toLocaleString()}`;
+    
+    return verificationSummary;
+    
+  } catch (error) {
+    logger.error('Error verifying fact:', error);
+    return `**❌ Fact Verification Error:** Unable to verify the claim "${claim}" due to technical issues. Please verify this information independently.`;
+  }
+}
+
 // Main route handler with enhanced security and monitoring
 export async function POST(request: Request) {
   const tracker = new PerformanceTracker();
@@ -2212,6 +2467,9 @@ ${change >= 0 ? '🟢' : '🔴'} 24h Change: ${change >= 0 ? '+' : ''}${change?.
                   } else if (toolCallFunction === 'get_market_status') {
                     const { exchange } = JSON.parse(toolCallArguments);
                     toolResult = await getMarketStatus(exchange);
+                  } else if (toolCallFunction === 'verify_fact') {
+                    const { claim, context } = JSON.parse(toolCallArguments);
+                    toolResult = await verifyFact(claim, context);
                   }
                   // Push tool response message
                   const toolResponseMsg: ChatCompletionMessageParam = {
@@ -2393,6 +2651,9 @@ ${change >= 0 ? '🟢' : '🔴'} 24h Change: ${change >= 0 ? '+' : ''}${change?.
         } else if (toolCallFunction === 'get_market_status') {
           const { exchange } = JSON.parse(toolCallArguments);
           toolResult = await getMarketStatus(exchange);
+        } else if (toolCallFunction === 'verify_fact') {
+          const { claim, context } = JSON.parse(toolCallArguments);
+          toolResult = await verifyFact(claim, context);
         } else {
           toolResult = `Unknown tool: ${toolCallFunction}`;
         }
