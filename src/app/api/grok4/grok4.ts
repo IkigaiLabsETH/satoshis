@@ -227,6 +227,134 @@ ${changeColor} 24h Change: ${formattedChange}
   }
 }
 
+// Get market data for multiple cryptocurrencies
+export async function getMarketData(symbols: string[]): Promise<string> {
+  try {
+    if (!symbols || symbols.length === 0) {
+      return 'Please provide at least one cryptocurrency symbol.';
+    }
+
+    // Map symbols to CoinGecko IDs
+    const cryptoIdMap: { [key: string]: string } = {
+      'BTC': 'bitcoin',
+      'ETH': 'ethereum',
+      'SOL': 'solana',
+      'LINK': 'chainlink',
+      'UNI': 'uniswap',
+      'AAVE': 'aave',
+      'MKR': 'maker',
+      'COMP': 'compound',
+      'YFI': 'yearn-finance',
+      'SNX': 'havven',
+      'BAL': 'balancer',
+      'CRV': 'curve-dao-token',
+      'SUSHI': 'sushi',
+      'CAKE': 'pancakeswap-token',
+      '1INCH': '1inch',
+      'ADA': 'cardano',
+      'BNB': 'binancecoin',
+      'XRP': 'ripple',
+      'DOT': 'polkadot',
+      'LTC': 'litecoin',
+      'BCH': 'bitcoin-cash',
+      'XLM': 'stellar',
+      'VET': 'vechain',
+      'FIL': 'filecoin',
+      'TRX': 'tron',
+      'AVAX': 'avalanche-2',
+      'MATIC': 'matic-network',
+      'ATOM': 'cosmos',
+      'ALGO': 'algorand',
+      'XMR': 'monero',
+      'XTZ': 'tezos',
+      'NEO': 'neo',
+      'DASH': 'dash',
+      'ZEC': 'zcash',
+      'DCR': 'decred',
+      'DGB': 'digibyte',
+      'RVN': 'ravencoin',
+      'GRS': 'groestlcoin',
+      'VTC': 'vertcoin',
+      'NMC': 'namecoin',
+      'PPC': 'peercoin',
+      'NVC': 'novacoin',
+      'FTC': 'feathercoin',
+      'IXC': 'ixcoin',
+      'LUNA': 'terra-luna-2'
+    };
+
+    // Convert symbols to CoinGecko IDs
+    const coinIds = symbols
+      .map(symbol => cryptoIdMap[symbol.toUpperCase()])
+      .filter(id => id); // Remove undefined values
+
+    if (coinIds.length === 0) {
+      return `No valid cryptocurrency symbols found. Supported symbols: ${Object.keys(cryptoIdMap).join(', ')}`;
+    }
+
+    // Fetch price data from CoinGecko
+    const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinIds.join(',')}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true`);
+    
+    if (!response.ok) {
+      throw new Error(`CoinGecko API error: ${response.status}`);
+    }
+
+    const data: CoinGeckoPrice = await response.json();
+    
+    let result = `📊 Market Data for ${symbols.join(', ')}:\n\n`;
+    
+    for (const symbol of symbols) {
+      const coinId = cryptoIdMap[symbol.toUpperCase()];
+      if (!coinId || !data[coinId]) {
+        result += `❌ ${symbol}: Data not available\n`;
+        continue;
+      }
+
+      const coinData = data[coinId];
+      const price = coinData.usd;
+      const change24h = coinData.usd_24h_change;
+      const marketCap = coinData.usd_market_cap;
+      const volume24h = coinData.usd_24h_vol;
+
+      const formattedPrice = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 8
+      }).format(price);
+
+      const formattedChange = change24h ? `${change24h >= 0 ? '+' : ''}${change24h.toFixed(2)}%` : 'N/A';
+      const formattedMarketCap = marketCap ? new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        notation: 'compact',
+        maximumFractionDigits: 1
+      }).format(marketCap) : 'N/A';
+      const formattedVolume = volume24h ? new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        notation: 'compact',
+        maximumFractionDigits: 1
+      }).format(volume24h) : 'N/A';
+
+      const changeColor = change24h >= 0 ? '🟢' : '🔴';
+      
+      result += `${symbol.toUpperCase()}:
+💰 Price: ${formattedPrice}
+${changeColor} 24h Change: ${formattedChange}
+📊 Market Cap: ${formattedMarketCap}
+📈 24h Volume: ${formattedVolume}\n\n`;
+    }
+
+    result += `⏰ Updated: ${new Date().toLocaleString()}`;
+    return result;
+
+  } catch (error) {
+    logger.error('Market data API error:', error);
+    return `Failed to fetch market data: ${error instanceof Error ? error.message : 'Unknown error'}`;
+  }
+}
+
 // Enhanced web search that prioritizes crypto price queries
 export async function enhancedWebSearch(query: string): Promise<string> {
   // Check if this is a crypto price query

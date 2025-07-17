@@ -1,4 +1,4 @@
-import { Grok4Service, enhancedWebSearch, getXSentiment } from './grok4';
+import { Grok4Service, enhancedWebSearch, getXSentiment, getCryptoPrice, getMarketData } from './grok4';
 import { logger } from '@/lib/logger';
 import type { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/index";
 import type { ChatCompletion } from "openai/resources/chat/completions";
@@ -2411,13 +2411,12 @@ async function handleStreamingResponse(
                     const { query } = JSON.parse(toolCallArguments);
                     toolResult = await enhancedWebSearch(query);
                   } else if (toolCallFunction === 'get_crypto_price') {
-                    const { symbol } = JSON.parse(toolCallArguments);
-                    // const price = await getCryptoPrice(symbol, currency); // Commented out
-                    toolResult = `Unable to get price for ${symbol}`; // Commented out
+                    const { symbol, currency: _currency = 'USD' } = JSON.parse(toolCallArguments);
+                    const query = `${symbol} price`;
+                    toolResult = await getCryptoPrice(query);
                   } else if (toolCallFunction === 'get_market_data') {
                     const { symbols } = JSON.parse(toolCallArguments);
-                    // const marketData = await getMarketData(symbols); // Commented out
-                    toolResult = `Unable to get market data for ${symbols.join(', ')}`; // Commented out
+                    toolResult = await getMarketData(symbols);
                   } else if (toolCallFunction === 'get_x_sentiment') {
                     const { tweetUrl } = JSON.parse(toolCallArguments);
                     toolResult = await getXSentiment(tweetUrl);
@@ -2595,13 +2594,12 @@ async function handleNonStreamingResponse(
           const { query } = JSON.parse(toolCallArguments);
           toolResult = await enhancedWebSearch(query);
         } else if (toolCallFunction === 'get_crypto_price') {
-          const { symbol } = JSON.parse(toolCallArguments);
-          // const price = await getCryptoPrice(symbol, currency); // Commented out
-          toolResult = `Unable to get price for ${symbol}`; // Commented out
+          const { symbol, currency: _currency = 'USD' } = JSON.parse(toolCallArguments);
+          const query = `${symbol} price`;
+          toolResult = await getCryptoPrice(query);
         } else if (toolCallFunction === 'get_market_data') {
           const { symbols } = JSON.parse(toolCallArguments);
-          // const marketData = await getMarketData(symbols); // Commented out
-          toolResult = `Unable to get market data for ${symbols.join(', ')}`; // Commented out
+          toolResult = await getMarketData(symbols);
         } else if (toolCallFunction === 'get_x_sentiment') {
           const { tweetUrl } = JSON.parse(toolCallArguments);
           toolResult = await getXSentiment(tweetUrl);
