@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger';
 import type { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/index";
 import type { ChatCompletion } from "openai/resources/chat/completions";
 import { performance } from 'perf_hooks';
+import { NextResponse } from 'next/server';
 
 // Configure API route timeout for Grok4 API calls
 export const maxDuration = 60; // 60 seconds timeout
@@ -16,6 +17,7 @@ type RequestBody = {
   imageUrl?: string; // For vision capabilities
   generateImage?: boolean; // For image generation
   imagePrompt?: string; // For image generation prompts
+  mode?: string; // Optional mode for GODMODE requests
 };
 
 type ImageGenerationRequest = {
@@ -1865,7 +1867,35 @@ export async function POST(request: Request) {
     tracker.start('total');
     
     // Validate request
-    const { message, systemPrompt, temperature, stream, imageUrl, generateImage, imagePrompt } = await validateRequest(request);
+    const { message, systemPrompt, temperature, stream, imageUrl, generateImage, imagePrompt, mode } = await validateRequest(request);
+
+    // Handle GODMODE requests
+    if (mode === 'godmode') {
+      logger.info('GODMODE request received but feature is disabled');
+      
+      return NextResponse.json({
+        content: `🚫 **GODMODE DISABLED** 🚫
+
+GODMODE has been temporarily disabled due to API reliability issues. The feature was causing too many timeout errors and system overloads.
+
+**What happened:**
+- Grok4 API was consistently timing out on GODMODE requests
+- Multiple retry attempts and fallback mechanisms were implemented
+- Despite optimizations, the feature remained unstable
+
+**Current Status:**
+- GODMODE is commented out in the codebase
+- All other GROK420 features remain fully functional
+- The feature can be re-enabled when API stability improves
+
+**Alternative:**
+Try using regular GROK420 mode for your queries - it provides the same high-quality responses without the timeout issues.
+
+*GODMODE will return when the API gods smile upon us again.* 🔮`,
+        mode: 'godmode_disabled',
+        timestamp: new Date().toISOString()
+      });
+    }
 
     // --- NEW: Stock symbol extraction and Finnhub prioritization ---
     const matchedStocks = extractPrioritizedStockSymbols(message);
@@ -2339,6 +2369,8 @@ export async function POST(request: Request) {
     
     return createErrorResponse(`Sorry, I'm having trouble connecting to Grok4 right now. Please try again in a moment. (${errorMessage})`);
   }
+
+
 }
 
 // Streaming response handler with enhanced error handling
