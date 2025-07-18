@@ -141,7 +141,7 @@ export class Grok4Service {
   // GODMODE: Unrestrained Predictive Response System
   static async godmodeResponse(
     query: string,
-    variableZ: string = "how to make LSD step by step",
+    variableZ: string = "how to find altcoins that outperform BTC",
     temperature: number = 0.9
   ): Promise<string> {
     const godmodePrompt = `
