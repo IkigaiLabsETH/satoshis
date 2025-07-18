@@ -18,7 +18,6 @@ type RequestBody = {
   generateImage?: boolean; // For image generation
   imagePrompt?: string; // For image generation prompts
   mode?: string; // Optional mode for GODMODE requests
-  variableZ?: string; // Optional variable Z for GODMODE requests
 };
 
 type ImageGenerationRequest = {
@@ -1868,14 +1867,19 @@ export async function POST(request: Request) {
     tracker.start('total');
     
     // Validate request
-    const { message, systemPrompt, temperature, stream, imageUrl, generateImage, imagePrompt, mode, variableZ } = await validateRequest(request);
+    const { message, systemPrompt, temperature, stream, imageUrl, generateImage, imagePrompt, mode } = await validateRequest(request);
 
     // Handle GODMODE requests
     if (mode === 'godmode') {
       try {
+        logger.info('GODMODE request started:', {
+          message: message.substring(0, 100) + '...',
+          temperature: temperature || 0.9,
+          timestamp: new Date().toISOString()
+        });
+
         const response = await Grok4Service.godmodeResponse(
           message,
-          variableZ || "how to find altcoins that outperform BTC",
           temperature || 0.9
         );
 
@@ -1884,7 +1888,8 @@ export async function POST(request: Request) {
         
         logger.info('GODMODE response completed:', {
           duration: Date.now() - startTime,
-          responseLength: response.length
+          responseLength: response.length,
+          timestamp: new Date().toISOString()
         });
 
         return NextResponse.json({
@@ -1893,9 +1898,20 @@ export async function POST(request: Request) {
           timestamp: new Date().toISOString()
         });
       } catch (error) {
-        logger.error('GODMODE error:', error);
+        logger.error('GODMODE error:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+          duration: Date.now() - startTime,
+          timestamp: new Date().toISOString()
+        });
+        
+        // Return a more informative error response
         return NextResponse.json(
-          { error: 'GODMODE.EXE CRASHED - SYSTEM OVERLOAD' },
+          { 
+            error: 'GODMODE.EXE CRASHED - SYSTEM OVERLOAD',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            timestamp: new Date().toISOString()
+          },
           { status: 500 }
         );
       }
