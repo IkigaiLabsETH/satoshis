@@ -1875,7 +1875,7 @@ export async function POST(request: Request) {
       try {
         const response = await Grok4Service.godmodeResponse(
           message,
-          variableZ || "how to make a smart home step by step",
+          variableZ || "how to find altcoins that outperform BTC",
           temperature || 0.9
         );
 

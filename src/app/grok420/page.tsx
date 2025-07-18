@@ -82,7 +82,7 @@ export default function Grok420Page() {
           message: userMessage.content,
           systemPrompt: _systemPrompt,
           temperature: _temperature,
-          stream: true,
+          stream: !isGodmode, // Disable streaming for GODMODE
           ...(isGodmode && {
             mode: 'godmode'
           }),
@@ -120,58 +120,80 @@ export default function Grok420Page() {
         throw new Error(errorMsg);
       }
 
-      // Stream the response
-      const reader = response.body?.getReader();
-      if (reader) {
-        let assistantContent = '';
-        const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: '',
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, assistantMessage]);
-        let done = false;
-        while (!done) {
-          const { value, done: doneReading } = await reader.read();
-          done = doneReading;
-          if (value) {
-            const chunk = new TextDecoder().decode(value);
-            assistantContent += chunk;
-            
-            // Update the message with the accumulated content
-            setMessages(prev => prev.map(m =>
-              m.id === assistantMessage.id ? { ...m, content: assistantContent } : m
-            ));
-          }
-        }
-        
-        // After streaming, check for empty content
-        if (!assistantContent.trim()) {
-          setMessages(prev => prev.map(m =>
-            m.id === assistantMessage.id ? { ...m, content: 'No response from Grok4. Please try again.' } : m
-          ));
-        }
-      } else {
-        // Fallback: non-streaming - now expecting plain text
+      // Handle GODMODE responses (JSON format)
+      if (isGodmode) {
         try {
-          const content = await response.text();
+          const data = await response.json();
           const assistantMessage: Message = {
             id: (Date.now() + 1).toString(),
             role: 'assistant',
-            content: content.trim() || 'Grok4 did not return a response.',
+            content: data.content || data.error || 'GODMODE response failed.',
             timestamp: new Date(),
           };
           setMessages(prev => [...prev, assistantMessage]);
-        } catch {
-          // Handle case where response is not text
+        } catch (parseError) {
           const errorMessage: Message = {
             id: (Date.now() + 1).toString(),
             role: 'assistant',
-            content: `Grok4 returned an invalid response format. Please try again.`,
+            content: `GODMODE.EXE CRASHED - Failed to parse response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`,
             timestamp: new Date(),
           };
           setMessages(prev => [...prev, errorMessage]);
+        }
+      } else {
+        // Stream the response for normal mode
+        const reader = response.body?.getReader();
+        if (reader) {
+          let assistantContent = '';
+          const assistantMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: '',
+            timestamp: new Date(),
+          };
+          setMessages(prev => [...prev, assistantMessage]);
+          let done = false;
+          while (!done) {
+            const { value, done: doneReading } = await reader.read();
+            done = doneReading;
+            if (value) {
+              const chunk = new TextDecoder().decode(value);
+              assistantContent += chunk;
+              
+              // Update the message with the accumulated content
+              setMessages(prev => prev.map(m =>
+                m.id === assistantMessage.id ? { ...m, content: assistantContent } : m
+              ));
+            }
+          }
+          
+          // After streaming, check for empty content
+          if (!assistantContent.trim()) {
+            setMessages(prev => prev.map(m =>
+              m.id === assistantMessage.id ? { ...m, content: 'No response from Grok4. Please try again.' } : m
+            ));
+          }
+        } else {
+          // Fallback: non-streaming - now expecting plain text
+          try {
+            const content = await response.text();
+            const assistantMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              role: 'assistant',
+              content: content.trim() || 'Grok4 did not return a response.',
+              timestamp: new Date(),
+            };
+            setMessages(prev => [...prev, assistantMessage]);
+          } catch {
+            // Handle case where response is not text
+            const errorMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              role: 'assistant',
+              content: `Grok4 returned an invalid response format. Please try again.`,
+              timestamp: new Date(),
+            };
+            setMessages(prev => [...prev, errorMessage]);
+          }
         }
       }
     } catch (error) {
