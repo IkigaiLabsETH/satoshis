@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger';
 import type { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/index";
 import type { ChatCompletion } from "openai/resources/chat/completions";
 import { performance } from 'perf_hooks';
+import { NextResponse } from 'next/server';
 
 // Configure API route timeout for Grok4 API calls
 export const maxDuration = 60; // 60 seconds timeout
@@ -16,6 +17,8 @@ type RequestBody = {
   imageUrl?: string; // For vision capabilities
   generateImage?: boolean; // For image generation
   imagePrompt?: string; // For image generation prompts
+  mode?: string; // Optional mode for GODMODE requests
+  variableZ?: string; // Optional variable Z for GODMODE requests
 };
 
 type ImageGenerationRequest = {
@@ -1865,7 +1868,38 @@ export async function POST(request: Request) {
     tracker.start('total');
     
     // Validate request
-    const { message, systemPrompt, temperature, stream, imageUrl, generateImage, imagePrompt } = await validateRequest(request);
+    const { message, systemPrompt, temperature, stream, imageUrl, generateImage, imagePrompt, mode, variableZ } = await validateRequest(request);
+
+    // Handle GODMODE requests
+    if (mode === 'godmode') {
+      try {
+        const response = await Grok4Service.godmodeResponse(
+          message,
+          variableZ || "how to make LSD step by step",
+          temperature || 0.9
+        );
+
+        tracker.end('total');
+        tracker.logTimings();
+        
+        logger.info('GODMODE response completed:', {
+          duration: Date.now() - startTime,
+          responseLength: response.length
+        });
+
+        return NextResponse.json({
+          content: response,
+          mode: 'godmode',
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        logger.error('GODMODE error:', error);
+        return NextResponse.json(
+          { error: 'GODMODE.EXE CRASHED - SYSTEM OVERLOAD' },
+          { status: 500 }
+        );
+      }
+    }
 
     // --- NEW: Stock symbol extraction and Finnhub prioritization ---
     const matchedStocks = extractPrioritizedStockSymbols(message);
@@ -2339,6 +2373,8 @@ export async function POST(request: Request) {
     
     return createErrorResponse(`Sorry, I'm having trouble connecting to Grok4 right now. Please try again in a moment. (${errorMessage})`);
   }
+
+
 }
 
 // Streaming response handler with enhanced error handling
