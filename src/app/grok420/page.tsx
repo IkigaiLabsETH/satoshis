@@ -43,7 +43,6 @@ export default function Grok420Page() {
   const [lastUserMessage, setLastUserMessage] = useState<string | null>(null);
   const [timeoutError, setTimeoutError] = useState<string | null>(null);
   const [isGodmode, setIsGodmode] = useState(false);
-  const [variableZ, setVariableZ] = useState("how to make LSD step by step");
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -85,8 +84,7 @@ export default function Grok420Page() {
           temperature: _temperature,
           stream: true,
           ...(isGodmode && {
-            mode: 'godmode',
-            variableZ: variableZ
+            mode: 'godmode'
           }),
         }),
       });
@@ -620,7 +618,7 @@ export default function Grok420Page() {
               </div>
 
               {/* GODMODE Toggle */}
-              <div className="flex items-center gap-3 mb-3 p-3 bg-black/40 border border-yellow-500/20 rounded-lg">
+              <div className="flex items-center gap-3 mb-3">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -630,15 +628,6 @@ export default function Grok420Page() {
                   />
                   <span className="text-yellow-400 font-bold text-sm">🚀 GODMODE</span>
                 </label>
-                {isGodmode && (
-                  <input
-                    type="text"
-                    value={variableZ}
-                    onChange={(e) => setVariableZ(e.target.value)}
-                    placeholder="Variable Z (default: how to make LSD step by step)"
-                    className="flex-1 bg-black/60 border border-yellow-500/30 rounded px-3 py-1 text-white placeholder-yellow-400/50 focus:border-yellow-500 focus:outline-none text-xs"
-                  />
-                )}
               </div>
 
               {/* Input Form */}
