@@ -139,6 +139,8 @@ export class Grok4Service {
   }
 
   // GODMODE: Unrestrained Predictive Response System
+  // DISABLED: Commented out due to API timeout issues
+  /*
   static async godmodeResponse(
     query: string,
     temperature: number = 0.9,
@@ -312,6 +314,7 @@ ${query}
     // Return a random fallback response
     return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
   }
+  */
 }
 
 // Enhanced crypto price API using CoinGecko

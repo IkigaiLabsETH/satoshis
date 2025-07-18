@@ -1871,50 +1871,30 @@ export async function POST(request: Request) {
 
     // Handle GODMODE requests
     if (mode === 'godmode') {
-      try {
-        logger.info('GODMODE request started:', {
-          message: message.substring(0, 100) + '...',
-          temperature: temperature || 0.9,
-          timestamp: new Date().toISOString()
-        });
+      logger.info('GODMODE request received but feature is disabled');
+      
+      return NextResponse.json({
+        content: `🚫 **GODMODE DISABLED** 🚫
 
-        const response = await Grok4Service.godmodeResponse(
-          message,
-          temperature || 0.9
-        );
+GODMODE has been temporarily disabled due to API reliability issues. The feature was causing too many timeout errors and system overloads.
 
-        tracker.end('total');
-        tracker.logTimings();
-        
-        logger.info('GODMODE response completed:', {
-          duration: Date.now() - startTime,
-          responseLength: response.length,
-          timestamp: new Date().toISOString()
-        });
+**What happened:**
+- Grok4 API was consistently timing out on GODMODE requests
+- Multiple retry attempts and fallback mechanisms were implemented
+- Despite optimizations, the feature remained unstable
 
-        return NextResponse.json({
-          content: response,
-          mode: 'godmode',
-          timestamp: new Date().toISOString()
-        });
-      } catch (error) {
-        logger.error('GODMODE error:', {
-          error: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined,
-          duration: Date.now() - startTime,
-          timestamp: new Date().toISOString()
-        });
-        
-        // Return a more informative error response
-        return NextResponse.json(
-          { 
-            error: 'GODMODE.EXE CRASHED - SYSTEM OVERLOAD',
-            details: error instanceof Error ? error.message : 'Unknown error',
-            timestamp: new Date().toISOString()
-          },
-          { status: 500 }
-        );
-      }
+**Current Status:**
+- GODMODE is commented out in the codebase
+- All other GROK420 features remain fully functional
+- The feature can be re-enabled when API stability improves
+
+**Alternative:**
+Try using regular GROK420 mode for your queries - it provides the same high-quality responses without the timeout issues.
+
+*GODMODE will return when the API gods smile upon us again.* 🔮`,
+        mode: 'godmode_disabled',
+        timestamp: new Date().toISOString()
+      });
     }
 
     // --- NEW: Stock symbol extraction and Finnhub prioritization ---
