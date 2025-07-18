@@ -3,6 +3,7 @@ import { env } from "@/env.mjs";
 import { logger } from "@/lib/logger";
 import type { ChatCompletion, ChatCompletionMessageParam, ChatCompletionTool, ChatCompletionToolChoiceOption } from "openai/resources/chat/completions";
 import { TweetAnalyzer } from '@/services/twitter/tweetAnalyzer';
+import { ViralThreadGenerator } from '@/lib/viral-thread-generator';
 
 // Initialize OpenAI client for XAI (Grok4)
 const client = new OpenAI({
@@ -315,6 +316,75 @@ ${query}
     return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
   }
   */
+
+  // Enhanced response generation with viral thread patterns
+  static async generateViralResponse(
+    query: string,
+    systemPrompt: string = "You are GROK420, an AI assistant that helps users with various tasks including crypto analysis, content creation, and general assistance.",
+    temperature: number = 0.7
+  ): Promise<string> {
+    try {
+      logger.info('Generating viral response:', { query: query.substring(0, 100) + '...' });
+
+      // Analyze query for viral potential
+      const viralAnalysis = ViralThreadGenerator.analyzeViralPotential(query);
+      
+      // Get appropriate topic and pattern
+      const topics = ViralThreadGenerator.getAvailableTopics();
+      const relevantTopic = topics.find(topic => 
+        query.toLowerCase().includes(topic.title.toLowerCase().split(' ')[0])
+      ) || topics[0]; // Default to first topic
+
+      const pattern = ViralThreadGenerator.getPattern(relevantTopic.pattern);
+      
+      // Enhance system prompt with viral thread guidance
+      const enhancedPrompt = `${systemPrompt}
+
+You are a former neuroscientist who went viral explaining complex concepts in Twitter threads. 
+Apply the Feynman Technique to simplify complex ideas and use proven viral thread patterns.
+
+Viral Thread Pattern: ${pattern?.name || 'Contrarian Reveal'}
+Target Audience: ${relevantTopic.targetAudience}
+Viral Elements: ${relevantTopic.viralElements.join(', ')}
+
+Structure your response using this viral pattern:
+${pattern?.structure.join('\n') || ''}
+
+Key principles:
+- Start with a hook that stops scrolling
+- Use simple language (Feynman Technique)
+- Include surprising insights
+- End with engagement triggers
+- Keep each section under 280 characters
+
+User query: ${query}`;
+
+      const response = await this.chatCompletion({
+        messages: [
+          {
+            role: "system",
+            content: enhancedPrompt
+          }
+        ],
+        temperature: temperature,
+        max_tokens: 4000
+      });
+      
+      // Apply Feynman Technique to the response
+      const simplifiedResponse = ViralThreadGenerator.applyFeynmanTechnique(response.choices[0]?.message?.content || '');
+      
+      logger.info('Viral response generated:', {
+        pattern: pattern?.name,
+        viralScore: viralAnalysis.score,
+        responseLength: simplifiedResponse.length
+      });
+
+      return simplifiedResponse;
+    } catch (error) {
+      logger.error('Viral response generation error:', error);
+      return `I apologize, but I encountered an issue generating a viral response. Here's a simplified answer: ${await this.generateResponseWithTools(query, systemPrompt, temperature)}`;
+    }
+  }
 }
 
 // Enhanced crypto price API using CoinGecko
