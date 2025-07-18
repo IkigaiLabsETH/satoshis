@@ -42,7 +42,7 @@ export default function Grok420Page() {
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [lastUserMessage, setLastUserMessage] = useState<string | null>(null);
   const [timeoutError, setTimeoutError] = useState<string | null>(null);
-  const [isGodmode, setIsGodmode] = useState(false);
+  const [isGodmode, _setIsGodmode] = useState(false); // GODMODE disabled - always false
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -639,18 +639,7 @@ export default function Grok420Page() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* GODMODE Toggle */}
-              <div className="flex items-center gap-3 mb-3">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isGodmode}
-                    onChange={(e) => setIsGodmode(e.target.checked)}
-                    className="w-4 h-4 text-yellow-500 bg-black border-yellow-500 rounded focus:ring-yellow-500 focus:ring-2"
-                  />
-                  <span className="text-yellow-400 font-bold text-sm">🚀 GODMODE</span>
-                </label>
-              </div>
+              {/* GODMODE Toggle - DISABLED */}
 
               {/* Input Form */}
               <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
