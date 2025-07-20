@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { BlogPostIdea } from '../notebook/types';
 import { logger } from '../lib/logger';
+import { EnhancedSEOWriter, SEOContentRequest } from './enhanced-seo-writer';
 
 // Make API key optional during build time
 const openai = new OpenAI({
@@ -93,6 +94,39 @@ export class OpenAIService {
       };
     } catch (error) {
       logger.error('Error generating blog post with OpenAI:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate enhanced SEO content using viral thread techniques
+   */
+  async generateEnhancedSEOContent(keyword: string, options?: Partial<SEOContentRequest>) {
+    try {
+      const seoRequest: SEOContentRequest = {
+        keyword,
+        targetAudience: options?.targetAudience || 'crypto enthusiasts and investors',
+        contentType: options?.contentType || 'blog-post',
+        length: options?.length || 'medium',
+        includeSchema: options?.includeSchema ?? true,
+        includeFAQs: options?.includeFAQs ?? true,
+        includeLLMTips: options?.includeLLMTips ?? true,
+        viralOptimization: options?.viralOptimization ?? true
+      };
+
+      logger.info('Generating enhanced SEO content with viral techniques:', { keyword });
+
+      const result = await EnhancedSEOWriter.generateSEOContent(seoRequest);
+
+      logger.info('Enhanced SEO content generated successfully:', {
+        keyword,
+        seoScore: result.seoScore,
+        viralElements: result.viralElements.length
+      });
+
+      return result;
+    } catch (error) {
+      logger.error('Error generating enhanced SEO content:', error);
       throw error;
     }
   }
