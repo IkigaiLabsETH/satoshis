@@ -48,8 +48,8 @@ export const CollectionDataSchema = z.object({
     wiki_url: z.string().nullable(),
     is_nsfw: z.boolean(),
     fees: z.object({
-      seller_fees: z.record(z.string()),
-      opensea_fees: z.record(z.string())
+      seller_fees: z.record(z.string(), z.string()),
+      opensea_fees: z.record(z.string(), z.string())
     }),
     is_rarity_enabled: z.boolean().optional(),
     is_creator_fees_enforced: z.boolean().optional(),

@@ -46,8 +46,8 @@ export const collectionSchema = baseAssetSchema.extend({
   instagram_username: z.string().optional(),
   stats: collectionStatsSchema,
   fees: z.object({
-    seller_fees: z.record(z.number()),
-    opensea_fees: z.record(z.number())
+    seller_fees: z.record(z.string(), z.number()),
+    opensea_fees: z.record(z.string(), z.number())
   }).optional(),
   payment_tokens: z.array(z.object({
     symbol: z.string(),

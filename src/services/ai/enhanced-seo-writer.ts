@@ -45,14 +45,13 @@ export class EnhancedSEOWriter {
       
       // Select appropriate viral pattern
       const patternKey = this.getPatternForKeyword(request.keyword);
-      const pattern = ViralThreadGenerator.getPattern(patternKey);
       
       // Generate viral hook and structure
       const viralHook = this.generateViralHook(request.keyword, patternKey);
       const viralStructure = this.generateViralStructure(request.keyword, patternKey);
       
       // Create enhanced content with viral elements
-      const content = await this.createViralSEOContent(request, viralHook, viralStructure, pattern);
+      const content = await this.createViralSEOContent(request, viralHook, viralStructure);
       
       // Generate SEO elements
       const seoElements = await this.generateSEOElements(request, content);
@@ -159,8 +158,7 @@ export class EnhancedSEOWriter {
   private static async createViralSEOContent(
     request: SEOContentRequest,
     hook: string,
-    structure: string[],
-    _pattern: any
+    structure: string[]
   ): Promise<string> {
     // Apply Feynman Technique to simplify complex concepts
     const simplifiedKeyword = ViralThreadGenerator.applyFeynmanTechnique(request.keyword);
@@ -209,7 +207,13 @@ ${request.keyword} isn't just another topic—it's a fundamental shift in how we
   /**
    * Generate SEO elements (title, meta description, schema, FAQs, LLM tips)
    */
-  private static async generateSEOElements(request: SEOContentRequest, content: string): Promise<any> {
+  private static async generateSEOElements(request: SEOContentRequest, content: string): Promise<{
+    title: string;
+    metaDescription: string;
+    schemaMarkup?: string;
+    faqs?: Array<{ question: string; answer: string }>;
+    llmTips?: string[];
+  }> {
     const title = this.generateSEOTitle(request.keyword, request.contentType);
     const metaDescription = this.generateMetaDescription(request.keyword, content);
     const schemaMarkup = request.includeSchema ? this.generateSchemaMarkup(request.keyword, content) : undefined;

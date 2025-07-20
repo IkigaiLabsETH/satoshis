@@ -45,7 +45,7 @@ export class BaseOpenSeaAPI {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw new OpenSeaAPIError(
-          `Invalid parameters: ${error.errors.map(e => e.message).join(', ')}`
+          `Invalid parameters: ${error.issues.map(e => e.message).join(', ')}`
         );
       }
       throw error;
