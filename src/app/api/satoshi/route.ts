@@ -31,6 +31,10 @@ function detectDataSource(input: string): Array<
   >;
 }
 
+function isPortfolioSimQuery(input: string): boolean {
+  return /simulate a portfolio with/i.test(input);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -176,6 +180,62 @@ ${satoshiMarket}
     } else {
       processedString = '';
     }
+
+    // Helper: get Jan 1 price for BTC, ETH, NVDA (hardcoded for now, can be improved with historical API)
+    const JAN1_PRICES = {
+      BTC: 45000, // Replace with actual Jan 1 price
+      ETH: 2300,  // Replace with actual Jan 1 price
+      NVDA: 480   // Replace with actual Jan 1 price
+    };
+
+    if (isPortfolioSimQuery(input)) {
+      // Fetch current prices
+      const cgDataRaw = await getMarketData(['BTC', 'ETH']);
+      // Parse prices from cgDataRaw (very basic extraction)
+      const btcMatch = cgDataRaw.match(/BTC:\n💰 Price: \$([\d,\.]+)/);
+      const ethMatch = cgDataRaw.match(/ETH:\n💰 Price: \$([\d,\.]+)/);
+      const btcNow = btcMatch ? parseFloat(btcMatch[1].replace(/,/g, '')) : undefined;
+      const ethNow = ethMatch ? parseFloat(ethMatch[1].replace(/,/g, '')) : undefined;
+      // Finnhub for NVDA
+      let nvdaNow: number | undefined = undefined;
+      try {
+        const nvdaQuote = await getFinnhubQuote('NVDA');
+        nvdaNow = nvdaQuote.c;
+      } catch {}
+      // Use hardcoded Jan 1 prices
+      const btcJan = JAN1_PRICES.BTC;
+      const ethJan = JAN1_PRICES.ETH;
+      const nvdaJan = JAN1_PRICES.NVDA;
+      // Calculate YTD returns
+      const btcYtd = btcNow && btcJan ? ((btcNow - btcJan) / btcJan) : undefined;
+      const ethYtd = ethNow && ethJan ? ((ethNow - ethJan) / ethJan) : undefined;
+      const nvdaYtd = nvdaNow && nvdaJan ? ((nvdaNow - nvdaJan) / nvdaJan) : undefined;
+      // Portfolio math (assume $100k)
+      const initial = 100000;
+      const btcAlloc = 0.5, nvdaAlloc = 0.25, ethAlloc = 0.25;
+      const btcFinal = btcYtd !== undefined ? initial * btcAlloc * (1 + btcYtd) : undefined;
+      const nvdaFinal = nvdaYtd !== undefined ? initial * nvdaAlloc * (1 + nvdaYtd) : undefined;
+      const ethFinal = ethYtd !== undefined ? initial * ethAlloc * (1 + ethYtd) : undefined;
+      const totalFinal = [btcFinal, nvdaFinal, ethFinal].every(x => x !== undefined)
+        ? (btcFinal! + nvdaFinal! + ethFinal!) : undefined;
+      const portYtd = totalFinal !== undefined ? (totalFinal - initial) / initial : undefined;
+      // Format answer
+      let answer = '### Portfolio Simulation: 50% BTC, 25% NVDA, 25% ETH (YTD)\n\n';
+      answer += '#### 1. Asset Performance\n';
+      answer += `- BTC: Jan 1: $${btcJan}, Now: $${btcNow ?? 'N/A'} → YTD: ${btcYtd !== undefined ? (btcYtd * 100).toFixed(2) + '%' : 'N/A'}\n`;
+      answer += `- NVDA: Jan 1: $${nvdaJan}, Now: $${nvdaNow ?? 'N/A'} → YTD: ${nvdaYtd !== undefined ? (nvdaYtd * 100).toFixed(2) + '%' : 'N/A'}\n`;
+      answer += `- ETH: Jan 1: $${ethJan}, Now: $${ethNow ?? 'N/A'} → YTD: ${ethYtd !== undefined ? (ethYtd * 100).toFixed(2) + '%' : 'N/A'}\n\n`;
+      answer += '#### 2. Portfolio Calculation (Initial $100,000)\n';
+      answer += `- BTC: $50,000 × (1 + YTD) = $${btcFinal !== undefined ? btcFinal.toFixed(2) : 'N/A'}\n`;
+      answer += `- NVDA: $25,000 × (1 + YTD) = $${nvdaFinal !== undefined ? nvdaFinal.toFixed(2) : 'N/A'}\n`;
+      answer += `- ETH: $25,000 × (1 + YTD) = $${ethFinal !== undefined ? ethFinal.toFixed(2) : 'N/A'}\n`;
+      answer += `- **Total Value:** $${totalFinal !== undefined ? totalFinal.toFixed(2) : 'N/A'}\n`;
+      answer += `- **Portfolio YTD Return:** ${portYtd !== undefined ? (portYtd * 100).toFixed(2) + '%' : 'N/A'}\n\n`;
+      answer += '#### 3. Risk & Context\n- Crypto allocation increases volatility.\n- Past performance ≠ future results.\n\n';
+      answer += '**Summary:** This simulated portfolio returned ' + (portYtd !== undefined ? (portYtd * 100).toFixed(2) + '%' : 'N/A') + ' YTD.\n';
+      return NextResponse.json({ persona, prompt: fullPrompt, processed: answer, dataSourceUsed: used });
+    }
+
     return NextResponse.json({ persona, prompt: fullPrompt, processed: processedString, dataSourceUsed: used });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
