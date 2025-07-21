@@ -541,36 +541,72 @@ export async function getMarketData(symbols: string[]): Promise<string> {
     }
 
     // Fetch price data from CoinGecko
-    const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinIds.join(',')}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true`);
-    
-    if (!response.ok) {
-      throw new Error(`CoinGecko API error: ${response.status}`);
+    const coingeckoUrl = `https://api.coingecko.com/api/v3/simple/price?ids=${coinIds.join(',')}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true`;
+    const response = await fetch(coingeckoUrl);
+    let data: CoinGeckoPrice = {};
+    if (response.ok) {
+      data = await response.json();
+      // Log for debugging
+      // eslint-disable-next-line no-console
+      console.log('CoinGecko API response:', JSON.stringify(data));
+    } else {
+      // eslint-disable-next-line no-console
+      console.error('CoinGecko API error:', response.status);
     }
 
-    const data: CoinGeckoPrice = await response.json();
-    
+    // Fallback for BTC/ETH: fetch from CryptoCompare if missing or obviously stale
+    const fallback: { [key: string]: number | undefined } = {};
+    const fallbackSymbols = symbols.filter(s => s.toUpperCase() === 'BTC' || s.toUpperCase() === 'ETH');
+    if (fallbackSymbols.length > 0) {
+      try {
+        const fallbackResp = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${fallbackSymbols.join(',')}&tsyms=USD`);
+        if (fallbackResp.ok) {
+          const fallbackData = await fallbackResp.json();
+          for (const s of fallbackSymbols) {
+            if (fallbackData[s.toUpperCase()] && fallbackData[s.toUpperCase()].USD) {
+              fallback[s.toUpperCase()] = fallbackData[s.toUpperCase()].USD;
+            }
+          }
+          // eslint-disable-next-line no-console
+          console.log('CryptoCompare fallback:', JSON.stringify(fallback));
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('CryptoCompare fallback error:', err);
+      }
+    }
+
     let result = `📊 Market Data for ${symbols.join(', ')}:\n\n`;
-    
     for (const symbol of symbols) {
       const coinId = cryptoIdMap[symbol.toUpperCase()];
+      let price: number | undefined = data[coinId]?.usd;
+      let warning = '';
+      // Fallback logic for BTC/ETH
+      if ((symbol.toUpperCase() === 'BTC' || symbol.toUpperCase() === 'ETH')) {
+        const fallbackPrice = fallback[symbol.toUpperCase()];
+        if ((!price || price < 100) && fallbackPrice) {
+          price = fallbackPrice;
+          warning = '⚠️ Used fallback price from CryptoCompare.';
+        } else if (price && fallbackPrice) {
+          const diff = Math.abs(price - fallbackPrice) / Math.max(price, fallbackPrice);
+          if (diff > 0.05) {
+            warning = `⚠️ Price mismatch: CoinGecko $${price}, CryptoCompare $${fallbackPrice}`;
+          }
+        }
+      }
       if (!coinId || !data[coinId]) {
         result += `❌ ${symbol}: Data not available\n`;
         continue;
       }
-
-      const coinData = data[coinId];
-      const price = coinData.usd;
-      const change24h = coinData.usd_24h_change;
-      const marketCap = coinData.usd_market_cap;
-      const volume24h = coinData.usd_24h_vol;
-
-      const formattedPrice = new Intl.NumberFormat('en-US', {
+      const change24h = data[coinId]?.usd_24h_change;
+      const marketCap = data[coinId]?.usd_market_cap;
+      const volume24h = data[coinId]?.usd_24h_vol;
+      const formattedPrice = price !== undefined ? new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
         minimumFractionDigits: 2,
         maximumFractionDigits: 8
-      }).format(price);
-
+      }).format(price) : 'N/A';
       const formattedChange = change24h ? `${change24h >= 0 ? '+' : ''}${change24h.toFixed(2)}%` : 'N/A';
       const formattedMarketCap = marketCap ? new Intl.NumberFormat('en-US', {
         style: 'currency',
@@ -584,19 +620,15 @@ export async function getMarketData(symbols: string[]): Promise<string> {
         notation: 'compact',
         maximumFractionDigits: 1
       }).format(volume24h) : 'N/A';
-
       const changeColor = change24h >= 0 ? '🟢' : '🔴';
-      
       result += `${symbol.toUpperCase()}:
-💰 Price: ${formattedPrice}
+💰 Price: ${formattedPrice} ${warning}
 ${changeColor} 24h Change: ${formattedChange}
 📊 Market Cap: ${formattedMarketCap}
 📈 24h Volume: ${formattedVolume}\n\n`;
     }
-
     result += `⏰ Updated: ${new Date().toLocaleString()}`;
     return result;
-
   } catch (error) {
     logger.error('Market data API error:', error);
     return `Failed to fetch market data: ${error instanceof Error ? error.message : 'Unknown error'}`;
