@@ -43,12 +43,12 @@ function extractHeadlines(section: string): string[] {
   return section.split('\n').filter(l => l.match(/^[0-9]+\./) || l.match(/^[-*•]/)).map(l => l.replace(/^[0-9]+\.\s*/, '').replace(/^[-*•]\s*/, '').trim());
 }
 
-export function postProcessLLMOutput(persona: PersonaKey, output: string): object {
+export function postProcessLLMOutput(persona: PersonaKey, output: string): Record<string, unknown> {
   const sections = extractSections(output);
   switch (persona) {
     case 'MarketResearcher': {
       // Try to extract tables and lists from key sections
-      const result: any = { sections, raw: output };
+      const result: Record<string, unknown> = { sections, raw: output };
       for (const [title, content] of Object.entries(sections)) {
         if (content.includes('|')) {
           result[title] = extractMarkdownTable(content);
@@ -60,7 +60,7 @@ export function postProcessLLMOutput(persona: PersonaKey, output: string): objec
     }
     case 'Analyst': {
       // Extract bullets and tables from summary and thesis sections
-      const result: any = { sections, raw: output };
+      const result: Record<string, unknown> = { sections, raw: output };
       if (sections['Investment Summary']) {
         result['InvestmentSummaryBullets'] = extractBullets(sections['Investment Summary']);
       }
@@ -72,7 +72,7 @@ export function postProcessLLMOutput(persona: PersonaKey, output: string): objec
     case 'Researcher':
     case 'Consultant': {
       // Extract headlines from summary or news sections
-      const result: any = { sections, raw: output };
+      const result: Record<string, unknown> = { sections, raw: output };
       if (sections['Summary'] || sections['Market Trends']) {
         const key = sections['Summary'] ? 'Summary' : 'Market Trends';
         result['Headlines'] = extractHeadlines(sections[key]);
