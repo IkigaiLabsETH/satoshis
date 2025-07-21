@@ -6,6 +6,23 @@ import { Grok4Service, getMarketData, enhancedWebSearch, getXSentiment } from '.
 import { BRAND_DNA_PROMPT } from '@/services/satoshi/brand-dna';
 import { getMarketDataWithSatoshiContext } from '@/services/satoshi/enhancedCryptoPrice';
 
+function detectDataSource(input: string): Array<'coingecko' | 'finnhub' | 'web'> {
+  const lower = input.toLowerCase();
+  const sources: Array<'coingecko' | 'finnhub' | 'web'> = [];
+  if (/(btc|bitcoin|eth|sol|altcoin|crypto|token|defi|nft|ratio|market cap|volume|gainer|loser|hash rate|gas fee|staking|yield|tvl|floor price|on-chain|wallet|address|mvrv|whale|liquidation|vault|makerdao|uniswap|lido|rocket pool|pancake|curve|sushiswap|opensea|blur|mint|airdrop)/.test(lower)) {
+    sources.push('coingecko');
+  }
+  if (/(stock|equity|nasdaq|sp500|s&p|mstr|nvda|aapl|msft|tesla|price to earnings|pe ratio|sharpe|company|public company|etf|fund|institutional|holding|microstrategy|apple|microsoft|tesla|nvda|nvidea|earnings|dividend|ytd|quarter|fomc|fed|cpi|unemployment|macro|dxy|dollar index)/.test(lower)) {
+    sources.push('finnhub');
+  }
+  if (/(news|sentiment|twitter|x.com|headline|trending|regulation|sec|catalyst|event|conference|upgrade|decision|google trends|meme|retweet|shared|trending|reddit|forum|breaking|update)/.test(lower)) {
+    sources.push('web');
+  }
+  // Always at least one
+  if (sources.length === 0) sources.push('web');
+  return Array.from(new Set(sources));
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -24,15 +41,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Unknown persona: ${persona}` }, { status: 400 });
     }
 
-    // --- Real-time data injection ---
-    // 1. Market data (BTC, ETH, SOL)
-    const marketData = await getMarketData(['BTC', 'ETH', 'SOL']);
-    // 2. Enhanced web search
-    const webSearch = await enhancedWebSearch(input);
-    // 3. X sentiment
-    const xSentiment = await getXSentiment(input);
-    // 4. Satoshi-style market context
-    const satoshiMarket = await getMarketDataWithSatoshiContext();
+    // --- Dynamic Data Source Selection ---
+    const sources = detectDataSource(input);
+    let marketData = '';
+    let webSearch = '';
+    let xSentiment = '';
+    let satoshiMarket = '';
+    const used: string[] = [];
+    if (sources.includes('coingecko')) {
+      marketData = await getMarketData(['BTC', 'ETH', 'SOL']);
+      used.push('Coingecko');
+    }
+    if (sources.includes('web')) {
+      webSearch = await enhancedWebSearch(input);
+      xSentiment = await getXSentiment(input);
+      used.push('Web Search/X');
+    }
+    if (sources.includes('finnhub')) {
+      // Placeholder: If you have a Finnhub integration, fetch and append here
+      // marketData += await getStockMarketData(['MSTR', 'NVDA', ...]);
+      used.push('Finnhub');
+    }
+    // Always add Satoshi market context
+    satoshiMarket = await getMarketDataWithSatoshiContext();
 
     // Compose context block
     const realtimeContext = `
@@ -52,8 +83,9 @@ ${satoshiMarket}
     // Prepend context to prompt
     const fullPrompt = `${realtimeContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
     const llmResponse = await Grok4Service.generateViralResponse(input, fullPrompt);
+    // Language refinement will be applied in postProcessLLMOutput
     const processed = postProcessLLMOutput(persona, llmResponse);
-    return NextResponse.json({ persona, prompt: fullPrompt, processed });
+    return NextResponse.json({ persona, prompt: fullPrompt, processed, dataSourceUsed: used });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
