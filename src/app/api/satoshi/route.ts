@@ -35,6 +35,10 @@ function isPortfolioSimQuery(input: string): boolean {
   return /simulate a portfolio with/i.test(input);
 }
 
+function isEarningsComparisonQuery(input: string): boolean {
+  return /latest earnings.*nvda.*compare.*btc|nvda.*earnings.*btc/i.test(input);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -254,6 +258,76 @@ ${satoshiMarket}
         answer += `**Warning:** ${cgWarning} ${nvdaWarning}\n`;
       }
       answer += '**Summary:** This simulated portfolio returned ' + (portYtd !== undefined ? (portYtd * 100).toFixed(2) + '%' : 'N/A') + ' YTD.\n';
+      return NextResponse.json({ persona, prompt: fullPrompt, processed: answer, dataSourceUsed: used });
+    }
+
+    if (isEarningsComparisonQuery(input)) {
+      // Fetch latest NVDA earnings
+      let earnings = [];
+      let earningsWarning = '';
+      try {
+        earnings = await getCompanyEarnings('NVDA');
+      } catch {
+        earningsWarning = '⚠️ Failed to fetch NVDA earnings.';
+      }
+      const latestEarnings = earnings && earnings.length > 0 ? earnings[0] : undefined;
+      // Fetch current prices for NVDA and BTC
+      let cgDataRaw = '';
+      let cgWarning = '';
+      try {
+        cgDataRaw = await Promise.race([
+          getMarketData(['BTC']),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 5000))
+        ]) as string;
+      } catch {
+        cgWarning = '⚠️ CoinGecko price fetch failed or timed out.';
+        cgDataRaw = '';
+      }
+      // Parse BTC price
+      const btcMatch = cgDataRaw.match(/BTC:\n💰 Price: \$([\d,\.]+)/);
+      const btcNow = btcMatch ? parseFloat(btcMatch[1].replace(/,/g, '')) : undefined;
+      // Finnhub for NVDA price
+      let nvdaNow: number | undefined = undefined;
+      let nvdaWarning = '';
+      try {
+        const nvdaQuote = await Promise.race([
+          getFinnhubQuote('NVDA'),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub timeout')), 5000))
+        ]) as { c?: number };
+        if (nvdaQuote && typeof nvdaQuote === 'object' && 'c' in nvdaQuote) {
+          nvdaNow = nvdaQuote.c;
+        }
+      } catch {
+        nvdaWarning = '⚠️ NVDA price fetch failed or timed out.';
+      }
+      // Use hardcoded Jan 1 prices
+      const btcJan = JAN1_PRICES.BTC;
+      const nvdaJan = JAN1_PRICES.NVDA;
+      // Calculate YTD returns
+      const btcYtd = btcNow && btcJan ? ((btcNow - btcJan) / btcJan) : undefined;
+      const nvdaYtd = nvdaNow && nvdaJan ? ((nvdaNow - nvdaJan) / nvdaJan) : undefined;
+      // Format answer
+      let answer = '### Latest NVDA Earnings vs BTC Performance\n\n';
+      answer += '#### NVDA Latest Earnings\n';
+      if (latestEarnings) {
+        answer += `- Date: ${latestEarnings.date || 'N/A'}\n`;
+        answer += `- EPS: $${latestEarnings.epsActual ?? 'N/A'} (Estimate: $${latestEarnings.epsEstimate ?? 'N/A'})\n`;
+        answer += `- Revenue: $${latestEarnings.revenueActual ?? 'N/A'} (Estimate: $${latestEarnings.revenueEstimate ?? 'N/A'})\n`;
+        answer += `- Surprise: ${latestEarnings.epsSurprise !== undefined ? latestEarnings.epsSurprise + '%' : 'N/A'}\n`;
+      } else {
+        answer += 'Earnings data not available.\n';
+      }
+      answer += '\n#### YTD Performance (2024)\n';
+      answer += `- NVDA: Jan 1: $${nvdaJan}, Now: $${nvdaNow ?? 'N/A'} → YTD: ${nvdaYtd !== undefined ? (nvdaYtd * 100).toFixed(2) + '%' : 'N/A'}\n`;
+      answer += `- BTC: Jan 1: $${btcJan}, Now: $${btcNow ?? 'N/A'} → YTD: ${btcYtd !== undefined ? (btcYtd * 100).toFixed(2) + '%' : 'N/A'}\n\n`;
+      if (earningsWarning || cgWarning || nvdaWarning) {
+        answer += `**Warning:** ${earningsWarning} ${cgWarning} ${nvdaWarning}\n`;
+      }
+      answer += '**Summary:** NVDA earnings: ';
+      if (latestEarnings) {
+        answer += `EPS $${latestEarnings.epsActual ?? 'N/A'} (est. $${latestEarnings.epsEstimate ?? 'N/A'}), Revenue $${latestEarnings.revenueActual ?? 'N/A'} (est. $${latestEarnings.revenueEstimate ?? 'N/A'}). `;
+      }
+      answer += `YTD: NVDA ${nvdaYtd !== undefined ? (nvdaYtd * 100).toFixed(2) + '%' : 'N/A'}, BTC ${btcYtd !== undefined ? (btcYtd * 100).toFixed(2) + '%' : 'N/A'}.`;
       return NextResponse.json({ persona, prompt: fullPrompt, processed: answer, dataSourceUsed: used });
     }
 
