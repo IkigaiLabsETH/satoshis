@@ -43,8 +43,8 @@ function isEarningsComparisonQuery(input: string): boolean {
 }
 
 export async function POST(request: NextRequest): Promise<Response> {
-  // Global timeout: always respond within 7 seconds
-  const GLOBAL_TIMEOUT = 7000;
+  // Global timeout: always respond within 12 seconds
+  const GLOBAL_TIMEOUT = 12000;
   return await Promise.race<Response>([
     (async () => {
       try {
