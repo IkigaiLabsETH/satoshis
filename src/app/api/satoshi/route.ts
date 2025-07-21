@@ -42,10 +42,10 @@ function isEarningsComparisonQuery(input: string): boolean {
   return /latest earnings.*nvda.*compare.*btc|nvda.*earnings.*btc/i.test(input);
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<Response> {
   // Global timeout: always respond within 7 seconds
   const GLOBAL_TIMEOUT = 7000;
-  return await Promise.race([
+  return await Promise.race<Response>([
     (async () => {
       try {
         const body = await request.json();
@@ -440,7 +440,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
       }
     })(),
-    new Promise(resolve => setTimeout(() => resolve(NextResponse.json({ error: 'Timeout: Satoshi API did not respond in time.' }, { status: 504 })), GLOBAL_TIMEOUT))
+    new Promise<Response>(resolve => setTimeout(() => resolve(NextResponse.json({ error: 'Timeout: Satoshi API did not respond in time.' }, { status: 504 })), GLOBAL_TIMEOUT))
   ]);
 }
 
