@@ -1,5 +1,28 @@
 import { PersonaKey } from './router';
 
+function cleanResponse(text: string): string {
+  // Remove WAGMI, NGMI (case-insensitive, whole word)
+  let cleaned = text.replace(/\bWAGMI\b/gi, '')
+                    .replace(/\bNGMI\b/gi, '');
+  // Remove hashtags (e.g., #bitcoin, #crypto)
+  cleaned = cleaned.replace(/#[a-zA-Z0-9_]+/g, '');
+  // Remove extra spaces left by removals
+  cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
+  return cleaned;
+}
+
+function refineLanguage(text: string): string {
+  // Remove generic AI phrases
+  let cleaned = text.replace(/As an AI language model[^.]*\./gi, '')
+                    .replace(/In conclusion,?/gi, '')
+                    .replace(/Overall,?/gi, '');
+  // Optionally, replace jargon with explanations
+  cleaned = cleaned.replace(/TVL/g, 'Total Value Locked (TVL)')
+                   .replace(/APY/g, 'Annual Percentage Yield (APY)');
+  // Remove extra spaces
+  return cleaned.replace(/\s{2,}/g, ' ').trim();
+}
+
 function extractSections(markdown: string): Record<string, string> {
   const sections: Record<string, string> = {};
   const lines = markdown.split('\n');
@@ -44,11 +67,12 @@ function extractHeadlines(section: string): string[] {
 }
 
 export function postProcessLLMOutput(persona: PersonaKey, output: string): Record<string, unknown> {
-  const sections = extractSections(output);
+  const cleanedOutput = refineLanguage(cleanResponse(output));
+  const sections = extractSections(cleanedOutput);
   switch (persona) {
     case 'MarketResearcher': {
       // Try to extract tables and lists from key sections
-      const result: Record<string, unknown> = { sections, raw: output };
+      const result: Record<string, unknown> = { sections, raw: cleanedOutput };
       for (const [title, content] of Object.entries(sections)) {
         if (content.includes('|')) {
           result[title] = extractMarkdownTable(content);
@@ -60,7 +84,7 @@ export function postProcessLLMOutput(persona: PersonaKey, output: string): Recor
     }
     case 'Analyst': {
       // Extract bullets and tables from summary and thesis sections
-      const result: Record<string, unknown> = { sections, raw: output };
+      const result: Record<string, unknown> = { sections, raw: cleanedOutput };
       if (sections['Investment Summary']) {
         result['InvestmentSummaryBullets'] = extractBullets(sections['Investment Summary']);
       }
@@ -72,7 +96,7 @@ export function postProcessLLMOutput(persona: PersonaKey, output: string): Recor
     case 'Researcher':
     case 'Consultant': {
       // Extract headlines from summary or news sections
-      const result: Record<string, unknown> = { sections, raw: output };
+      const result: Record<string, unknown> = { sections, raw: cleanedOutput };
       if (sections['Summary'] || sections['Market Trends']) {
         const key = sections['Summary'] ? 'Summary' : 'Market Trends';
         result['Headlines'] = extractHeadlines(sections[key]);
@@ -80,6 +104,6 @@ export function postProcessLLMOutput(persona: PersonaKey, output: string): Recor
       return result;
     }
     default:
-      return { raw: output };
+      return { raw: cleanedOutput };
   }
 } 
