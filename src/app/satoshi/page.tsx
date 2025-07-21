@@ -39,6 +39,11 @@ interface ProcessedResponse {
   [key: string]: unknown;
 }
 
+// Helper to get a valid persona key
+function getValidPersonaKey(mode: string): string {
+  return personaMeta[mode] ? mode : 'multimodal';
+}
+
 export default function SatoshiTestPage() {
   const [message, setMessage] = useState('');
   const [mode, setMode] = useState('multimodal');
@@ -68,15 +73,17 @@ export default function SatoshiTestPage() {
     setPersona('');
     setAutoDetected(false);
     try {
+      // Always send a valid persona key
+      const personaKey = getValidPersonaKey(mode);
       const res = await fetch('/api/satoshi', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input: message.trim(), mode, options: {} }),
+        body: JSON.stringify({ input: message.trim(), mode: personaKey, options: {} }),
       });
       if (res.ok) {
         const data = await res.json();
         setResponse(data.processed || data.content || data.error || 'No response content received from Satoshi');
-        setPersona(data.persona || mode);
+        setPersona(data.persona || personaKey);
         setAutoDetected(!mode || mode === 'multimodal' || mode === 'Multi-Modal (Auto-detect)');
       } else {
         const errorData = await res.json().catch(() => ({}));
@@ -96,6 +103,15 @@ export default function SatoshiTestPage() {
   // Copy-to-clipboard helper
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
+  };
+
+  // Retry handler (if you have a retry button)
+  const handleRetry = () => {
+    setMode('multimodal');
+    setError('');
+    setResponse('');
+    setPersona('');
+    setAutoDetected(false);
   };
 
   // Helper to render structured output
@@ -202,9 +218,14 @@ export default function SatoshiTestPage() {
                 </div>
               )}
               {error && (
-                <div className="text-red-400 text-center py-8 text-sm sm:text-base">
-                  {error}
-                  <button className="ml-4 px-3 py-1 bg-yellow-500 text-black rounded hover:bg-yellow-400 transition-colors text-xs font-bold" onClick={handleSubmit}>Retry</button>
+                <div className="bg-red-900 text-red-200 p-4 rounded mb-4 flex items-center gap-4">
+                  <span>{error}</span>
+                  <button
+                    className="ml-4 px-3 py-1 bg-yellow-500 text-black rounded hover:bg-yellow-400 transition-colors"
+                    onClick={handleRetry}
+                  >
+                    Retry
+                  </button>
                 </div>
               )}
               {!loading && !error && response && renderStructuredResponse(response, persona, autoDetected)}

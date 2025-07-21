@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { SATOSHI_PERSONAS } from '@/services/satoshi/personas';
 import { routeToPersona } from '@/services/satoshi/router';
 import { postProcessLLMOutput } from '@/services/satoshi/postprocess';
-import { Grok4Service } from '../grok4/grok4';
+import { Grok4Service, getMarketData, enhancedWebSearch, getXSentiment } from '../grok4/grok4';
 import { BRAND_DNA_PROMPT } from '@/services/satoshi/brand-dna';
+import { getMarketDataWithSatoshiContext } from '@/services/satoshi/enhancedCryptoPrice';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +23,34 @@ export async function POST(request: NextRequest) {
     if (!personaPrompt) {
       return NextResponse.json({ error: `Unknown persona: ${persona}` }, { status: 400 });
     }
-    const fullPrompt = `${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
+
+    // --- Real-time data injection ---
+    // 1. Market data (BTC, ETH, SOL)
+    const marketData = await getMarketData(['BTC', 'ETH', 'SOL']);
+    // 2. Enhanced web search
+    const webSearch = await enhancedWebSearch(input);
+    // 3. X sentiment
+    const xSentiment = await getXSentiment(input);
+    // 4. Satoshi-style market context
+    const satoshiMarket = await getMarketDataWithSatoshiContext();
+
+    // Compose context block
+    const realtimeContext = `
+# Real-Time Market Data
+${marketData}
+
+# Latest Web Search
+${webSearch}
+
+# X Sentiment
+${xSentiment}
+
+# Satoshi Market Context
+${satoshiMarket}
+`;
+
+    // Prepend context to prompt
+    const fullPrompt = `${realtimeContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
     const llmResponse = await Grok4Service.generateViralResponse(input, fullPrompt);
     const processed = postProcessLLMOutput(persona, llmResponse);
     return NextResponse.json({ persona, prompt: fullPrompt, processed });
