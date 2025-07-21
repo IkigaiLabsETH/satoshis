@@ -171,19 +171,8 @@ ${satoshiMarket}
 
     // Prepend context to prompt
     const fullPrompt = `${realtimeContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
-    const llmResponse = await Grok4Service.generateViralResponse(input, fullPrompt);
+    // const llmResponse = await Grok4Service.generateViralResponse(input, fullPrompt);
     // Language refinement will be applied in postProcessLLMOutput
-    const processed = postProcessLLMOutput(persona, llmResponse) as string | { content?: string; text?: string; [key: string]: unknown };
-    let processedString = '';
-    if (typeof processed === 'string') {
-      processedString = processed;
-    } else if (processed && typeof processed === 'object' && (processed.content || processed.text)) {
-      processedString = (processed.content || processed.text) ?? '';
-    } else if (processed && typeof processed === 'object' && Object.keys(processed).length > 0) {
-      processedString = JSON.stringify(processed, null, 2);
-    } else {
-      processedString = '';
-    }
 
     // Helper: get Jan 1 price for BTC, ETH, NVDA (hardcoded for now, can be improved with historical API)
     const JAN1_PRICES = {
@@ -331,7 +320,43 @@ ${satoshiMarket}
       return NextResponse.json({ persona, prompt: fullPrompt, processed: answer, dataSourceUsed: used });
     }
 
-    return NextResponse.json({ persona, prompt: fullPrompt, processed: processedString, dataSourceUsed: used });
+    // Fallback: always try to answer with real-time data
+    let fallbackWarning = '';
+    let fallbackMarketData = '';
+    let fallbackWebSearch = '';
+    try {
+      fallbackMarketData = await Promise.race([
+        getMarketData(['BTC', 'ETH', 'SOL']),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 5000))
+      ]) as string;
+    } catch {
+      fallbackWarning += '⚠️ CoinGecko price fetch failed or timed out. ';
+    }
+    try {
+      fallbackWebSearch = await Promise.race([
+        enhancedWebSearch(input),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 5000))
+      ]) as string;
+    } catch {
+      fallbackWarning += '⚠️ Web search failed or timed out. ';
+    }
+    const fallbackContext = `
+# Real-Time Market Data
+${fallbackMarketData}
+
+# Latest Web Search
+${fallbackWebSearch}
+`;
+    const fallbackPrompt = `${fallbackContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
+    const fallbackLLMResponse = await Grok4Service.generateViralResponse(input, fallbackPrompt);
+    const fallbackProcessed = postProcessLLMOutput(persona, fallbackLLMResponse) as string | { content?: string; text?: string; [key: string]: unknown };
+    let fallbackProcessedString = typeof fallbackProcessed === 'string'
+      ? fallbackProcessed
+      : (fallbackProcessed.content || fallbackProcessed.text) ?? JSON.stringify(fallbackProcessed, null, 2);
+    if (fallbackWarning) {
+      fallbackProcessedString = `**Warning:** ${fallbackWarning}\n\n${fallbackProcessedString}`;
+    }
+    return NextResponse.json({ persona, prompt: fallbackPrompt, processed: fallbackProcessedString, dataSourceUsed: used });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
