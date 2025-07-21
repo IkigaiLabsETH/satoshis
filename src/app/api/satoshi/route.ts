@@ -6,6 +6,7 @@ import { Grok4Service, getMarketData, enhancedWebSearch, getXSentiment } from '.
 import { BRAND_DNA_PROMPT } from '@/services/satoshi/brand-dna';
 import { getMarketDataWithSatoshiContext } from '@/services/satoshi/enhancedCryptoPrice';
 import { getFinnhubQuote, getInsiderSentiment, getCompanyEarnings, getIPOCalendar, getCompanyNews } from '@/services/market/finnhub';
+import { getAnalystRecommendations, getPriceTarget } from '@/services/market/finnhub';
 
 function extractSymbol(input: string): string {
   // Simple regex to extract a likely stock symbol (all caps, 1-5 letters)
@@ -14,20 +15,22 @@ function extractSymbol(input: string): string {
 }
 
 function detectDataSource(input: string): Array<
-  'coingecko' | 'finnhub' | 'web' | 'finnhub-insider' | 'finnhub-earnings' | 'finnhub-ipo' | 'finnhub-news'
+  'coingecko' | 'finnhub' | 'web' | 'finnhub-insider' | 'finnhub-earnings' | 'finnhub-ipo' | 'finnhub-news' | 'finnhub-analyst' | 'finnhub-price-target'
 > {
   const lower = input.toLowerCase();
   const sources: Array<string> = [];
   if (/(btc|bitcoin|eth|sol|altcoin|crypto|token|defi|nft|ratio|market cap|volume|gainer|loser|hash rate|gas fee|staking|yield|tvl|floor price|on-chain|wallet|address|mvrv|whale|liquidation|vault|makerdao|uniswap|lido|rocket pool|pancake|curve|sushiswap|opensea|blur|mint|airdrop)/.test(lower)) sources.push('coingecko');
-  if (/(stock|equity|nasdaq|sp500|s&p|mstr|nvda|aapl|msft|tesla|price to earnings|pe ratio|sharpe|company|public company|etf|fund|institutional|holding|microstrategy|apple|microsoft|tesla|nvda|nvidea|earnings|dividend|ytd|quarter|fomc|fed|cpi|unemployment|macro|dxy|dollar index)/.test(lower)) sources.push('finnhub');
+  if (/(stock|equity|nasdaq|sp500|s&p|mstr|nvda|aapl|msft|tesla|price to earnings|pe ratio|sharpe|company|public company|etf|fund|institutional|holding|microstrategy|apple|microsoft|tesla|nvda|nvidea|earnings|dividend|ytd|quarter|fomc|fed|cpi|unemployment|macro|dxy|dollar index|coinbase|coin)/.test(lower)) sources.push('finnhub');
   if (/(insider sentiment|insider activity)/.test(lower)) sources.push('finnhub-insider');
   if (/(earnings|eps|quarterly results)/.test(lower)) sources.push('finnhub-earnings');
   if (/(ipo|initial public offering)/.test(lower)) sources.push('finnhub-ipo');
   if (/(company news|stock news|press release)/.test(lower)) sources.push('finnhub-news');
+  if (/(analyst|recommendation|target price|price target|buy|hold|sell)/.test(lower)) sources.push('finnhub-analyst');
+  if (/(price target|target price)/.test(lower)) sources.push('finnhub-price-target');
   if (/(news|sentiment|twitter|x.com|headline|trending|regulation|sec|catalyst|event|conference|upgrade|decision|google trends|meme|retweet|shared|trending|reddit|forum|breaking|update)/.test(lower)) sources.push('web');
   if (sources.length === 0) sources.push('web');
   return Array.from(new Set(sources)) as Array<
-    'coingecko' | 'finnhub' | 'web' | 'finnhub-insider' | 'finnhub-earnings' | 'finnhub-ipo' | 'finnhub-news'
+    'coingecko' | 'finnhub' | 'web' | 'finnhub-insider' | 'finnhub-earnings' | 'finnhub-ipo' | 'finnhub-news' | 'finnhub-analyst' | 'finnhub-price-target'
   >;
 }
 
@@ -69,6 +72,8 @@ export async function POST(request: NextRequest) {
     let ipoData = '';
     let companyNewsData = '';
     let btcQuote = '';
+    let analystData = '';
+    let priceTargetData = '';
     const used: string[] = [];
     // Always fetch BTC price for benchmarking
     try {
@@ -151,13 +156,46 @@ export async function POST(request: NextRequest) {
         companyNewsData = `\n(Failed to fetch company news for ${symbol} from Finnhub)`;
       }
     }
+    if (sources.includes('finnhub-analyst')) {
+      try {
+        const analyst = await Promise.race([
+          getAnalystRecommendations(symbol),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub timeout')), 5000))
+        ]);
+        if (analyst && analyst.length > 0) {
+          const latest = analyst[0];
+          analystData = `\nAnalyst Recommendations for ${symbol}: Buy: ${latest.buy}, Hold: ${latest.hold}, Sell: ${latest.sell}, Strong Buy: ${latest.strongBuy}, Strong Sell: ${latest.strongSell}, Target Price: $${latest.targetPrice ?? 'N/A'}`;
+        } else {
+          analystData = `\nNo recent analyst recommendations for ${symbol}.`;
+        }
+        used.push('Finnhub (Analyst Recommendations)');
+      } catch {
+        analystData = `\n(Failed to fetch analyst recommendations for ${symbol} from Finnhub)`;
+      }
+    }
+    if (sources.includes('finnhub-price-target')) {
+      try {
+        const pt = await Promise.race([
+          getPriceTarget(symbol),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub timeout')), 5000))
+        ]);
+        if (pt && pt.targetHighPrice !== undefined) {
+          priceTargetData = `\nPrice Target for ${symbol}: High: $${pt.targetHighPrice}, Low: $${pt.targetLowPrice}, Mean: $${pt.targetMeanPrice}, Median: $${pt.targetMedianPrice}`;
+        } else {
+          priceTargetData = `\nNo price target data for ${symbol}.`;
+        }
+        used.push('Finnhub (Price Target)');
+      } catch {
+        priceTargetData = `\n(Failed to fetch price target for ${symbol} from Finnhub)`;
+      }
+    }
     // Always add Satoshi market context
     satoshiMarket = await getMarketDataWithSatoshiContext();
 
     // Compose context block
     const realtimeContext = `
 # Real-Time Market Data
-${btcQuote}${marketData}${insiderSentimentData}${earningsData}${ipoData}${companyNewsData}
+${btcQuote}${marketData}${insiderSentimentData}${earningsData}${ipoData}${companyNewsData}${analystData}${priceTargetData}
 
 # Latest Web Search
 ${webSearch}
@@ -324,6 +362,8 @@ ${satoshiMarket}
     let fallbackWarning = '';
     let fallbackMarketData = '';
     let fallbackWebSearch = '';
+    let fallbackAnalystData = '';
+    let fallbackPriceTargetData = '';
     try {
       fallbackMarketData = await Promise.race([
         getMarketData(['BTC', 'ETH', 'SOL']),
@@ -340,9 +380,36 @@ ${satoshiMarket}
     } catch {
       fallbackWarning += '⚠️ Web search failed or timed out. ';
     }
+    try {
+      const analystRaw = await Promise.race([
+        getAnalystRecommendations(symbol),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub analyst timeout')), 5000))
+      ]) as Array<{ buy?: number; hold?: number; sell?: number; strongBuy?: number; strongSell?: number; targetPrice?: number }>;
+      if (analystRaw && analystRaw.length > 0) {
+        const latest = analystRaw[0];
+        fallbackAnalystData = `\nAnalyst Recommendations for ${symbol}: Buy: ${latest.buy}, Hold: ${latest.hold}, Sell: ${latest.sell}, Strong Buy: ${latest.strongBuy}, Strong Sell: ${latest.strongSell}, Target Price: $${latest.targetPrice ?? 'N/A'}`;
+      } else {
+        fallbackAnalystData = `\nNo recent analyst recommendations for ${symbol}.`;
+      }
+    } catch {
+      fallbackAnalystData = `\n(Failed to fetch analyst recommendations for ${symbol} from Finnhub)`;
+    }
+    try {
+      const ptRaw = await Promise.race([
+        getPriceTarget(symbol),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub price target timeout')), 5000))
+      ]) as { targetHighPrice?: number; targetLowPrice?: number; targetMeanPrice?: number; targetMedianPrice?: number };
+      if (ptRaw && ptRaw.targetHighPrice !== undefined) {
+        fallbackPriceTargetData = `\nPrice Target for ${symbol}: High: $${ptRaw.targetHighPrice}, Low: $${ptRaw.targetLowPrice}, Mean: $${ptRaw.targetMeanPrice}, Median: $${ptRaw.targetMedianPrice}`;
+      } else {
+        fallbackPriceTargetData = `\nNo price target data for ${symbol}.`;
+      }
+    } catch {
+      fallbackPriceTargetData = `\n(Failed to fetch price target for ${symbol} from Finnhub)`;
+    }
     const fallbackContext = `
 # Real-Time Market Data
-${fallbackMarketData}
+${fallbackMarketData}${fallbackAnalystData}${fallbackPriceTargetData}
 
 # Latest Web Search
 ${fallbackWebSearch}
