@@ -8,6 +8,17 @@ import { getMarketDataWithSatoshiContext } from '@/services/satoshi/enhancedCryp
 import { getFinnhubQuote, getInsiderSentiment, getCompanyEarnings, getIPOCalendar, getCompanyNews } from '@/services/market/finnhub';
 import { getAnalystRecommendations, getPriceTarget } from '@/services/market/finnhub';
 
+// Timing helpers
+function logDuration(label: string, start: number, end: number) {
+  const duration = end - start;
+  // eslint-disable-next-line no-console
+  console.log(`${label} took ${duration}ms`);
+  if (duration > 2000) {
+    // eslint-disable-next-line no-console
+    console.warn(`⚠️ ${label} is slow: ${duration}ms`);
+  }
+}
+
 function extractSymbol(input: string): string {
   // Simple regex to extract a likely stock symbol (all caps, 1-5 letters)
   const match = input.match(/\b([A-Z]{1,5})\b/);
@@ -161,7 +172,19 @@ export async function POST(request: NextRequest): Promise<Response> {
             new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 3000))
           ]));
         }
-        const results = await Promise.allSettled(apiCalls);
+        // Timed API calls
+        const timings: { label: string; duration: number }[] = [];
+        const apiCallWrappers = apiCalls.map((call, idx) => {
+          const label = `API call ${idx}`;
+          const start = Date.now();
+          return call.then((result) => {
+            const end = Date.now();
+            timings.push({ label, duration: end - start });
+            logDuration(label, start, end);
+            return result;
+          });
+        });
+        const results = await Promise.allSettled(apiCallWrappers);
         // Map results to context variables
         let warning = '';
         results.forEach((result, idx) => {
@@ -425,7 +448,15 @@ export async function POST(request: NextRequest): Promise<Response> {
 
         // Fallback: always answer with whatever data is available
         const fallbackPrompt = `${realtimeContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
+        const llmStart = Date.now();
         const fallbackLLMResponse = await Grok4Service.generateViralResponse(input, fallbackPrompt);
+        const llmEnd = Date.now();
+        logDuration('LLM response', llmStart, llmEnd);
+        timings.push({ label: 'LLM response', duration: llmEnd - llmStart });
+        // Print slowest step
+        const slowest = timings.reduce((a, b) => (a.duration > b.duration ? a : b), { label: '', duration: 0 });
+        // eslint-disable-next-line no-console
+        console.log('Slowest step:', slowest.label, slowest.duration, 'ms');
         const fallbackProcessed = postProcessLLMOutput(persona, fallbackLLMResponse) as string | { content?: string; text?: string; [key: string]: unknown };
         let fallbackProcessedString = typeof fallbackProcessed === 'string'
           ? fallbackProcessed
