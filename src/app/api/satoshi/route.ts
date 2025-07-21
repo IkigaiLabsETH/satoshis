@@ -5,6 +5,7 @@ import { postProcessLLMOutput } from '@/services/satoshi/postprocess';
 import { Grok4Service, getMarketData, enhancedWebSearch, getXSentiment } from '../grok4/grok4';
 import { BRAND_DNA_PROMPT } from '@/services/satoshi/brand-dna';
 import { getMarketDataWithSatoshiContext } from '@/services/satoshi/enhancedCryptoPrice';
+import { getFinnhubQuote } from '@/services/market/finnhub';
 
 function detectDataSource(input: string): Array<'coingecko' | 'finnhub' | 'web'> {
   const lower = input.toLowerCase();
@@ -58,9 +59,15 @@ export async function POST(request: NextRequest) {
       used.push('Web Search/X');
     }
     if (sources.includes('finnhub')) {
-      // Placeholder: If you have a Finnhub integration, fetch and append here
-      // marketData += await getStockMarketData(['MSTR', 'NVDA', ...]);
-      used.push('Finnhub');
+      try {
+        const mstrQuote = await getFinnhubQuote('MSTR');
+        const nvdaQuote = await getFinnhubQuote('NVDA');
+        marketData += `\nMSTR: $${mstrQuote.c} (Open: $${mstrQuote.o}, High: $${mstrQuote.h}, Low: $${mstrQuote.l})`;
+        marketData += `\nNVDA: $${nvdaQuote.c} (Open: $${nvdaQuote.o}, High: $${nvdaQuote.h}, Low: $${nvdaQuote.l})`;
+        used.push('Finnhub');
+      } catch {
+        marketData += '\n(Failed to fetch some stock data from Finnhub)';
+      }
     }
     // Always add Satoshi market context
     satoshiMarket = await getMarketDataWithSatoshiContext();
