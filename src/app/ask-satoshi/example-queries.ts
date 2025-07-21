@@ -1,64 +1,106 @@
+// Example queries for Satoshi AI. Each category is shown as a header in the UI, with queries as clickable suggestions.
+// To extend: Add new categories or queries as needed. Keep queries actionable, concise, and focused on real-time, data-driven insights.
+
 export const SATOSHI_EXAMPLE_QUERIES_CATEGORIZED = {
-  "Price & Performance": [
-    "What is the live price of Bitcoin, Ethereum, and Solana right now?",
-    "Which crypto just hit a new all-time high today?",
-    "Show me the top 5 crypto gainers and losers today.",
-    "What’s the biggest price drop in the crypto top 100 right now?",
-    "What’s the latest funding rate for BTC and ETH futures?"
+  'Beginner Onboarding': [
+    'What is Bitcoin and why does it matter?',
+    'How do I compare Bitcoin to stocks or gold?',
+    'What are the safest ways to buy and store BTC?',
+    'How can I track Bitcoin’s price and news in real time?',
   ],
-  "Macro & Cross-Asset": [
-    "How did Bitcoin react to today’s Fed announcement?",
-    "Compare today’s gold, S&P 500, and BTC performance.",
-    "What’s the current DXY (US Dollar Index) and how is it impacting BTC?",
-    "Correlate today’s Bitcoin price action with the latest CPI and unemployment data. What macro factors are driving the move?",
-    "How did BTC, ETH, and gold react to the most recent FOMC statement? Show me the intraday chart overlays.",
-    "What’s the current Sharpe ratio for BTC vs S&P 500 and gold over the last 90 days?"
+  'Price & Performance': [
+    'What is the live price of Bitcoin, Ethereum, and Solana right now?',
+    'Which crypto just hit a new all-time high today?',
+    'Show me the top 5 crypto gainers and losers today.',
+    'What’s the biggest price drop in the crypto top 100 right now?',
+    'Compare the volatility of Tesla and Bitcoin over the last quarter.',
+    'List the top S&P500 gainers this week and compare their returns to BTC.',
+    'What is the current price of MSTR and how does it compare to Bitcoin today?',
   ],
-  "On-Chain & Network": [
-    "What’s the current Bitcoin network hash rate and difficulty?",
-    "How many BTC were moved on-chain in the last 24 hours?",
-    "What’s the latest ETH gas fee and network activity?",
-    "Identify the largest Bitcoin whale transactions in the last 12 hours. Did any go to exchanges?",
-    "What’s the current MVRV Z-Score for Bitcoin and what does it signal about market tops or bottoms?",
-    "Analyze the change in active addresses and new wallets for Ethereum this week. Is network activity rising or falling?"
+  'Stock & Equity Analysis': [
+    'Show the latest earnings for NVDA and compare to BTC performance.',
+    'Which stocks had IPOs this month? How did they perform vs Bitcoin?',
+    'What is the insider sentiment for Apple and how does it compare to BTC price action?',
+    'Give me analyst recommendations for Coinbase and compare COIN to BTC.',
+    'Show the price target consensus for MicroStrategy and how it stacks up against Bitcoin.',
+    'What are the most recent institutional holdings changes for NVDA? Benchmark vs BTC.',
+    'Summarize the latest company news for Tesla and benchmark TSLA vs BTC YTD.',
   ],
-  "DeFi & Yield": [
-    "Which DeFi protocol currently offers the highest stablecoin yield? Is it sustainable based on TVL and recent inflows?",
-    "Compare the 7-day APY for ETH staking across Lido, Rocket Pool, and Coinbase.",
-    "What’s the liquidation risk for the top 3 MakerDAO vaults right now?",
-    "Which DeFi protocol has the highest TVL growth this week?"
+  'Macro & Cross-Asset': [
+    'How did Bitcoin react to today’s Fed announcement?',
+    'Compare today’s gold, S&P 500, and BTC performance.',
+    'What’s the current DXY (US Dollar Index) and how is it impacting BTC?',
+    'Correlate today’s Bitcoin price action with the latest CPI and unemployment data.',
+    'What’s the current Sharpe ratio for BTC vs S&P 500 and gold over the last 90 days?',
+    'What is the current macro outlook for risk assets? How is BTC positioned?',
   ],
-  "NFT & Social Analytics": [
-    "What’s the floor price of the top NFT collection right now?",
-    "Which NFT project had the most sales in the last 24 hours?",
-    "Which NFT collection had the highest floor price increase in the last 48 hours? What’s driving the demand?",
-    "Show me the most retweeted Bitcoin tweet in the last 24 hours and summarize its impact.",
-    "What’s the current sentiment on X (Twitter) for ‘Solana outage’ and how is it affecting SOL price?",
-    "What’s trending on X (Twitter) in crypto right now?",
-    "Show me the most shared Bitcoin meme today.",
-    "What’s the current Google Trends score for ‘Bitcoin’?"
+  'On-Chain & Network': [
+    'What’s the current Bitcoin network hash rate and difficulty?',
+    'How many BTC were moved on-chain in the last 24 hours?',
+    'What’s the latest ETH gas fee and network activity?',
+    'Identify the largest Bitcoin whale transactions in the last 12 hours. Did any go to exchanges?',
+    'What’s the current MVRV Z-Score for Bitcoin and what does it signal about market tops or bottoms?',
+    'Show the latest on-chain metrics for Ethereum and compare to BTC.',
   ],
-  "News & Events": [
-    "What are the top 3 breaking crypto news headlines right now?",
-    "Which altcoin is getting the most media coverage today?",
-    "What’s the latest SEC or regulatory update affecting crypto?",
-    "What are the top 3 upcoming crypto events (conferences, ETF decisions, protocol upgrades) and their likely market impact?"
+  'DeFi & Yield': [
+    'Which DeFi protocol currently offers the highest stablecoin yield? Is it sustainable?',
+    'Compare the 7-day APY for ETH staking across Lido, Rocket Pool, and Coinbase.',
+    'What’s the liquidation risk for the top 3 MakerDAO vaults right now?',
+    'Which DeFi protocol has the highest TVL growth this week?',
+    'What are the top DeFi tokens by TVL and how do their returns compare to Bitcoin?',
   ],
-  "Portfolio & Strategy Simulation": [
-    "If I bought $1,000 of BTC a week ago, what’s it worth now?",
-    "What’s the best-performing DCA strategy for BTC this year?",
-    "Which altcoin rotation would have outperformed BTC this month?",
-    "If I rotated from BTC to ETH every time ETH/BTC crossed above 0.07 in the last year, what would my returns be?",
-    "Backtest a weekly DCA strategy for BTC vs SOL since January 2023. Which performed better?",
-    "What’s the optimal portfolio allocation between BTC, ETH, and cash based on the latest volatility and correlation data?"
+  'NFT & Social Analytics': [
+    'What’s the floor price of the top NFT collection right now?',
+    'Which NFT project had the most sales in the last 24 hours?',
+    'Show the most retweeted Bitcoin tweet in the last 24 hours and summarize its impact.',
+    'What’s trending on X (Twitter) in crypto right now?',
+    'Summarize the latest crypto market news and highlight any assets beating BTC.',
   ],
-  "Event-Driven & Predictive": [
-    "Based on current funding rates and open interest, is the market positioned net long or short on BTC?",
-    "Which altcoin is most likely to benefit from the next Ethereum upgrade? Show supporting data."
+  'News & Events': [
+    'What are the top 3 breaking crypto news headlines right now?',
+    'Which altcoin is getting the most media coverage today?',
+    'What’s the latest SEC or regulatory update affecting crypto?',
+    'What are the top 3 upcoming crypto events and their likely market impact?',
   ],
-  "Regulatory & Institutional": [
-    "Summarize the latest SEC enforcement actions against crypto exchanges and their effect on trading volumes.",
-    "Which public companies have increased their Bitcoin holdings this quarter? What’s their average entry price?",
-    "What’s the current state of spot Bitcoin ETF flows and how are they impacting price?"
-  ]
+  'Portfolio & Strategy Simulation': [
+    'If I bought $1,000 of BTC a week ago, what’s it worth now?',
+    'What’s the best-performing DCA strategy for BTC this year?',
+    'Which altcoin rotation would have outperformed BTC this month?',
+    'Simulate a portfolio with 50% BTC, 25% NVDA, 25% ETH. How did it perform YTD?',
+    'If I rotated from MSTR to BTC after each earnings report, what would my returns look like?',
+    'How would a 60/40 BTC/SPY portfolio have performed during the last market drawdown?',
+    'What is the Sharpe ratio of holding BTC vs holding Tesla over the last year?',
+    'Backtest a weekly DCA strategy for BTC vs SOL since January 2023. Which performed better?',
+  ],
+  'Event-Driven & Predictive': [
+    'Based on current funding rates and open interest, is the market net long or short on BTC?',
+    'Which altcoin is most likely to benefit from the next Ethereum upgrade? Show supporting data.',
+    'What upcoming earnings or IPOs could impact BTC correlation?',
+    'Are there any regulatory events or FOMC meetings this week? How might they affect Bitcoin and stocks?',
+    'Which companies have the highest analyst upgrades this month and how do their returns compare to BTC?',
+    'What are the most shorted stocks right now and how are they performing vs Bitcoin?',
+    'What’s the best way to hedge a BTC-heavy portfolio ahead of earnings season?',
+  ],
+  'Risk & Downside': [
+    'What are the biggest risks to Bitcoin’s price this month?',
+    'How can I protect my portfolio if BTC drops 20% suddenly?',
+    'Which altcoins are most correlated with BTC drawdowns?',
+    'What’s the historical max drawdown for BTC, ETH, and MSTR?',
+    'How do I set stop-losses or alerts for my BTC and stock holdings?',
+  ],
+  'Regulatory & Institutional': [
+    'Summarize the latest SEC enforcement actions against crypto exchanges and their effect on trading volumes.',
+    'Which public companies have increased their Bitcoin holdings this quarter? What’s their average entry price?',
+    'What’s the current state of spot Bitcoin ETF flows and how are they impacting price?',
+    'What is the insider sentiment for Apple and how does it compare to BTC price action?',
+    'What are the most recent institutional holdings changes for NVDA? Benchmark vs BTC.',
+  ],
+  // Advanced/power user prompts
+  'Advanced Scenarios': [
+    'If I rebalanced my portfolio weekly between BTC and the top S&P500 gainer, what would my YTD return be?',
+    'How would a 3-asset rotation (BTC, ETH, NVDA) based on momentum signals have performed since 2022?',
+    'Simulate a scenario where BTC drops 30% and stocks rally—what happens to a 50/50 BTC/SPY portfolio?',
+    'What’s the best-performing asset class (crypto, stocks, gold) in the last 90 days, and why?',
+    'If I only bought assets with positive insider sentiment, how would my returns compare to BTC?',
+  ],
 }; 
