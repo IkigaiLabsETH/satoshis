@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { SATOSHI_EXAMPLE_QUERIES } from '@/app/ask-satoshi/example-queries';
+import { SATOSHI_EXAMPLE_QUERIES_CATEGORIZED } from '@/app/ask-satoshi/example-queries';
 import React from 'react';
 
 // Persona icon and description map
@@ -56,7 +56,7 @@ export default function SatoshiTestPage() {
   const [showPersonaDesc, setShowPersonaDesc] = useState(false);
 
   const modes = Object.entries(personaMeta).map(([value, meta]) => ({ value, label: meta.label }));
-  const exampleQueries = SATOSHI_EXAMPLE_QUERIES;
+  const categorizedQueries = SATOSHI_EXAMPLE_QUERIES_CATEGORIZED;
 
   useEffect(() => {
     if (responseRef.current) {
@@ -282,15 +282,22 @@ export default function SatoshiTestPage() {
             </form>
             <div className="mt-6">
               <h3 className="text-white/80 text-sm font-medium mb-3">Example Queries:</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 max-h-32 overflow-y-auto">
-                {exampleQueries.map((query, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleExampleClick(query)}
-                    className="bg-black/40 border border-yellow-500/20 rounded px-3 py-2 text-xs text-white/80 hover:bg-yellow-500/10 hover:border-yellow-400 transition-colors duration-200 text-left"
-                  >
-                    {query}
-                  </button>
+              <div className="space-y-4 max-h-64 overflow-y-auto">
+                {Object.entries(categorizedQueries).map(([category, queries]) => (
+                  <div key={category}>
+                    <div className="text-yellow-400 font-semibold text-xs mb-1 mt-2 uppercase tracking-wider">{category}</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                      {queries.map((query, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleExampleClick(query)}
+                          className="bg-black/40 border border-yellow-500/20 rounded px-3 py-2 text-xs text-white/80 hover:bg-yellow-500/10 hover:border-yellow-400 transition-colors duration-200 text-left"
+                        >
+                          {query}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
