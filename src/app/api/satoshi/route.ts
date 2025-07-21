@@ -165,8 +165,18 @@ ${satoshiMarket}
     const fullPrompt = `${realtimeContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
     const llmResponse = await Grok4Service.generateViralResponse(input, fullPrompt);
     // Language refinement will be applied in postProcessLLMOutput
-    const processed = postProcessLLMOutput(persona, llmResponse);
-    return NextResponse.json({ persona, prompt: fullPrompt, processed, dataSourceUsed: used });
+    const processed = postProcessLLMOutput(persona, llmResponse) as string | { content?: string; text?: string; [key: string]: unknown };
+    let processedString = '';
+    if (typeof processed === 'string') {
+      processedString = processed;
+    } else if (processed && typeof processed === 'object' && (processed.content || processed.text)) {
+      processedString = (processed.content || processed.text) ?? '';
+    } else if (processed && typeof processed === 'object' && Object.keys(processed).length > 0) {
+      processedString = JSON.stringify(processed, null, 2);
+    } else {
+      processedString = '';
+    }
+    return NextResponse.json({ persona, prompt: fullPrompt, processed: processedString, dataSourceUsed: used });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
