@@ -189,19 +189,37 @@ ${satoshiMarket}
     };
 
     if (isPortfolioSimQuery(input)) {
-      // Fetch current prices
-      const cgDataRaw = await getMarketData(['BTC', 'ETH']);
+      // Fetch current prices with timeout and error handling
+      let cgDataRaw = '';
+      let cgWarning = '';
+      try {
+        cgDataRaw = await Promise.race([
+          getMarketData(['BTC', 'ETH']),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 5000))
+        ]) as string;
+      } catch {
+        cgWarning = '⚠️ CoinGecko price fetch failed or timed out.';
+        cgDataRaw = '';
+      }
       // Parse prices from cgDataRaw (very basic extraction)
       const btcMatch = cgDataRaw.match(/BTC:\n💰 Price: \$([\d,\.]+)/);
       const ethMatch = cgDataRaw.match(/ETH:\n💰 Price: \$([\d,\.]+)/);
       const btcNow = btcMatch ? parseFloat(btcMatch[1].replace(/,/g, '')) : undefined;
       const ethNow = ethMatch ? parseFloat(ethMatch[1].replace(/,/g, '')) : undefined;
-      // Finnhub for NVDA
+      // Finnhub for NVDA with timeout
       let nvdaNow: number | undefined = undefined;
+      let nvdaWarning = '';
       try {
-        const nvdaQuote = await getFinnhubQuote('NVDA');
-        nvdaNow = nvdaQuote.c;
-      } catch {}
+        const nvdaQuote = await Promise.race([
+          getFinnhubQuote('NVDA'),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub timeout')), 5000))
+        ]) as { c?: number; o?: number; h?: number; l?: number };
+        if (nvdaQuote && typeof nvdaQuote === 'object' && 'c' in nvdaQuote) {
+          nvdaNow = nvdaQuote.c;
+        }
+      } catch {
+        nvdaWarning = '⚠️ NVDA price fetch failed or timed out.';
+      }
       // Use hardcoded Jan 1 prices
       const btcJan = JAN1_PRICES.BTC;
       const ethJan = JAN1_PRICES.ETH;
@@ -232,6 +250,9 @@ ${satoshiMarket}
       answer += `- **Total Value:** $${totalFinal !== undefined ? totalFinal.toFixed(2) : 'N/A'}\n`;
       answer += `- **Portfolio YTD Return:** ${portYtd !== undefined ? (portYtd * 100).toFixed(2) + '%' : 'N/A'}\n\n`;
       answer += '#### 3. Risk & Context\n- Crypto allocation increases volatility.\n- Past performance ≠ future results.\n\n';
+      if (cgWarning || nvdaWarning) {
+        answer += `**Warning:** ${cgWarning} ${nvdaWarning}\n`;
+      }
       answer += '**Summary:** This simulated portfolio returned ' + (portYtd !== undefined ? (portYtd * 100).toFixed(2) + '%' : 'N/A') + ' YTD.\n';
       return NextResponse.json({ persona, prompt: fullPrompt, processed: answer, dataSourceUsed: used });
     }
