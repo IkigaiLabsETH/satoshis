@@ -551,7 +551,7 @@ export async function POST(request: NextRequest): Promise<Response> {
         logDuration('LLM response', llmStart, llmEnd);
         let fallbackProcessedString: string;
         if (llmTimedOut) {
-          fallbackProcessedString = '**Warning:** LLM timed out after 15 seconds. Partial data shown.';
+          fallbackProcessedString = `Bitcoin is the signal. Even when data is missing, the narrative remains: decentralization, sound money, and antifragility. Stay sovereign.\n\n**Warning:** LLM timed out after 15 seconds. Partial data shown.\n\n*Suggestions:*\n- Try a more focused question.\n- Wait a moment and try again if the system is busy.`;
         } else {
           const fallbackProcessed = postProcessLLMOutput(persona, String(fallbackLLMResponse)) as string | { content?: string; text?: string; [key: string]: unknown };
           fallbackProcessedString = typeof fallbackProcessed === 'string'
