@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import Image from 'next/image';
 
 export default function RolexPage() {
   return (
@@ -21,6 +22,18 @@ export default function RolexPage() {
               <div className="h-px w-24 bg-yellow-500/30"></div>
               <p className="mx-6 text-lg text-white/70 font-light italic font-satoshi">When Wealth Becomes Visible</p>
               <div className="h-px w-24 bg-yellow-500/30"></div>
+            </div>
+            {/* Feature Visual: Watches */}
+            <div className="relative w-full mx-auto mt-12 aspect-[16/9] overflow-hidden rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+              <Image
+                src="/watches.jpeg"
+                alt="Luxury watches as market signal"
+                fill
+                style={{ objectFit: 'cover' }}
+                priority
+                className="w-full h-full"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
             </div>
           </div>
 
