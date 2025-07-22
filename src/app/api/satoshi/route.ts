@@ -57,7 +57,17 @@ function isEarningsComparisonQuery(input: string): boolean {
 const LLM_TIMEOUT = 15000;
 
 function normalizePersonaMode(mode: string | undefined): string {
-  if (!mode || mode.toLowerCase().includes('multi-modal')) return 'multimodal';
+  if (!mode) return 'multimodal';
+  const m = mode.toLowerCase();
+  if (
+    m === 'multimodal' ||
+    m === 'multi-modal' ||
+    m === 'multi_modal' ||
+    m.includes('multi-modal') ||
+    m.includes('multimodal')
+  ) {
+    return 'multimodal';
+  }
   // Convert snake_case or lower to PascalCase or known keys
   // e.g., 'viral_creator' -> 'ViralCreator', 'analyst' -> 'Analyst'
   return mode
@@ -65,6 +75,11 @@ function normalizePersonaMode(mode: string | undefined): string {
     .map((s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
     .join('');
 }
+
+process.on('unhandledRejection', (reason, promise) => {
+  // eslint-disable-next-line no-console
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
 
 export async function POST(request: NextRequest): Promise<Response> {
   try {
@@ -112,10 +127,15 @@ export async function POST(request: NextRequest): Promise<Response> {
       // Always fetch BTC price for benchmarking
       try {
         if (sources.includes('coingecko')) {
-          const btc = await getMarketData(['BTC']);
+          const btc = await Promise.race([
+            getMarketData(['BTC']),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 5000))
+          ]);
           btcQuote = `\nBTC Price Benchmark:\n${btc}`;
         }
-      } catch {
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('CoinGecko BTC price fetch failed:', e);
         btcQuote = '\n(Failed to fetch BTC price)';
       }
       // Only call APIs that are needed for the detected query type
@@ -129,66 +149,66 @@ export async function POST(request: NextRequest): Promise<Response> {
         apiCalls.push(
           sources.includes('coingecko') ? Promise.race([
             getMarketData(['BTC', 'ETH', 'SOL']),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 3000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 5000))
           ]) : Promise.resolve(null),
           sources.includes('web') ? Promise.race([
             enhancedWebSearch(input),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 3000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 5000))
           ]) : Promise.resolve(null),
           sources.includes('web') ? Promise.race([
             getXSentiment(input),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('X sentiment timeout')), 3000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('X sentiment timeout')), 5000))
           ]) : Promise.resolve(null),
           sources.includes('finnhub') ? Promise.race([
             getFinnhubQuote(symbol),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub quote timeout')), 3000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub quote timeout')), 5000))
           ]) : Promise.resolve(null),
           sources.includes('finnhub-insider') ? Promise.race([
             getInsiderSentiment(symbol),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub insider timeout')), 3000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub insider timeout')), 5000))
           ]) : Promise.resolve(null),
           sources.includes('finnhub-earnings') ? Promise.race([
             getCompanyEarnings(symbol),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub earnings timeout')), 3000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub earnings timeout')), 5000))
           ]) : Promise.resolve(null),
           sources.includes('finnhub-ipo') ? Promise.race([
             getIPOCalendar(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub IPO timeout')), 3000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub IPO timeout')), 5000))
           ]) : Promise.resolve(null),
           sources.includes('finnhub-news') ? Promise.race([
             getCompanyNews(symbol),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub news timeout')), 3000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub news timeout')), 5000))
           ]) : Promise.resolve(null),
           sources.includes('finnhub-analyst') ? Promise.race([
             getAnalystRecommendations(symbol),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub analyst timeout')), 3000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub analyst timeout')), 5000))
           ]) : Promise.resolve(null),
           sources.includes('finnhub-price-target') ? Promise.race([
             getPriceTarget(symbol),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub price target timeout')), 3000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub price target timeout')), 5000))
           ]) : Promise.resolve(null),
           Promise.race([
             getMarketDataWithSatoshiContext(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Satoshi market context timeout')), 3000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Satoshi market context timeout')), 5000))
           ])
         );
       } else if (isSimpleCryptoQuery) {
         // Only call CoinGecko
         apiCalls.push(Promise.race([
           getMarketData(['BTC', 'ETH', 'SOL']),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 3000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 5000))
         ]));
       } else if (isSimpleStockQuery) {
         // Only call Finnhub quote
         apiCalls.push(Promise.race([
           getFinnhubQuote(symbol),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub quote timeout')), 3000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub quote timeout')), 5000))
         ]));
       } else if (isNewsQuery) {
         // Only call web search
         apiCalls.push(Promise.race([
           enhancedWebSearch(input),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 3000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 5000))
         ]));
       }
       // Timed API calls
@@ -335,7 +355,9 @@ export async function POST(request: NextRequest): Promise<Response> {
             getMarketData(['BTC', 'ETH']),
             new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 5000))
           ]) as string;
-        } catch {
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error('CoinGecko price fetch failed:', e);
           cgWarning = '⚠️ CoinGecko price fetch failed or timed out.';
           cgDataRaw = '';
         }
@@ -355,7 +377,9 @@ export async function POST(request: NextRequest): Promise<Response> {
           if (nvdaQuote && typeof nvdaQuote === 'object' && 'c' in nvdaQuote) {
             nvdaNow = nvdaQuote.c;
           }
-        } catch {
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error('NVDA price fetch failed:', e);
           nvdaWarning = '⚠️ NVDA price fetch failed or timed out.';
         }
         // Use hardcoded Jan 1 prices
@@ -400,8 +424,13 @@ export async function POST(request: NextRequest): Promise<Response> {
         let earnings = [];
         let earningsWarning = '';
         try {
-          earnings = await getCompanyEarnings('NVDA');
-        } catch {
+          earnings = await Promise.race([
+            getCompanyEarnings('NVDA'),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub earnings timeout')), 5000))
+          ]);
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error('NVDA earnings fetch failed:', e);
           earningsWarning = '⚠️ Failed to fetch NVDA earnings.';
         }
         const latestEarnings = earnings && earnings.length > 0 ? earnings[0] : undefined;
@@ -413,7 +442,9 @@ export async function POST(request: NextRequest): Promise<Response> {
             getMarketData(['BTC']),
             new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 5000))
           ]) as string;
-        } catch {
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error('CoinGecko price fetch failed:', e);
           cgWarning = '⚠️ CoinGecko price fetch failed or timed out.';
           cgDataRaw = '';
         }
@@ -431,7 +462,9 @@ export async function POST(request: NextRequest): Promise<Response> {
           if (nvdaQuote && typeof nvdaQuote === 'object' && 'c' in nvdaQuote) {
             nvdaNow = nvdaQuote.c;
           }
-        } catch {
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error('NVDA price fetch failed:', e);
           nvdaWarning = '⚠️ NVDA price fetch failed or timed out.';
         }
         // Use hardcoded Jan 1 prices
@@ -472,20 +505,30 @@ export async function POST(request: NextRequest): Promise<Response> {
         let analystData = '';
         let btcQuote = '';
         try {
-          const analyst = await getAnalystRecommendations('COIN');
+          const analyst = await Promise.race([
+            getAnalystRecommendations('COIN'),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub analyst timeout')), 5000))
+          ]);
           if (analyst && analyst.length > 0) {
             const latest = analyst[0];
             analystData = `\nAnalyst Recommendations for COIN: Buy: ${latest.buy}, Hold: ${latest.hold}, Sell: ${latest.sell}, Strong Buy: ${latest.strongBuy}, Strong Sell: ${latest.strongSell}, Target Price: $${latest.targetPrice ?? 'N/A'}`;
           } else {
             analystData = `\nNo recent analyst recommendations for COIN.`;
           }
-        } catch {
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error('Analyst recommendations fetch failed:', e);
           analystData = `\n(Failed to fetch analyst recommendations for COIN from Finnhub)`;
         }
         try {
-          const btc = await getMarketData(['BTC']);
+          const btc = await Promise.race([
+            getMarketData(['BTC']),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 5000))
+          ]);
           btcQuote = `\nBTC Price Benchmark:\n${btc}`;
-        } catch {
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error('BTC price fetch failed:', e);
           btcQuote = '\n(Failed to fetch BTC price)';
         }
         const minimalContext = `\n# Analyst Recommendations\n${analystData}\n\n# BTC Price\n${btcQuote}`;
@@ -498,7 +541,9 @@ export async function POST(request: NextRequest): Promise<Response> {
             Grok4Service.generateViralResponse(input, fullPrompt),
             new Promise((_, reject) => setTimeout(() => reject(new Error('LLM timeout')), LLM_TIMEOUT))
           ]);
-        } catch {
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error('LLM response failed:', e);
           llmTimedOut = true;
         }
         const llmEnd = Date.now();
@@ -525,7 +570,9 @@ export async function POST(request: NextRequest): Promise<Response> {
           Grok4Service.generateViralResponse(input, fallbackPrompt),
           new Promise((_, reject) => setTimeout(() => reject(new Error('LLM timeout')), LLM_TIMEOUT))
         ]);
-      } catch {
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('LLM response failed:', e);
         llmTimedOut = true;
       }
       const llmEnd = Date.now();
@@ -572,8 +619,11 @@ export async function POST(request: NextRequest): Promise<Response> {
   }
 }
 
-// GET endpoint for getting available modes and capabilities
-export async function GET() {
+// Healthcheck endpoint for monitoring
+export async function GET(request: NextRequest) {
+  if (request.nextUrl.pathname.endsWith('/health')) {
+    return NextResponse.json({ status: 'ok', timestamp: new Date().toISOString() }, { status: 200 });
+  }
   return NextResponse.json({
     modes: {
       validator: 'Validate crypto projects using Satoshi frameworks',

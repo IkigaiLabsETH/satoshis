@@ -73,7 +73,7 @@ export default function SatoshiTestPage() {
     setPersona('');
     setAutoDetected(false);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 7000); // 7s timeout
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
     try {
       // Always send a valid persona key
       const personaKey = getValidPersonaKey(mode);
