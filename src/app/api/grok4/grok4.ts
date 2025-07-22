@@ -62,6 +62,17 @@ interface CoinGeckoPrice {
   };
 }
 
+// --- Fetch with timeout utility ---
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = 5000): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export class Grok4Service {
   static async chatCompletion(request: Grok4Request): Promise<ChatCompletion> {
     try {
@@ -420,7 +431,7 @@ export async function getCryptoPrice(query: string): Promise<string> {
     }
 
     // Fetch price data from CoinGecko
-    const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true`);
+    const response = await fetchWithTimeout(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true`);
     
     if (!response.ok) {
       throw new Error(`CoinGecko API error: ${response.status}`);
@@ -542,7 +553,7 @@ export async function getMarketData(symbols: string[]): Promise<string> {
 
     // Fetch price data from CoinGecko
     const coingeckoUrl = `https://api.coingecko.com/api/v3/simple/price?ids=${coinIds.join(',')}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true`;
-    const response = await fetch(coingeckoUrl);
+    const response = await fetchWithTimeout(coingeckoUrl);
     let data: CoinGeckoPrice = {};
     if (response.ok) {
       data = await response.json();
@@ -559,7 +570,7 @@ export async function getMarketData(symbols: string[]): Promise<string> {
     const fallbackSymbols = symbols.filter(s => s.toUpperCase() === 'BTC' || s.toUpperCase() === 'ETH');
     if (fallbackSymbols.length > 0) {
       try {
-        const fallbackResp = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${fallbackSymbols.join(',')}&tsyms=USD`);
+        const fallbackResp = await fetchWithTimeout(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${fallbackSymbols.join(',')}&tsyms=USD`);
         if (fallbackResp.ok) {
           const fallbackData = await fallbackResp.json();
           for (const s of fallbackSymbols) {
@@ -788,7 +799,7 @@ export async function getXSentiment(input: string): Promise<string> {
 export async function duckDuckGoSearch(query: string): Promise<string> {
   try {
     const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`;
-    const res = await fetch(url);
+    const res = await fetchWithTimeout(url);
     if (!res.ok) throw new Error('DuckDuckGo API error');
     const data = await res.json();
     // Prefer Abstract, then RelatedTopics, then fallback
