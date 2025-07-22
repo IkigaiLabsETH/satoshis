@@ -56,516 +56,520 @@ function isEarningsComparisonQuery(input: string): boolean {
 // LLM timeout constant
 const LLM_TIMEOUT = 15000;
 
+function normalizePersonaMode(mode: string | undefined): string {
+  if (!mode || mode.toLowerCase().includes('multi-modal')) return 'multimodal';
+  // Convert snake_case or lower to PascalCase or known keys
+  // e.g., 'viral_creator' -> 'ViralCreator', 'analyst' -> 'Analyst'
+  return mode
+    .split('_')
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
+    .join('');
+}
+
 export async function POST(request: NextRequest): Promise<Response> {
-  // Global timeout: always respond within 12 seconds
-  const GLOBAL_TIMEOUT = 12000;
-  return await Promise.race<Response>([
-    (async () => {
+  try {
+    const body = await request.json();
+    // Defensive logging
+    // eslint-disable-next-line no-console
+    console.log('Satoshi API received body:', body);
+    const { input, mode } = body;
+    if (!input) {
+      return NextResponse.json({ error: 'Input is required' }, { status: 400 });
+    }
+    let persona: string;
+    if (!mode || mode === 'Multi-Modal' || mode === 'Multi-Modal (Auto-detect)') {
+      persona = routeToPersona(input);
+    } else {
+      persona = normalizePersonaMode(mode);
+    }
+    const personaPrompt = SATOSHI_PERSONAS[persona];
+    if (!personaPrompt) {
+      const bitcoinNarrative = 'Bitcoin is the signal. Even when data is missing, the narrative remains: decentralization, sound money, and antifragility. Stay sovereign.';
+      return NextResponse.json({
+        persona,
+        prompt: '',
+        processed: `${bitcoinNarrative}\n\n**Warning:** Unknown persona: ${persona}. Partial data is available.`,
+        dataSourceUsed: []
+      }, { status: 200 });
+    }
+
+    // --- Dynamic Data Source Selection ---
+    try {
+      const sources = detectDataSource(input);
+      const symbol = extractSymbol(input);
+      let marketData = '';
+      let webSearch = '';
+      let xSentiment = '';
+      let satoshiMarket = '';
+      let insiderSentimentData = '';
+      let earningsData = '';
+      let ipoData = '';
+      let companyNewsData = '';
+      let btcQuote = '';
+      let analystData = '';
+      let priceTargetData = '';
+      const used: string[] = [];
+      // Always fetch BTC price for benchmarking
       try {
-        const body = await request.json();
-        const { input, mode } = body;
-        if (!input) {
-          return NextResponse.json({ error: 'Input is required' }, { status: 400 });
+        if (sources.includes('coingecko')) {
+          const btc = await getMarketData(['BTC']);
+          btcQuote = `\nBTC Price Benchmark:\n${btc}`;
         }
-        let persona: string;
-        if (!mode || mode === 'Multi-Modal' || mode === 'Multi-Modal (Auto-detect)') {
-          persona = routeToPersona(input);
-        } else {
-          persona = mode;
-        }
-        const personaPrompt = SATOSHI_PERSONAS[persona];
-        if (!personaPrompt) {
-          return NextResponse.json({ error: `Unknown persona: ${persona}` }, { status: 400 });
-        }
-
-        // --- Dynamic Data Source Selection ---
-        try {
-          const sources = detectDataSource(input);
-          const symbol = extractSymbol(input);
-          let marketData = '';
-          let webSearch = '';
-          let xSentiment = '';
-          let satoshiMarket = '';
-          let insiderSentimentData = '';
-          let earningsData = '';
-          let ipoData = '';
-          let companyNewsData = '';
-          let btcQuote = '';
-          let analystData = '';
-          let priceTargetData = '';
-          const used: string[] = [];
-          // Always fetch BTC price for benchmarking
-          try {
-            if (sources.includes('coingecko')) {
-              const btc = await getMarketData(['BTC']);
-              btcQuote = `\nBTC Price Benchmark:\n${btc}`;
-            }
-          } catch {
-            btcQuote = '\n(Failed to fetch BTC price)';
-          }
-          // Only call APIs that are needed for the detected query type
-          // If only crypto price is needed, skip all Finnhub, news, and web search calls
-          const isSimpleCryptoQuery = sources.length === 1 && sources[0] === 'coingecko';
-          const isSimpleStockQuery = sources.length === 1 && sources[0] === 'finnhub';
-          const isNewsQuery = sources.includes('web') && sources.length === 1;
-          const apiCalls: Promise<unknown>[] = [];
-          if (!isSimpleCryptoQuery && !isSimpleStockQuery && !isNewsQuery) {
-            // Complex or multi-source query: call all detected sources as before
-            apiCalls.push(
-              sources.includes('coingecko') ? Promise.race([
-                getMarketData(['BTC', 'ETH', 'SOL']),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 3000))
-              ]) : Promise.resolve(null),
-              sources.includes('web') ? Promise.race([
-                enhancedWebSearch(input),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 3000))
-              ]) : Promise.resolve(null),
-              sources.includes('web') ? Promise.race([
-                getXSentiment(input),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('X sentiment timeout')), 3000))
-              ]) : Promise.resolve(null),
-              sources.includes('finnhub') ? Promise.race([
-                getFinnhubQuote(symbol),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub quote timeout')), 3000))
-              ]) : Promise.resolve(null),
-              sources.includes('finnhub-insider') ? Promise.race([
-                getInsiderSentiment(symbol),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub insider timeout')), 3000))
-              ]) : Promise.resolve(null),
-              sources.includes('finnhub-earnings') ? Promise.race([
-                getCompanyEarnings(symbol),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub earnings timeout')), 3000))
-              ]) : Promise.resolve(null),
-              sources.includes('finnhub-ipo') ? Promise.race([
-                getIPOCalendar(),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub IPO timeout')), 3000))
-              ]) : Promise.resolve(null),
-              sources.includes('finnhub-news') ? Promise.race([
-                getCompanyNews(symbol),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub news timeout')), 3000))
-              ]) : Promise.resolve(null),
-              sources.includes('finnhub-analyst') ? Promise.race([
-                getAnalystRecommendations(symbol),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub analyst timeout')), 3000))
-              ]) : Promise.resolve(null),
-              sources.includes('finnhub-price-target') ? Promise.race([
-                getPriceTarget(symbol),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub price target timeout')), 3000))
-              ]) : Promise.resolve(null),
-              Promise.race([
-                getMarketDataWithSatoshiContext(),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Satoshi market context timeout')), 3000))
-              ])
-            );
-          } else if (isSimpleCryptoQuery) {
-            // Only call CoinGecko
-            apiCalls.push(Promise.race([
-              getMarketData(['BTC', 'ETH', 'SOL']),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 3000))
-            ]));
-          } else if (isSimpleStockQuery) {
-            // Only call Finnhub quote
-            apiCalls.push(Promise.race([
-              getFinnhubQuote(symbol),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub quote timeout')), 3000))
-            ]));
-          } else if (isNewsQuery) {
-            // Only call web search
-            apiCalls.push(Promise.race([
-              enhancedWebSearch(input),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 3000))
-            ]));
-          }
-          // Timed API calls
-          const timings: { label: string; duration: number }[] = [];
-          const apiCallWrappers = apiCalls.map((call, idx) => {
-            const label = `API call ${idx}`;
-            const start = Date.now();
-            return call.then((result) => {
-              const end = Date.now();
-              timings.push({ label, duration: end - start });
-              logDuration(label, start, end);
-              return result;
-            });
-          });
-          const results = await Promise.allSettled(apiCallWrappers);
-          // Map results to context variables
-          let warning = '';
-          results.forEach((result, idx) => {
-            if (result.status === 'rejected') {
-              // eslint-disable-next-line no-console
-              console.error(`API call ${idx} failed:`, result.reason);
-              warning += `⚠️ API call ${idx} failed: ${result.reason} `;
-            }
-          });
-          if (results[0].status === 'fulfilled' && typeof results[0].value === 'string') {
-            marketData = results[0].value;
-            used.push('Coingecko');
-          } else if (sources.includes('coingecko')) {
-            warning += '⚠️ CoinGecko price fetch failed or timed out. ';
-          }
-          if (results[1].status === 'fulfilled' && typeof results[1].value === 'string') {
-            webSearch = results[1].value;
-            used.push('Web Search');
-          } else if (sources.includes('web')) {
-            warning += '⚠️ Web search failed or timed out. ';
-          }
-          if (results[2].status === 'fulfilled' && typeof results[2].value === 'string') {
-            xSentiment = results[2].value;
-          } else if (sources.includes('web')) {
-            warning += '⚠️ X sentiment fetch failed or timed out. ';
-          }
-          if (results[3].status === 'fulfilled' && results[3].value && typeof results[3].value === 'object' && 'c' in results[3].value) {
-            const q = results[3].value as { c?: number; o?: number; h?: number; l?: number };
-            marketData += `\n${symbol}: $${q.c} (Open: $${q.o}, High: $${q.h}, Low: $${q.l})`;
-            used.push('Finnhub');
-          } else if (sources.includes('finnhub')) {
-            warning += `⚠️ Finnhub quote for ${symbol} failed or timed out. `;
-          }
-          if (results[4].status === 'fulfilled' && results[4].value && typeof results[4].value === 'object' && 'data' in results[4].value) {
-            const sentiment = results[4].value as { data?: Array<{ mspr?: number; month?: string; year?: string }> };
-            if (sentiment && sentiment.data && sentiment.data.length > 0) {
-              const latest = sentiment.data[sentiment.data.length - 1];
-              insiderSentimentData = `\nInsider Sentiment for ${symbol}: MSPR=${latest.mspr}, Month=${latest.month}, Year=${latest.year}`;
-            } else {
-              insiderSentimentData = `\nNo recent insider sentiment data for ${symbol}.`;
-            }
-            used.push('Finnhub (Insider Sentiment)');
-          } else if (sources.includes('finnhub-insider')) {
-            warning += `⚠️ Finnhub insider sentiment for ${symbol} failed or timed out. `;
-          }
-          if (results[5].status === 'fulfilled' && Array.isArray(results[5].value)) {
-            const earnings = results[5].value;
-            if (earnings && earnings.length > 0) {
-              const latest = earnings[0];
-              earningsData = `\nEarnings for ${symbol}: EPS=${latest.epsActual}, Estimate=${latest.epsEstimate}, Date=${latest.date}`;
-            } else {
-              earningsData = `\nNo recent earnings data for ${symbol}.`;
-            }
-            used.push('Finnhub (Earnings)');
-          } else if (sources.includes('finnhub-earnings')) {
-            warning += `⚠️ Finnhub earnings for ${symbol} failed or timed out. `;
-          }
-          if (results[6].status === 'fulfilled' && results[6].value && typeof results[6].value === 'object' && 'ipoCalendar' in results[6].value) {
-            const ipo = results[6].value as { ipoCalendar?: Array<{ name?: string; symbol?: string; date?: string }> };
-            if (ipo && ipo.ipoCalendar && ipo.ipoCalendar.length > 0) {
-              const nextIpo = ipo.ipoCalendar[0];
-              ipoData = `\nUpcoming IPO: ${nextIpo.name} (${nextIpo.symbol}) on ${nextIpo.date}`;
-            } else {
-              ipoData = '\nNo upcoming IPOs found.';
-            }
-            used.push('Finnhub (IPO Calendar)');
-          } else if (sources.includes('finnhub-ipo')) {
-            warning += '⚠️ Finnhub IPO calendar failed or timed out. ';
-          }
-          if (results[7].status === 'fulfilled' && Array.isArray(results[7].value)) {
-            const news = results[7].value;
-            if (news && news.length > 0) {
-              const topNews = news.slice(0, 2).map((n: { headline: string; datetime: string }) => `- ${n.headline} (${n.datetime})`).join('\n');
-              companyNewsData = `\nLatest News for ${symbol}:\n${topNews}`;
-            } else {
-              companyNewsData = `\nNo recent news for ${symbol}.`;
-            }
-            used.push('Finnhub (Company News)');
-          } else if (sources.includes('finnhub-news')) {
-            warning += '⚠️ Finnhub company news failed or timed out. ';
-          }
-          if (results[8].status === 'fulfilled' && Array.isArray(results[8].value)) {
-            const analyst = results[8].value;
-            if (analyst && analyst.length > 0) {
-              const latest = analyst[0];
-              analystData = `\nAnalyst Recommendations for ${symbol}: Buy: ${latest.buy}, Hold: ${latest.hold}, Sell: ${latest.sell}, Strong Buy: ${latest.strongBuy}, Strong Sell: ${latest.strongSell}, Target Price: $${latest.targetPrice ?? 'N/A'}`;
-            } else {
-              analystData = `\nNo recent analyst recommendations for ${symbol}.`;
-            }
-            used.push('Finnhub (Analyst Recommendations)');
-          } else if (sources.includes('finnhub-analyst')) {
-            warning += '⚠️ Finnhub analyst recommendations failed or timed out. ';
-          }
-          if (results[9].status === 'fulfilled' && results[9].value && typeof results[9].value === 'object' && 'targetHighPrice' in results[9].value) {
-            const pt = results[9].value as { targetHighPrice?: number; targetLowPrice?: number; targetMeanPrice?: number; targetMedianPrice?: number };
-            if (pt && pt.targetHighPrice !== undefined) {
-              priceTargetData = `\nPrice Target for ${symbol}: High: $${pt.targetHighPrice}, Low: $${pt.targetLowPrice}, Mean: $${pt.targetMeanPrice}, Median: $${pt.targetMedianPrice}`;
-            } else {
-              priceTargetData = `\nNo price target data for ${symbol}.`;
-            }
-            used.push('Finnhub (Price Target)');
-          } else if (sources.includes('finnhub-price-target')) {
-            warning += '⚠️ Finnhub price target failed or timed out. ';
-          }
-          if (results[10].status === 'fulfilled' && typeof results[10].value === 'string') {
-            satoshiMarket = results[10].value;
-          } else {
-            warning += '⚠️ Satoshi market context fetch failed or timed out. ';
-          }
-
-          // Compose context block
-          const realtimeContext = `\n# Real-Time Market Data\n${btcQuote}${marketData}${insiderSentimentData}${earningsData}${ipoData}${companyNewsData}${analystData}${priceTargetData}\n\n# Latest Web Search\n${webSearch}\n\n# X Sentiment\n${xSentiment}\n\n# Satoshi Market Context\n${satoshiMarket}\n`;
-          // Prepend context to prompt
-          const fullPrompt = `${realtimeContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
-
-          // Helper: get Jan 1 price for BTC, ETH, NVDA (hardcoded for now, can be improved with historical API)
-          const JAN1_PRICES = {
-            BTC: 45000, // Replace with actual Jan 1 price
-            ETH: 2300,  // Replace with actual Jan 1 price
-            NVDA: 480   // Replace with actual Jan 1 price
-          };
-
-          if (isPortfolioSimQuery(input)) {
-            // Fetch current prices with timeout and error handling
-            let cgDataRaw = '';
-            let cgWarning = '';
-            try {
-              cgDataRaw = await Promise.race([
-                getMarketData(['BTC', 'ETH']),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 5000))
-              ]) as string;
-            } catch {
-              cgWarning = '⚠️ CoinGecko price fetch failed or timed out.';
-              cgDataRaw = '';
-            }
-            // Parse prices from cgDataRaw (very basic extraction)
-            const btcMatch = cgDataRaw.match(/BTC:\n💰 Price: \$([\d,\.]+)/);
-            const ethMatch = cgDataRaw.match(/ETH:\n💰 Price: \$([\d,\.]+)/);
-            const btcNow = btcMatch ? parseFloat(btcMatch[1].replace(/,/g, '')) : undefined;
-            const ethNow = ethMatch ? parseFloat(ethMatch[1].replace(/,/g, '')) : undefined;
-            // Finnhub for NVDA with timeout
-            let nvdaNow: number | undefined = undefined;
-            let nvdaWarning = '';
-            try {
-              const nvdaQuote = await Promise.race([
-                getFinnhubQuote('NVDA'),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub timeout')), 5000))
-              ]) as { c?: number; o?: number; h?: number; l?: number };
-              if (nvdaQuote && typeof nvdaQuote === 'object' && 'c' in nvdaQuote) {
-                nvdaNow = nvdaQuote.c;
-              }
-            } catch {
-              nvdaWarning = '⚠️ NVDA price fetch failed or timed out.';
-            }
-            // Use hardcoded Jan 1 prices
-            const btcJan = JAN1_PRICES.BTC;
-            const ethJan = JAN1_PRICES.ETH;
-            const nvdaJan = JAN1_PRICES.NVDA;
-            // Calculate YTD returns
-            const btcYtd = btcNow && btcJan ? ((btcNow - btcJan) / btcJan) : undefined;
-            const ethYtd = ethNow && ethJan ? ((ethNow - ethJan) / ethJan) : undefined;
-            const nvdaYtd = nvdaNow && nvdaJan ? ((nvdaNow - nvdaJan) / nvdaJan) : undefined;
-            // Portfolio math (assume $100k)
-            const initial = 100000;
-            const btcAlloc = 0.5, nvdaAlloc = 0.25, ethAlloc = 0.25;
-            const btcFinal = btcYtd !== undefined ? initial * btcAlloc * (1 + btcYtd) : undefined;
-            const nvdaFinal = nvdaYtd !== undefined ? initial * nvdaAlloc * (1 + nvdaYtd) : undefined;
-            const ethFinal = ethYtd !== undefined ? initial * ethAlloc * (1 + ethYtd) : undefined;
-            const totalFinal = [btcFinal, nvdaFinal, ethFinal].every(x => x !== undefined)
-              ? (btcFinal! + nvdaFinal! + ethFinal!) : undefined;
-            const portYtd = totalFinal !== undefined ? (totalFinal - initial) / initial : undefined;
-            // Format answer
-            let answer = '### Portfolio Simulation: 50% BTC, 25% NVDA, 25% ETH (YTD)\n\n';
-            answer += '#### 1. Asset Performance\n';
-            answer += `- BTC: Jan 1: $${btcJan}, Now: $${btcNow ?? 'N/A'} → YTD: ${btcYtd !== undefined ? (btcYtd * 100).toFixed(2) + '%' : 'N/A'}\n`;
-            answer += `- NVDA: Jan 1: $${nvdaJan}, Now: $${nvdaNow ?? 'N/A'} → YTD: ${nvdaYtd !== undefined ? (nvdaYtd * 100).toFixed(2) + '%' : 'N/A'}\n`;
-            answer += `- ETH: Jan 1: $${ethJan}, Now: $${ethNow ?? 'N/A'} → YTD: ${ethYtd !== undefined ? (ethYtd * 100).toFixed(2) + '%' : 'N/A'}\n\n`;
-            answer += '#### 2. Portfolio Calculation (Initial $100,000)\n';
-            answer += `- BTC: $50,000 × (1 + YTD) = $${btcFinal !== undefined ? btcFinal.toFixed(2) : 'N/A'}\n`;
-            answer += `- NVDA: $25,000 × (1 + YTD) = $${nvdaFinal !== undefined ? nvdaFinal.toFixed(2) : 'N/A'}\n`;
-            answer += `- ETH: $25,000 × (1 + YTD) = $${ethFinal !== undefined ? ethFinal.toFixed(2) : 'N/A'}\n`;
-            answer += `- **Total Value:** $${totalFinal !== undefined ? totalFinal.toFixed(2) : 'N/A'}\n`;
-            answer += `- **Portfolio YTD Return:** ${portYtd !== undefined ? (portYtd * 100).toFixed(2) + '%' : 'N/A'}\n\n`;
-            answer += '#### 3. Risk & Context\n- Crypto allocation increases volatility.\n- Past performance ≠ future results.\n\n';
-            if (cgWarning || nvdaWarning) {
-              answer += `**Warning:** ${cgWarning} ${nvdaWarning}\n`;
-            }
-            answer += '**Summary:** This simulated portfolio returned ' + (portYtd !== undefined ? (portYtd * 100).toFixed(2) + '%' : 'N/A') + ' YTD.\n';
-            return NextResponse.json({ persona, prompt: fullPrompt, processed: answer, dataSourceUsed: used });
-          }
-
-          if (isEarningsComparisonQuery(input)) {
-            // Fetch latest NVDA earnings
-            let earnings = [];
-            let earningsWarning = '';
-            try {
-              earnings = await getCompanyEarnings('NVDA');
-            } catch {
-              earningsWarning = '⚠️ Failed to fetch NVDA earnings.';
-            }
-            const latestEarnings = earnings && earnings.length > 0 ? earnings[0] : undefined;
-            // Fetch current prices for NVDA and BTC
-            let cgDataRaw = '';
-            let cgWarning = '';
-            try {
-              cgDataRaw = await Promise.race([
-                getMarketData(['BTC']),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 5000))
-              ]) as string;
-            } catch {
-              cgWarning = '⚠️ CoinGecko price fetch failed or timed out.';
-              cgDataRaw = '';
-            }
-            // Parse BTC price
-            const btcMatch = cgDataRaw.match(/BTC:\n💰 Price: \$([\d,\.]+)/);
-            const btcNow = btcMatch ? parseFloat(btcMatch[1].replace(/,/g, '')) : undefined;
-            // Finnhub for NVDA price
-            let nvdaNow: number | undefined = undefined;
-            let nvdaWarning = '';
-            try {
-              const nvdaQuote = await Promise.race([
-                getFinnhubQuote('NVDA'),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub timeout')), 5000))
-              ]) as { c?: number };
-              if (nvdaQuote && typeof nvdaQuote === 'object' && 'c' in nvdaQuote) {
-                nvdaNow = nvdaQuote.c;
-              }
-            } catch {
-              nvdaWarning = '⚠️ NVDA price fetch failed or timed out.';
-            }
-            // Use hardcoded Jan 1 prices
-            const btcJan = JAN1_PRICES.BTC;
-            const nvdaJan = JAN1_PRICES.NVDA;
-            // Calculate YTD returns
-            const btcYtd = btcNow && btcJan ? ((btcNow - btcJan) / btcJan) : undefined;
-            const nvdaYtd = nvdaNow && nvdaJan ? ((nvdaNow - nvdaJan) / nvdaJan) : undefined;
-            // Format answer
-            let answer = '### Latest NVDA Earnings vs BTC Performance\n\n';
-            answer += '#### NVDA Latest Earnings\n';
-            if (latestEarnings) {
-              answer += `- Date: ${latestEarnings.date || 'N/A'}\n`;
-              answer += `- EPS: $${latestEarnings.epsActual ?? 'N/A'} (Estimate: $${latestEarnings.epsEstimate ?? 'N/A'})\n`;
-              answer += `- Revenue: $${latestEarnings.revenueActual ?? 'N/A'} (Estimate: $${latestEarnings.revenueEstimate ?? 'N/A'})\n`;
-              answer += `- Surprise: ${latestEarnings.epsSurprise !== undefined ? latestEarnings.epsSurprise + '%' : 'N/A'}\n`;
-            } else {
-              answer += 'Earnings data not available.\n';
-            }
-            answer += '\n#### YTD Performance (2024)\n';
-            answer += `- NVDA: Jan 1: $${nvdaJan}, Now: $${nvdaNow ?? 'N/A'} → YTD: ${nvdaYtd !== undefined ? (nvdaYtd * 100).toFixed(2) + '%' : 'N/A'}\n`;
-            answer += `- BTC: Jan 1: $${btcJan}, Now: $${btcNow ?? 'N/A'} → YTD: ${btcYtd !== undefined ? (btcYtd * 100).toFixed(2) + '%' : 'N/A'}\n\n`;
-            if (earningsWarning || cgWarning || nvdaWarning) {
-              answer += `**Warning:** ${earningsWarning} ${cgWarning} ${nvdaWarning}\n`;
-            }
-            answer += '**Summary:** NVDA earnings: ';
-            if (latestEarnings) {
-              answer += `EPS $${latestEarnings.epsActual ?? 'N/A'} (est. $${latestEarnings.epsEstimate ?? 'N/A'}), Revenue $${latestEarnings.revenueActual ?? 'N/A'} (est. $${latestEarnings.revenueEstimate ?? 'N/A'}). `;
-            }
-            answer += `YTD: NVDA ${nvdaYtd !== undefined ? (nvdaYtd * 100).toFixed(2) + '%' : 'N/A'}, BTC ${btcYtd !== undefined ? (btcYtd * 100).toFixed(2) + '%' : 'N/A'}.`;
-            return NextResponse.json({ persona, prompt: fullPrompt, processed: answer, dataSourceUsed: used });
-          }
-
-          // Special case: analyst recommendations and compare COIN to BTC
-          const isAnalystCompareQuery = /analyst recommendations.*compare.*coin.*btc|compare.*coin.*btc.*analyst recommendations/i.test(input);
-          if (isAnalystCompareQuery) {
-            // Fetch only Finnhub analyst recommendations and BTC price
-            let analystData = '';
-            let btcQuote = '';
-            try {
-              const analyst = await getAnalystRecommendations('COIN');
-              if (analyst && analyst.length > 0) {
-                const latest = analyst[0];
-                analystData = `\nAnalyst Recommendations for COIN: Buy: ${latest.buy}, Hold: ${latest.hold}, Sell: ${latest.sell}, Strong Buy: ${latest.strongBuy}, Strong Sell: ${latest.strongSell}, Target Price: $${latest.targetPrice ?? 'N/A'}`;
-              } else {
-                analystData = `\nNo recent analyst recommendations for COIN.`;
-              }
-            } catch {
-              analystData = `\n(Failed to fetch analyst recommendations for COIN from Finnhub)`;
-            }
-            try {
-              const btc = await getMarketData(['BTC']);
-              btcQuote = `\nBTC Price Benchmark:\n${btc}`;
-            } catch {
-              btcQuote = '\n(Failed to fetch BTC price)';
-            }
-            const minimalContext = `\n# Analyst Recommendations\n${analystData}\n\n# BTC Price\n${btcQuote}`;
-            const fullPrompt = `${minimalContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
-            const llmStart = Date.now();
-            let fallbackLLMResponse;
-            let llmTimedOut = false;
-            try {
-              fallbackLLMResponse = await Promise.race([
-                Grok4Service.generateViralResponse(input, fullPrompt),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('LLM timeout')), LLM_TIMEOUT))
-              ]);
-            } catch {
-              llmTimedOut = true;
-            }
-            const llmEnd = Date.now();
-            logDuration('LLM response', llmStart, llmEnd);
-            let fallbackProcessedString: string;
-            if (llmTimedOut) {
-              fallbackProcessedString = '**Warning:** LLM timed out after 15 seconds. Partial data shown.';
-            } else {
-              const fallbackProcessed = postProcessLLMOutput(persona, String(fallbackLLMResponse)) as string | { content?: string; text?: string; [key: string]: unknown };
-              fallbackProcessedString = typeof fallbackProcessed === 'string'
-                ? fallbackProcessed
-                : (fallbackProcessed.content || fallbackProcessed.text) ?? JSON.stringify(fallbackProcessed, null, 2);
-            }
-            return NextResponse.json({ persona, prompt: fullPrompt, processed: fallbackProcessedString, dataSourceUsed: ['Finnhub', 'CoinGecko'] });
-          }
-
-          // Fallback: always answer with whatever data is available
-          const fallbackPrompt = `${realtimeContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
-          const llmStart = Date.now();
-          let fallbackLLMResponse;
-          let llmTimedOut = false;
-          try {
-            fallbackLLMResponse = await Promise.race([
-              Grok4Service.generateViralResponse(input, fallbackPrompt),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('LLM timeout')), LLM_TIMEOUT))
-            ]);
-          } catch {
-            llmTimedOut = true;
-          }
-          const llmEnd = Date.now();
-          logDuration('LLM response', llmStart, llmEnd);
-          timings.push({ label: 'LLM response', duration: llmEnd - llmStart });
-          // Print slowest step
-          const slowest = timings.reduce((a, b) => (a.duration > b.duration ? a : b), { label: '', duration: 0 });
-          // eslint-disable-next-line no-console
-          console.log('Slowest step:', slowest.label, slowest.duration, 'ms');
-          let fallbackProcessedString: string;
-          if (llmTimedOut) {
-            fallbackProcessedString = `**Warning:** LLM timed out after 15 seconds. Partial data shown.\n\n*Suggestions:*\n- Try a more focused question.\n- Wait a moment and try again if the system is busy.`;
-          } else {
-            const fallbackProcessed = postProcessLLMOutput(persona, String(fallbackLLMResponse)) as string | { content?: string; text?: string; [key: string]: unknown };
-            fallbackProcessedString = typeof fallbackProcessed === 'string'
-              ? fallbackProcessed
-              : (fallbackProcessed.content || fallbackProcessed.text) ?? JSON.stringify(fallbackProcessed, null, 2);
-          }
-          if (warning) {
-            fallbackProcessedString = `**Warning:** ${warning}\n\n${fallbackProcessedString}`;
-          }
-          return NextResponse.json({ persona, prompt: fallbackPrompt, processed: fallbackProcessedString, dataSourceUsed: used });
-        } catch (apiError) {
-          // If any API call fails unexpectedly, return a 200 with a warning and partial data
-          let warningMsg: string;
-          if (typeof apiError === 'string') warningMsg = apiError;
-          else if (apiError instanceof Error) warningMsg = apiError.message;
-          else warningMsg = String(apiError);
-          const suggestions = `\n\n*Suggestions:*\n- Try your request again in a few moments.\n- Rephrase your question for a more focused answer.\n- If this issue persists, please let us know!`;
-          return NextResponse.json({
-            persona,
-            prompt: '',
-            processed: `**Warning:** An error occurred while fetching data: ${warningMsg}\n\nPartial or no data is available at this time.${suggestions}`,
-            dataSourceUsed: []
-          }, { status: 200 });
-        }
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error('Satoshi API error:', e);
-        // Instead of 500, return 200 with a warning and partial data
-        let warningMsg: string;
-        if (typeof e === 'string') warningMsg = e;
-        else if (e instanceof Error) warningMsg = e.message;
-        else warningMsg = String(e);
-        const suggestions = `\n\n*Suggestions:*\n- Try your request again in a few moments.\n- Rephrase your question for a more focused answer.\n- If this issue persists, please let us know!`;
-        return NextResponse.json({
-          persona: 'unknown',
-          prompt: '',
-          processed: `**Warning:** An unexpected error occurred: ${warningMsg}\n\nPartial or no data is available at this time.${suggestions}`,
-          dataSourceUsed: []
-        }, { status: 200 });
+      } catch {
+        btcQuote = '\n(Failed to fetch BTC price)';
       }
-    })(),
-    new Promise<Response>(resolve => setTimeout(() => resolve(NextResponse.json({ error: 'Timeout: Satoshi API did not respond in time.' }, { status: 504 })), GLOBAL_TIMEOUT))
-  ]);
+      // Only call APIs that are needed for the detected query type
+      // If only crypto price is needed, skip all Finnhub, news, and web search calls
+      const isSimpleCryptoQuery = sources.length === 1 && sources[0] === 'coingecko';
+      const isSimpleStockQuery = sources.length === 1 && sources[0] === 'finnhub';
+      const isNewsQuery = sources.includes('web') && sources.length === 1;
+      const apiCalls: Promise<unknown>[] = [];
+      if (!isSimpleCryptoQuery && !isSimpleStockQuery && !isNewsQuery) {
+        // Complex or multi-source query: call all detected sources as before
+        apiCalls.push(
+          sources.includes('coingecko') ? Promise.race([
+            getMarketData(['BTC', 'ETH', 'SOL']),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 3000))
+          ]) : Promise.resolve(null),
+          sources.includes('web') ? Promise.race([
+            enhancedWebSearch(input),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 3000))
+          ]) : Promise.resolve(null),
+          sources.includes('web') ? Promise.race([
+            getXSentiment(input),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('X sentiment timeout')), 3000))
+          ]) : Promise.resolve(null),
+          sources.includes('finnhub') ? Promise.race([
+            getFinnhubQuote(symbol),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub quote timeout')), 3000))
+          ]) : Promise.resolve(null),
+          sources.includes('finnhub-insider') ? Promise.race([
+            getInsiderSentiment(symbol),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub insider timeout')), 3000))
+          ]) : Promise.resolve(null),
+          sources.includes('finnhub-earnings') ? Promise.race([
+            getCompanyEarnings(symbol),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub earnings timeout')), 3000))
+          ]) : Promise.resolve(null),
+          sources.includes('finnhub-ipo') ? Promise.race([
+            getIPOCalendar(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub IPO timeout')), 3000))
+          ]) : Promise.resolve(null),
+          sources.includes('finnhub-news') ? Promise.race([
+            getCompanyNews(symbol),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub news timeout')), 3000))
+          ]) : Promise.resolve(null),
+          sources.includes('finnhub-analyst') ? Promise.race([
+            getAnalystRecommendations(symbol),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub analyst timeout')), 3000))
+          ]) : Promise.resolve(null),
+          sources.includes('finnhub-price-target') ? Promise.race([
+            getPriceTarget(symbol),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub price target timeout')), 3000))
+          ]) : Promise.resolve(null),
+          Promise.race([
+            getMarketDataWithSatoshiContext(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Satoshi market context timeout')), 3000))
+          ])
+        );
+      } else if (isSimpleCryptoQuery) {
+        // Only call CoinGecko
+        apiCalls.push(Promise.race([
+          getMarketData(['BTC', 'ETH', 'SOL']),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 3000))
+        ]));
+      } else if (isSimpleStockQuery) {
+        // Only call Finnhub quote
+        apiCalls.push(Promise.race([
+          getFinnhubQuote(symbol),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub quote timeout')), 3000))
+        ]));
+      } else if (isNewsQuery) {
+        // Only call web search
+        apiCalls.push(Promise.race([
+          enhancedWebSearch(input),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 3000))
+        ]));
+      }
+      // Timed API calls
+      const timings: { label: string; duration: number }[] = [];
+      const apiCallWrappers = apiCalls.map((call, idx) => {
+        const label = `API call ${idx}`;
+        const start = Date.now();
+        return call.then((result) => {
+          const end = Date.now();
+          timings.push({ label, duration: end - start });
+          logDuration(label, start, end);
+          return result;
+        });
+      });
+      const results = await Promise.allSettled(apiCallWrappers);
+      // Map results to context variables
+      let warning = '';
+      results.forEach((result, idx) => {
+        if (result.status === 'rejected') {
+          // eslint-disable-next-line no-console
+          console.error(`API call ${idx} failed:`, result.reason);
+          warning += `⚠️ API call ${idx} failed: ${result.reason} `;
+        }
+      });
+      if (results[0].status === 'fulfilled' && typeof results[0].value === 'string') {
+        marketData = results[0].value;
+        used.push('Coingecko');
+      } else if (sources.includes('coingecko')) {
+        warning += '⚠️ CoinGecko price fetch failed or timed out. ';
+      }
+      if (results[1].status === 'fulfilled' && typeof results[1].value === 'string') {
+        webSearch = results[1].value;
+        used.push('Web Search');
+      } else if (sources.includes('web')) {
+        warning += '⚠️ Web search failed or timed out. ';
+      }
+      if (results[2].status === 'fulfilled' && typeof results[2].value === 'string') {
+        xSentiment = results[2].value;
+      } else if (sources.includes('web')) {
+        warning += '⚠️ X sentiment fetch failed or timed out. ';
+      }
+      if (results[3].status === 'fulfilled' && results[3].value && typeof results[3].value === 'object' && 'c' in results[3].value) {
+        const q = results[3].value as { c?: number; o?: number; h?: number; l?: number };
+        marketData += `\n${symbol}: $${q.c} (Open: $${q.o}, High: $${q.h}, Low: $${q.l})`;
+        used.push('Finnhub');
+      } else if (sources.includes('finnhub')) {
+        warning += `⚠️ Finnhub quote for ${symbol} failed or timed out. `;
+      }
+      if (results[4].status === 'fulfilled' && results[4].value && typeof results[4].value === 'object' && 'data' in results[4].value) {
+        const sentiment = results[4].value as { data?: Array<{ mspr?: number; month?: string; year?: string }> };
+        if (sentiment && sentiment.data && sentiment.data.length > 0) {
+          const latest = sentiment.data[sentiment.data.length - 1];
+          insiderSentimentData = `\nInsider Sentiment for ${symbol}: MSPR=${latest.mspr}, Month=${latest.month}, Year=${latest.year}`;
+        } else {
+          insiderSentimentData = `\nNo recent insider sentiment data for ${symbol}.`;
+        }
+        used.push('Finnhub (Insider Sentiment)');
+      } else if (sources.includes('finnhub-insider')) {
+        warning += `⚠️ Finnhub insider sentiment for ${symbol} failed or timed out. `;
+      }
+      if (results[5].status === 'fulfilled' && Array.isArray(results[5].value)) {
+        const earnings = results[5].value;
+        if (earnings && earnings.length > 0) {
+          const latest = earnings[0];
+          earningsData = `\nEarnings for ${symbol}: EPS=${latest.epsActual}, Estimate=${latest.epsEstimate}, Date=${latest.date}`;
+        } else {
+          earningsData = `\nNo recent earnings data for ${symbol}.`;
+        }
+        used.push('Finnhub (Earnings)');
+      } else if (sources.includes('finnhub-earnings')) {
+        warning += `⚠️ Finnhub earnings for ${symbol} failed or timed out. `;
+      }
+      if (results[6].status === 'fulfilled' && results[6].value && typeof results[6].value === 'object' && 'ipoCalendar' in results[6].value) {
+        const ipo = results[6].value as { ipoCalendar?: Array<{ name?: string; symbol?: string; date?: string }> };
+        if (ipo && ipo.ipoCalendar && ipo.ipoCalendar.length > 0) {
+          const nextIpo = ipo.ipoCalendar[0];
+          ipoData = `\nUpcoming IPO: ${nextIpo.name} (${nextIpo.symbol}) on ${nextIpo.date}`;
+        } else {
+          ipoData = '\nNo upcoming IPOs found.';
+        }
+        used.push('Finnhub (IPO Calendar)');
+      } else if (sources.includes('finnhub-ipo')) {
+        warning += '⚠️ Finnhub IPO calendar failed or timed out. ';
+      }
+      if (results[7].status === 'fulfilled' && Array.isArray(results[7].value)) {
+        const news = results[7].value;
+        if (news && news.length > 0) {
+          const topNews = news.slice(0, 2).map((n: { headline: string; datetime: string }) => `- ${n.headline} (${n.datetime})`).join('\n');
+          companyNewsData = `\nLatest News for ${symbol}:\n${topNews}`;
+        } else {
+          companyNewsData = `\nNo recent news for ${symbol}.`;
+        }
+        used.push('Finnhub (Company News)');
+      } else if (sources.includes('finnhub-news')) {
+        warning += '⚠️ Finnhub company news failed or timed out. ';
+      }
+      if (results[8].status === 'fulfilled' && Array.isArray(results[8].value)) {
+        const analyst = results[8].value;
+        if (analyst && analyst.length > 0) {
+          const latest = analyst[0];
+          analystData = `\nAnalyst Recommendations for ${symbol}: Buy: ${latest.buy}, Hold: ${latest.hold}, Sell: ${latest.sell}, Strong Buy: ${latest.strongBuy}, Strong Sell: ${latest.strongSell}, Target Price: $${latest.targetPrice ?? 'N/A'}`;
+        } else {
+          analystData = `\nNo recent analyst recommendations for ${symbol}.`;
+        }
+        used.push('Finnhub (Analyst Recommendations)');
+      } else if (sources.includes('finnhub-analyst')) {
+        warning += '⚠️ Finnhub analyst recommendations failed or timed out. ';
+      }
+      if (results[9].status === 'fulfilled' && results[9].value && typeof results[9].value === 'object' && 'targetHighPrice' in results[9].value) {
+        const pt = results[9].value as { targetHighPrice?: number; targetLowPrice?: number; targetMeanPrice?: number; targetMedianPrice?: number };
+        if (pt && pt.targetHighPrice !== undefined) {
+          priceTargetData = `\nPrice Target for ${symbol}: High: $${pt.targetHighPrice}, Low: $${pt.targetLowPrice}, Mean: $${pt.targetMeanPrice}, Median: $${pt.targetMedianPrice}`;
+        } else {
+          priceTargetData = `\nNo price target data for ${symbol}.`;
+        }
+        used.push('Finnhub (Price Target)');
+      } else if (sources.includes('finnhub-price-target')) {
+        warning += '⚠️ Finnhub price target failed or timed out. ';
+      }
+      if (results[10].status === 'fulfilled' && typeof results[10].value === 'string') {
+        satoshiMarket = results[10].value;
+      } else {
+        warning += '⚠️ Satoshi market context fetch failed or timed out. ';
+      }
+
+      // Compose context block
+      const realtimeContext = `\n# Real-Time Market Data\n${btcQuote}${marketData}${insiderSentimentData}${earningsData}${ipoData}${companyNewsData}${analystData}${priceTargetData}\n\n# Latest Web Search\n${webSearch}\n\n# X Sentiment\n${xSentiment}\n\n# Satoshi Market Context\n${satoshiMarket}\n`;
+      // Prepend context to prompt
+      const fullPrompt = `${realtimeContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
+
+      // Helper: get Jan 1 price for BTC, ETH, NVDA (hardcoded for now, can be improved with historical API)
+      const JAN1_PRICES = {
+        BTC: 45000, // Replace with actual Jan 1 price
+        ETH: 2300,  // Replace with actual Jan 1 price
+        NVDA: 480   // Replace with actual Jan 1 price
+      };
+
+      if (isPortfolioSimQuery(input)) {
+        // Fetch current prices with timeout and error handling
+        let cgDataRaw = '';
+        let cgWarning = '';
+        try {
+          cgDataRaw = await Promise.race([
+            getMarketData(['BTC', 'ETH']),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 5000))
+          ]) as string;
+        } catch {
+          cgWarning = '⚠️ CoinGecko price fetch failed or timed out.';
+          cgDataRaw = '';
+        }
+        // Parse prices from cgDataRaw (very basic extraction)
+        const btcMatch = cgDataRaw.match(/BTC:\n💰 Price: \$([\d,\.]+)/);
+        const ethMatch = cgDataRaw.match(/ETH:\n💰 Price: \$([\d,\.]+)/);
+        const btcNow = btcMatch ? parseFloat(btcMatch[1].replace(/,/g, '')) : undefined;
+        const ethNow = ethMatch ? parseFloat(ethMatch[1].replace(/,/g, '')) : undefined;
+        // Finnhub for NVDA with timeout
+        let nvdaNow: number | undefined = undefined;
+        let nvdaWarning = '';
+        try {
+          const nvdaQuote = await Promise.race([
+            getFinnhubQuote('NVDA'),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub timeout')), 5000))
+          ]) as { c?: number; o?: number; h?: number; l?: number };
+          if (nvdaQuote && typeof nvdaQuote === 'object' && 'c' in nvdaQuote) {
+            nvdaNow = nvdaQuote.c;
+          }
+        } catch {
+          nvdaWarning = '⚠️ NVDA price fetch failed or timed out.';
+        }
+        // Use hardcoded Jan 1 prices
+        const btcJan = JAN1_PRICES.BTC;
+        const ethJan = JAN1_PRICES.ETH;
+        const nvdaJan = JAN1_PRICES.NVDA;
+        // Calculate YTD returns
+        const btcYtd = btcNow && btcJan ? ((btcNow - btcJan) / btcJan) : undefined;
+        const ethYtd = ethNow && ethJan ? ((ethNow - ethJan) / ethJan) : undefined;
+        const nvdaYtd = nvdaNow && nvdaJan ? ((nvdaNow - nvdaJan) / nvdaJan) : undefined;
+        // Portfolio math (assume $100k)
+        const initial = 100000;
+        const btcAlloc = 0.5, nvdaAlloc = 0.25, ethAlloc = 0.25;
+        const btcFinal = btcYtd !== undefined ? initial * btcAlloc * (1 + btcYtd) : undefined;
+        const nvdaFinal = nvdaYtd !== undefined ? initial * nvdaAlloc * (1 + nvdaYtd) : undefined;
+        const ethFinal = ethYtd !== undefined ? initial * ethAlloc * (1 + ethYtd) : undefined;
+        const totalFinal = [btcFinal, nvdaFinal, ethFinal].every(x => x !== undefined)
+          ? (btcFinal! + nvdaFinal! + ethFinal!) : undefined;
+        const portYtd = totalFinal !== undefined ? (totalFinal - initial) / initial : undefined;
+        // Format answer
+        let answer = '### Portfolio Simulation: 50% BTC, 25% NVDA, 25% ETH (YTD)\n\n';
+        answer += '#### 1. Asset Performance\n';
+        answer += `- BTC: Jan 1: $${btcJan}, Now: $${btcNow ?? 'N/A'} → YTD: ${btcYtd !== undefined ? (btcYtd * 100).toFixed(2) + '%' : 'N/A'}\n`;
+        answer += `- NVDA: Jan 1: $${nvdaJan}, Now: $${nvdaNow ?? 'N/A'} → YTD: ${nvdaYtd !== undefined ? (nvdaYtd * 100).toFixed(2) + '%' : 'N/A'}\n`;
+        answer += `- ETH: Jan 1: $${ethJan}, Now: $${ethNow ?? 'N/A'} → YTD: ${ethYtd !== undefined ? (ethYtd * 100).toFixed(2) + '%' : 'N/A'}\n\n`;
+        answer += '#### 2. Portfolio Calculation (Initial $100,000)\n';
+        answer += `- BTC: $50,000 × (1 + YTD) = $${btcFinal !== undefined ? btcFinal.toFixed(2) : 'N/A'}\n`;
+        answer += `- NVDA: $25,000 × (1 + YTD) = $${nvdaFinal !== undefined ? nvdaFinal.toFixed(2) : 'N/A'}\n`;
+        answer += `- ETH: $25,000 × (1 + YTD) = $${ethFinal !== undefined ? ethFinal.toFixed(2) : 'N/A'}\n`;
+        answer += `- **Total Value:** $${totalFinal !== undefined ? totalFinal.toFixed(2) : 'N/A'}\n`;
+        answer += `- **Portfolio YTD Return:** ${portYtd !== undefined ? (portYtd * 100).toFixed(2) + '%' : 'N/A'}\n\n`;
+        answer += '#### 3. Risk & Context\n- Crypto allocation increases volatility.\n- Past performance ≠ future results.\n\n';
+        if (cgWarning || nvdaWarning) {
+          answer += `**Warning:** ${cgWarning} ${nvdaWarning}\n`;
+        }
+        answer += '**Summary:** This simulated portfolio returned ' + (portYtd !== undefined ? (portYtd * 100).toFixed(2) + '%' : 'N/A') + ' YTD.\n';
+        return NextResponse.json({ persona, prompt: fullPrompt, processed: answer, dataSourceUsed: used });
+      }
+
+      if (isEarningsComparisonQuery(input)) {
+        // Fetch latest NVDA earnings
+        let earnings = [];
+        let earningsWarning = '';
+        try {
+          earnings = await getCompanyEarnings('NVDA');
+        } catch {
+          earningsWarning = '⚠️ Failed to fetch NVDA earnings.';
+        }
+        const latestEarnings = earnings && earnings.length > 0 ? earnings[0] : undefined;
+        // Fetch current prices for NVDA and BTC
+        let cgDataRaw = '';
+        let cgWarning = '';
+        try {
+          cgDataRaw = await Promise.race([
+            getMarketData(['BTC']),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 5000))
+          ]) as string;
+        } catch {
+          cgWarning = '⚠️ CoinGecko price fetch failed or timed out.';
+          cgDataRaw = '';
+        }
+        // Parse BTC price
+        const btcMatch = cgDataRaw.match(/BTC:\n💰 Price: \$([\d,\.]+)/);
+        const btcNow = btcMatch ? parseFloat(btcMatch[1].replace(/,/g, '')) : undefined;
+        // Finnhub for NVDA price
+        let nvdaNow: number | undefined = undefined;
+        let nvdaWarning = '';
+        try {
+          const nvdaQuote = await Promise.race([
+            getFinnhubQuote('NVDA'),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub timeout')), 5000))
+          ]) as { c?: number };
+          if (nvdaQuote && typeof nvdaQuote === 'object' && 'c' in nvdaQuote) {
+            nvdaNow = nvdaQuote.c;
+          }
+        } catch {
+          nvdaWarning = '⚠️ NVDA price fetch failed or timed out.';
+        }
+        // Use hardcoded Jan 1 prices
+        const btcJan = JAN1_PRICES.BTC;
+        const nvdaJan = JAN1_PRICES.NVDA;
+        // Calculate YTD returns
+        const btcYtd = btcNow && btcJan ? ((btcNow - btcJan) / btcJan) : undefined;
+        const nvdaYtd = nvdaNow && nvdaJan ? ((nvdaNow - nvdaJan) / nvdaJan) : undefined;
+        // Format answer
+        let answer = '### Latest NVDA Earnings vs BTC Performance\n\n';
+        answer += '#### NVDA Latest Earnings\n';
+        if (latestEarnings) {
+          answer += `- Date: ${latestEarnings.date || 'N/A'}\n`;
+          answer += `- EPS: $${latestEarnings.epsActual ?? 'N/A'} (Estimate: $${latestEarnings.epsEstimate ?? 'N/A'})\n`;
+          answer += `- Revenue: $${latestEarnings.revenueActual ?? 'N/A'} (Estimate: $${latestEarnings.revenueEstimate ?? 'N/A'})\n`;
+          answer += `- Surprise: ${latestEarnings.epsSurprise !== undefined ? latestEarnings.epsSurprise + '%' : 'N/A'}\n`;
+        } else {
+          answer += 'Earnings data not available.\n';
+        }
+        answer += '\n#### YTD Performance (2024)\n';
+        answer += `- NVDA: Jan 1: $${nvdaJan}, Now: $${nvdaNow ?? 'N/A'} → YTD: ${nvdaYtd !== undefined ? (nvdaYtd * 100).toFixed(2) + '%' : 'N/A'}\n`;
+        answer += `- BTC: Jan 1: $${btcJan}, Now: $${btcNow ?? 'N/A'} → YTD: ${btcYtd !== undefined ? (btcYtd * 100).toFixed(2) + '%' : 'N/A'}\n\n`;
+        if (earningsWarning || cgWarning || nvdaWarning) {
+          answer += `**Warning:** ${earningsWarning} ${cgWarning} ${nvdaWarning}\n`;
+        }
+        answer += '**Summary:** NVDA earnings: ';
+        if (latestEarnings) {
+          answer += `EPS $${latestEarnings.epsActual ?? 'N/A'} (est. $${latestEarnings.epsEstimate ?? 'N/A'}), Revenue $${latestEarnings.revenueActual ?? 'N/A'} (est. $${latestEarnings.revenueEstimate ?? 'N/A'}). `;
+        }
+        answer += `YTD: NVDA ${nvdaYtd !== undefined ? (nvdaYtd * 100).toFixed(2) + '%' : 'N/A'}, BTC ${btcYtd !== undefined ? (btcYtd * 100).toFixed(2) + '%' : 'N/A'}.`;
+        return NextResponse.json({ persona, prompt: fullPrompt, processed: answer, dataSourceUsed: used });
+      }
+
+      // Special case: analyst recommendations and compare COIN to BTC
+      const isAnalystCompareQuery = /analyst recommendations.*compare.*coin.*btc|compare.*coin.*btc.*analyst recommendations/i.test(input);
+      if (isAnalystCompareQuery) {
+        // Fetch only Finnhub analyst recommendations and BTC price
+        let analystData = '';
+        let btcQuote = '';
+        try {
+          const analyst = await getAnalystRecommendations('COIN');
+          if (analyst && analyst.length > 0) {
+            const latest = analyst[0];
+            analystData = `\nAnalyst Recommendations for COIN: Buy: ${latest.buy}, Hold: ${latest.hold}, Sell: ${latest.sell}, Strong Buy: ${latest.strongBuy}, Strong Sell: ${latest.strongSell}, Target Price: $${latest.targetPrice ?? 'N/A'}`;
+          } else {
+            analystData = `\nNo recent analyst recommendations for COIN.`;
+          }
+        } catch {
+          analystData = `\n(Failed to fetch analyst recommendations for COIN from Finnhub)`;
+        }
+        try {
+          const btc = await getMarketData(['BTC']);
+          btcQuote = `\nBTC Price Benchmark:\n${btc}`;
+        } catch {
+          btcQuote = '\n(Failed to fetch BTC price)';
+        }
+        const minimalContext = `\n# Analyst Recommendations\n${analystData}\n\n# BTC Price\n${btcQuote}`;
+        const fullPrompt = `${minimalContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
+        const llmStart = Date.now();
+        let fallbackLLMResponse;
+        let llmTimedOut = false;
+        try {
+          fallbackLLMResponse = await Promise.race([
+            Grok4Service.generateViralResponse(input, fullPrompt),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('LLM timeout')), LLM_TIMEOUT))
+          ]);
+        } catch {
+          llmTimedOut = true;
+        }
+        const llmEnd = Date.now();
+        logDuration('LLM response', llmStart, llmEnd);
+        let fallbackProcessedString: string;
+        if (llmTimedOut) {
+          fallbackProcessedString = '**Warning:** LLM timed out after 15 seconds. Partial data shown.';
+        } else {
+          const fallbackProcessed = postProcessLLMOutput(persona, String(fallbackLLMResponse)) as string | { content?: string; text?: string; [key: string]: unknown };
+          fallbackProcessedString = typeof fallbackProcessed === 'string'
+            ? fallbackProcessed
+            : (fallbackProcessed.content || fallbackProcessed.text) ?? JSON.stringify(fallbackProcessed, null, 2);
+        }
+        return NextResponse.json({ persona, prompt: fullPrompt, processed: fallbackProcessedString, dataSourceUsed: ['Finnhub', 'CoinGecko'] });
+      }
+
+      // Fallback: always answer with whatever data is available
+      const fallbackPrompt = `${realtimeContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
+      const llmStart = Date.now();
+      let fallbackLLMResponse;
+      let llmTimedOut = false;
+      try {
+        fallbackLLMResponse = await Promise.race([
+          Grok4Service.generateViralResponse(input, fallbackPrompt),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('LLM timeout')), LLM_TIMEOUT))
+        ]);
+      } catch {
+        llmTimedOut = true;
+      }
+      const llmEnd = Date.now();
+      logDuration('LLM response', llmStart, llmEnd);
+      timings.push({ label: 'LLM response', duration: llmEnd - llmStart });
+      // Print slowest step
+      const slowest = timings.reduce((a, b) => (a.duration > b.duration ? a : b), { label: '', duration: 0 });
+      // eslint-disable-next-line no-console
+      console.log('Slowest step:', slowest.label, slowest.duration, 'ms');
+      let fallbackProcessedString: string;
+      if (llmTimedOut) {
+        fallbackProcessedString = `Bitcoin is the signal. Even when data is missing, the narrative remains: decentralization, sound money, and antifragility. Stay sovereign.\n\n**Warning:** LLM timed out after 15 seconds. Partial data shown.\n\n*Suggestions:*\n- Try a more focused question.\n- Wait a moment and try again if the system is busy.`;
+      } else {
+        const fallbackProcessed = postProcessLLMOutput(persona, String(fallbackLLMResponse)) as string | { content?: string; text?: string; [key: string]: unknown };
+        fallbackProcessedString = typeof fallbackProcessed === 'string'
+          ? fallbackProcessed
+          : (fallbackProcessed.content || fallbackProcessed.text) ?? JSON.stringify(fallbackProcessed, null, 2);
+      }
+      if (warning) {
+        fallbackProcessedString = `Bitcoin is the signal. Even when data is missing, the narrative remains: decentralization, sound money, and antifragility. Stay sovereign.\n\n**Warning:** ${warning}\n\n${fallbackProcessedString}`;
+      }
+      return NextResponse.json({ persona, prompt: fallbackPrompt, processed: fallbackProcessedString, dataSourceUsed: used });
+    } catch (apiError) {
+      // If any API call fails unexpectedly, return a 200 with a warning and partial data
+      let warningMsg: string;
+      if (typeof apiError === 'string') warningMsg = apiError;
+      else if (apiError instanceof Error) warningMsg = apiError.message;
+      else warningMsg = String(apiError);
+      const suggestions = `\n\n*Suggestions:*\n- Try your request again in a few moments.\n- Rephrase your question for a more focused answer.\n- If this issue persists, please let us know!`;
+      const bitcoinNarrative = 'Bitcoin is the signal. Even when data is missing, the narrative remains: decentralization, sound money, and antifragility. Stay sovereign.';
+      return NextResponse.json({
+        persona,
+        prompt: '',
+        processed: `${bitcoinNarrative}\n\n**Warning:** An error occurred while fetching data: ${warningMsg}\n\nPartial or no data is available at this time.${suggestions}`,
+        dataSourceUsed: []
+      }, { status: 200 });
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('Satoshi API error:', e);
+    const errorMsg = e instanceof Error ? e.message : String(e);
+    const bitcoinNarrative = 'Bitcoin is the signal. Even when data is missing, the narrative remains: decentralization, sound money, and antifragility. Stay sovereign.';
+    return NextResponse.json({ error: 'Malformed request or server error', details: `${bitcoinNarrative}\n${errorMsg}` }, { status: 400 });
+  }
 }
 
 // GET endpoint for getting available modes and capabilities

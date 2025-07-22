@@ -66,8 +66,11 @@ function extractHeadlines(section: string): string[] {
   return section.split('\n').filter(l => l.match(/^[0-9]+\./) || l.match(/^[-*•]/)).map(l => l.replace(/^[0-9]+\.\s*/, '').replace(/^[-*•]\s*/, '').trim());
 }
 
-export function postProcessLLMOutput(persona: PersonaKey, output: string): Record<string, unknown> {
+export function postProcessLLMOutput(persona: PersonaKey, output: string): string | Record<string, unknown> {
   const cleanedOutput = refineLanguage(cleanResponse(output));
+  if (!cleanedOutput || cleanedOutput.length < 10) {
+    return 'Bitcoin is the signal. Even when data is missing, the narrative remains: decentralization, sound money, and antifragility. Stay sovereign.';
+  }
   const sections = extractSections(cleanedOutput);
   switch (persona) {
     case 'MarketResearcher': {
@@ -104,6 +107,6 @@ export function postProcessLLMOutput(persona: PersonaKey, output: string): Recor
       return result;
     }
     default:
-      return { raw: cleanedOutput };
+      return cleanedOutput;
   }
 } 
