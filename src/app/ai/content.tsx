@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from "framer-motion"
+import Image from "next/image"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -41,8 +42,18 @@ export default function AIContent() {
       {/* The $1M Bitcoin Era Section */}
       <motion.div
         variants={sectionVariants}
-        className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]"
+        className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] relative overflow-hidden"
       >
+        {/* Background Visual */}
+        <div className="absolute inset-0 opacity-10">
+          <Image 
+            src="/grok4.jpg" 
+            alt="AI Future" 
+            fill
+            className="object-cover"
+          />
+        </div>
+        <div className="relative z-10">
         <h2 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">The $1M Bitcoin Era</h2>
         <div className="space-y-4 text-gray-300">
           <p className="text-lg">If you&apos;re reading this, you&apos;re living in the era where Bitcoin breaks gravity—$1 million per coin is just the beginning.</p>
@@ -74,17 +85,29 @@ export default function AIContent() {
             Will you pull them?
           </motion.p>
         </div>
+        </div>
       </motion.div>
 
       {/* The Startup Playbook Section */}
       <motion.div 
         variants={sectionVariants}
-        className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]"
+        className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] relative overflow-hidden"
       >
-        <h2 className="text-4xl md:text-5xl font-bold text-yellow-500 mb-6">The Startup Playbook Has Been Rewritten—Forever</h2>
-        <div className="space-y-4 text-gray-300">
-          <p className="text-lg">Let&apos;s not sugarcoat it. The old startup playbook is dead. Long live the weird, modular, agent-powered, meme-led, micro-app-driven new world. The rules have changed—not just slightly, but at a cellular level. And the founders who understand this aren&apos;t just adapting. They&apos;re building from first principles in a new reality, one where small teams wield infinite leverage and identity is the product.</p>
-          <p className="text-lg">This isn&apos;t a &quot;pivot.&quot; This is a paradigm shift.</p>
+        {/* Background Visual */}
+        <div className="absolute inset-0 opacity-10">
+          <Image 
+            src="/grok420.jpg" 
+            alt="AI Revolution" 
+            fill
+            className="object-cover"
+          />
+        </div>
+        <div className="relative z-10">
+          <h2 className="text-4xl md:text-5xl font-bold text-yellow-500 mb-6">The Startup Playbook Has Been Rewritten—Forever</h2>
+          <div className="space-y-4 text-gray-300">
+            <p className="text-lg">Let&apos;s not sugarcoat it. The old startup playbook is dead. Long live the weird, modular, agent-powered, meme-led, micro-app-driven new world. The rules have changed—not just slightly, but at a cellular level. And the founders who understand this aren&apos;t just adapting. They&apos;re building from first principles in a new reality, one where small teams wield infinite leverage and identity is the product.</p>
+            <p className="text-lg">This isn&apos;t a &quot;pivot.&quot; This is a paradigm shift.</p>
+          </div>
         </div>
       </motion.div>
 
@@ -92,35 +115,65 @@ export default function AIContent() {
       <div className="grid md:grid-cols-3 gap-8">
         <motion.div 
           variants={sectionVariants}
-          className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]"
+          className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] relative overflow-hidden"
         >
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <span className="text-4xl">🧠</span>
-            <h3 className="text-2xl font-bold text-yellow-500">Your Team Is Not a Team</h3>
+          <div className="absolute inset-0 opacity-5">
+            <Image 
+              src="/grok4.jpg" 
+              alt="AI Network" 
+              fill
+              className="object-cover"
+            />
           </div>
-          <p className="text-center text-lg">It&apos;s a Network</p>
+          <div className="relative z-10">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <span className="text-4xl">🧠</span>
+              <h3 className="text-2xl font-bold text-yellow-500">Your Team Is Not a Team</h3>
+            </div>
+            <p className="text-center text-lg">It&apos;s a Network</p>
+          </div>
         </motion.div>
 
         <motion.div 
           variants={sectionVariants}
-          className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]"
+          className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] relative overflow-hidden"
         >
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <span className="text-4xl">💸</span>
-            <h3 className="text-2xl font-bold text-yellow-500">Niches Print Millions</h3>
+          <div className="absolute inset-0 opacity-5">
+            <Image 
+              src="/grok420.jpg" 
+              alt="AI Culture" 
+              fill
+              className="object-cover"
+            />
           </div>
-          <p className="text-center text-lg">Culture Prints Billions</p>
+          <div className="relative z-10">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <span className="text-4xl">💸</span>
+              <h3 className="text-2xl font-bold text-yellow-500">Niches Print Millions</h3>
+            </div>
+            <p className="text-center text-lg">Culture Prints Billions</p>
+          </div>
         </motion.div>
 
         <motion.div 
           variants={sectionVariants}
-          className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]"
+          className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] relative overflow-hidden"
         >
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <span className="text-4xl">📺</span>
-            <h3 className="text-2xl font-bold text-yellow-500">Startups Are the New QVC</h3>
+          <div className="absolute inset-0 opacity-5">
+            <Image 
+              src="/grok4.jpg" 
+              alt="AI Channel" 
+              fill
+              className="object-cover"
+            />
           </div>
-          <p className="text-center text-lg">Own the Channel</p>
+          <div className="relative z-10">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <span className="text-4xl">📺</span>
+              <h3 className="text-2xl font-bold text-yellow-500">Startups Are the New QVC</h3>
+            </div>
+            <p className="text-center text-lg">Own the Channel</p>
+          </div>
         </motion.div>
       </div>
 
@@ -228,26 +281,37 @@ export default function AIContent() {
       {/* Agents Section */}
       <motion.div 
         variants={sectionVariants}
-        className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]"
+        className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] relative overflow-hidden"
       >
-        <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">🛠 Agents Are the New Stack</h3>
-        <div className="space-y-4 text-gray-300">
-          <p className="text-lg">Product feedback loops are now instant:</p>
-          <ul className="list-none space-y-2">
-            <li className="flex items-center gap-2">
-              <span className="text-yellow-500">•</span> Users speak &rarr; Agents summarize, prioritize, and mock UI changes.
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-yellow-500">•</span> Support tickets &rarr; Tagged, triaged, and visualized before a dev touches them.
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-yellow-500">•</span> Churned users &rarr; Winback campaigns tailored to their exit story.
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="text-yellow-500">•</span> Your CRM &rarr; Updated and summarized before the call ends.
-            </li>
-          </ul>
-          <p className="text-lg">This is not automation. This is orchestration.</p>
+        {/* Background Visual */}
+        <div className="absolute inset-0 opacity-10">
+          <Image 
+            src="/grok420.jpg" 
+            alt="AI Agents" 
+            fill
+            className="object-cover"
+          />
+        </div>
+        <div className="relative z-10">
+          <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">🛠 Agents Are the New Stack</h3>
+          <div className="space-y-4 text-gray-300">
+            <p className="text-lg">Product feedback loops are now instant:</p>
+            <ul className="list-none space-y-2">
+              <li className="flex items-center gap-2">
+                <span className="text-yellow-500">•</span> Users speak &rarr; Agents summarize, prioritize, and mock UI changes.
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-yellow-500">•</span> Support tickets &rarr; Tagged, triaged, and visualized before a dev touches them.
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-yellow-500">•</span> Churned users &rarr; Winback campaigns tailored to their exit story.
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-yellow-500">•</span> Your CRM &rarr; Updated and summarized before the call ends.
+              </li>
+            </ul>
+            <p className="text-lg">This is not automation. This is orchestration.</p>
+          </div>
         </div>
       </motion.div>
 
@@ -310,9 +374,19 @@ export default function AIContent() {
       {/* ChatGPT Generation Gap Section */}
       <motion.div 
         variants={sectionVariants}
-        className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]"
+        className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] relative overflow-hidden"
       >
-        <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">👥 Generations of AI: The ChatGPT Generation Gap</h3>
+        {/* Background Visual */}
+        <div className="absolute inset-0 opacity-10">
+          <Image 
+            src="/grok4.jpg" 
+            alt="AI Generations" 
+            fill
+            className="object-cover"
+          />
+        </div>
+        <div className="relative z-10">
+          <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">👥 Generations of AI: The ChatGPT Generation Gap</h3>
         <div className="space-y-6 text-gray-300">
           <p className="text-lg">Since its public release, ChatGPT has rapidly become one of the most transformative tools in digital history. But how people use it varies wildly by age. While the underlying model remains the same, the way users approach it—what they ask, how they trust it, and what they expect from it—exposes deep generational differences in digital literacy, psychology, and ambition.</p>
 
@@ -390,6 +464,7 @@ export default function AIContent() {
 
           <p className="text-lg">The way we use ChatGPT is more than personal preference—it&apos;s a window into how each generation sees technology. Boomers want information. Millennials want support. Gen Z wants collaboration.</p>
           <p className="text-lg">And AI? It&apos;s learning from all of us.</p>
+        </div>
         </div>
       </motion.div>
 
@@ -594,8 +669,18 @@ export default function AIContent() {
       {/* Final Call to Action */}
       <motion.div 
         variants={sectionVariants}
-        className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] text-center"
+        className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] text-center relative overflow-hidden"
       >
+        {/* Background Visual */}
+        <div className="absolute inset-0 opacity-10">
+          <Image 
+            src="/grok420.jpg" 
+            alt="AI Future" 
+            fill
+            className="object-cover"
+          />
+        </div>
+        <div className="relative z-10">
         <p className="text-lg text-gray-300 mb-4">You don&apos;t need permission to build like this.</p>
         <p className="text-lg text-gray-300 mb-4">You don&apos;t need a seed round or a growth team or even a launch date.</p>
         <p className="text-lg text-gray-300 mb-4">You just need to start.</p>
@@ -607,6 +692,7 @@ export default function AIContent() {
         <p className="text-lg text-gray-300 mb-4">Send it to someone weird enough to believe it too.</p>
         <p className="text-yellow-500 font-bold text-xl mt-8">Happy building.</p>
         <p className="text-yellow-500 font-bold text-xl">I&apos;m rooting for you.</p>
+        </div>
       </motion.div>
     </motion.div>
   )
