@@ -28,17 +28,6 @@ const personaMeta: Record<string, { icon: string; label: string; desc: string }>
   x_sentiment: { icon: '🐦', label: 'X Sentiment', desc: 'Analyzes Bitcoin sentiment on X (Twitter).' },
 };
 
-interface TableRow {
-  [key: string]: string | number | null;
-}
-
-interface ProcessedResponse {
-  sections?: Record<string, string | string[] | TableRow[]>;
-  Headlines?: string[];
-  raw?: string;
-  [key: string]: unknown;
-}
-
 // Helper to get a valid persona key
 function getValidPersonaKey(mode: string): string {
   return personaMeta[mode] ? mode : 'multimodal';
@@ -47,7 +36,7 @@ function getValidPersonaKey(mode: string): string {
 export default function SatoshiTestPage() {
   const [message, setMessage] = useState('');
   const [mode, setMode] = useState('multimodal');
-  const [response, setResponse] = useState<string | ProcessedResponse>('');
+  const [response, setResponse] = useState<string>('');
   const [persona, setPersona] = useState<string>('');
   const [autoDetected, setAutoDetected] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -73,24 +62,49 @@ export default function SatoshiTestPage() {
     setPersona('');
     setAutoDetected(false);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    const timeout = setTimeout(() => controller.abort(), 20000); // 20s timeout for streaming
     try {
       // Always send a valid persona key
       const personaKey = getValidPersonaKey(mode);
       const res = await fetch('/api/satoshi', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input: message.trim(), mode: personaKey, options: {} }),
+        body: JSON.stringify({ input: message.trim(), mode: personaKey, options: {}, stream: true }),
         signal: controller.signal,
       });
-      if (res.ok) {
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(`Error: ${res.status} - ${errorData.error || 'Failed to get response from Satoshi'}`);
+        return;
+      }
+      // Streaming support
+      const reader = res.body?.getReader();
+      if (reader) {
+        let assistantContent = '';
+        setLoading(true);
+        setResponse('');
+        setPersona(personaKey);
+        setAutoDetected(!mode || mode === 'multimodal' || mode === 'Multi-Modal (Auto-detect)');
+        let done = false;
+        while (!done) {
+          const { value, done: doneReading } = await reader.read();
+          done = doneReading;
+          if (value) {
+            const chunk = new TextDecoder().decode(value);
+            assistantContent += chunk;
+            setResponse(assistantContent);
+          }
+        }
+        setLoading(false);
+        // Optionally, parse JSON if the backend sends a final JSON object at the end
+        // (If your backend streams plain text, this is not needed)
+      } else {
+        // Fallback: non-streaming - expect JSON
         const data = await res.json();
         setResponse(data.processed || data.content || data.error || 'No response content received from Satoshi');
         setPersona(data.persona || personaKey);
         setAutoDetected(!mode || mode === 'multimodal' || mode === 'Multi-Modal (Auto-detect)');
-      } else {
-        const errorData = await res.json().catch(() => ({}));
-        setError(`Error: ${res.status} - ${errorData.error || 'Failed to get response from Satoshi'}`);
+        setLoading(false);
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
@@ -98,19 +112,14 @@ export default function SatoshiTestPage() {
       } else {
         setError(`Error: Failed to connect to Satoshi API - ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
+      setLoading(false);
     } finally {
       clearTimeout(timeout);
-      setLoading(false);
     }
   };
 
   const handleExampleClick = (example: string) => {
     setMessage(example);
-  };
-
-  // Copy-to-clipboard helper
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
   };
 
   // Retry handler (if you have a retry button)
@@ -123,9 +132,8 @@ export default function SatoshiTestPage() {
   };
 
   // Helper to render structured output
-  function renderStructuredResponse(resp: string | ProcessedResponse, persona: string, autoDetected: boolean): React.ReactNode {
+  function renderStructuredResponse(resp: string, persona: string, autoDetected: boolean): React.ReactNode {
     if (!resp) return <></>;
-    // Persona awareness card
     const meta = personaMeta[persona] || personaMeta['multimodal'];
     return (
       <div className="relative bg-black/60 border-2 border-yellow-500 rounded-xl shadow-lg p-6 mb-6">
@@ -138,73 +146,7 @@ export default function SatoshiTestPage() {
           )}
         </div>
         <hr className="border-yellow-500/30 mb-4" />
-        {/* Structured output rendering */}
-        {typeof resp === 'string' ? (
-          <div className="text-white/90 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">{resp}</div>
-        ) : (
-          <>
-            {resp.sections && (
-              <div className="space-y-6">
-                {Object.entries(resp.sections).map(([section, content]) => (
-                  <div key={section} className="relative group">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="font-bold text-yellow-400 text-base" style={{ fontFamily: 'inherit' }}>{section}</div>
-                      <button className="ml-2 px-2 py-1 text-xs bg-yellow-500/20 text-yellow-400 rounded hover:bg-yellow-500/40 transition-colors" onClick={() => handleCopy(typeof content === 'string' ? content : JSON.stringify(content))}>Copy</button>
-                    </div>
-                    {/* Render tables if present */}
-                    {Array.isArray(content) && content.length > 0 && typeof content[0] === 'object' ? (
-                      <div className="overflow-x-auto rounded-lg border border-yellow-500/30">
-                        <table className="min-w-full text-xs sm:text-sm">
-                          <thead>
-                            <tr className="bg-yellow-500/10">
-                              {Object.keys(content[0] as TableRow).map((col) => (
-                                <th key={col} className="border-b border-yellow-500 px-2 py-1 text-yellow-400 bg-black/60">{col}</th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {(content as TableRow[]).map((row, i) => (
-                              <tr key={i} className={i % 2 === 0 ? 'bg-black/40' : 'bg-yellow-500/5'}>
-                                {Object.values(row).map((cell, j) => (
-                                  <td key={j} className="border-b border-yellow-500 px-2 py-1 text-white/90">{String(cell)}</td>
-                                ))}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    ) : null}
-                    {/* Render bullet lists if present */}
-                    {Array.isArray(content) && typeof content[0] === 'string' ? (
-                      <ul className="list-none ml-6 text-white/90 text-sm mt-2">
-                        {(content as string[]).map((item, i) => (
-                          <li key={i} className="flex items-center gap-2"><span className="inline-block w-2 h-2 bg-yellow-400 rounded-full" />{item}</li>
-                        ))}
-                      </ul>
-                    ) : null}
-                    {/* Fallback: render as preformatted text */}
-                    {!Array.isArray(content) && (
-                      <div className="whitespace-pre-wrap text-white/80 text-xs sm:text-sm mt-2">{String(content)}</div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-            {resp.Headlines && Array.isArray(resp.Headlines) && (
-              <ul className="list-none ml-6 text-white/90 text-sm mt-2">
-                {resp.Headlines.map((item, i) => (
-                  <li key={i} className="flex items-center gap-2"><span className="inline-block w-2 h-2 bg-yellow-400 rounded-full" />{item}</li>
-                ))}
-              </ul>
-            )}
-            {resp.raw && (
-              <div className="text-white/90 text-sm sm:text-base leading-relaxed whitespace-pre-wrap mt-4">{resp.raw}</div>
-            )}
-            {!resp.sections && !resp.Headlines && !resp.raw && (
-              <div className="text-white/90 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">{JSON.stringify(resp)}</div>
-            )}
-          </>
-        )}
+        <div className="text-white/90 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">{resp}</div>
       </div>
     );
   }
