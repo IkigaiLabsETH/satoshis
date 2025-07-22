@@ -17,53 +17,23 @@ export function trimContextBlock(block: string, maxLines: number = 2): string {
 export function buildPromptContext({
   btcQuote,
   marketData,
-  insiderSentimentData,
-  earningsData,
-  ipoData,
-  companyNewsData,
-  analystData,
-  priceTargetData,
-  webSearch,
-  xSentiment,
-  satoshiMarket,
   personaPrompt,
   brandDnaPrompt
 }: {
   btcQuote: string;
   marketData: string;
-  insiderSentimentData: string;
-  earningsData: string;
-  ipoData: string;
-  companyNewsData: string;
-  analystData: string;
-  priceTargetData: string;
-  webSearch: string;
-  xSentiment: string;
-  satoshiMarket: string;
   personaPrompt: string;
   brandDnaPrompt: string;
-}): { prompt: string; llmMaxTokens: number; tokenEstimate: number; trimLevel: number } {
-  let realtimeContext = `\n# Real-Time Market Data\n${btcQuote}${marketData}${insiderSentimentData}${earningsData}${ipoData}${companyNewsData}${analystData}${priceTargetData}\n\n# Latest Web Search\n${webSearch}\n\n# X Sentiment\n${xSentiment}\n\n# Satoshi Market Context\n${satoshiMarket}\n`;
-  const MAX_PROMPT_TOKENS = 2048;
-  let prompt = `${realtimeContext}\n\n${brandDnaPrompt}\n\n${personaPrompt}`;
-  let tokenEstimate = estimateTokens(prompt);
-  let trimLevel = 2;
-  while (tokenEstimate > MAX_PROMPT_TOKENS && trimLevel > 0) {
-    realtimeContext = `\n# Real-Time Market Data\n${trimContextBlock(btcQuote, trimLevel)}${trimContextBlock(marketData, trimLevel)}${trimContextBlock(insiderSentimentData, trimLevel)}${trimContextBlock(earningsData, trimLevel)}${trimContextBlock(ipoData, trimLevel)}${trimContextBlock(companyNewsData, trimLevel)}${trimContextBlock(analystData, trimLevel)}${trimContextBlock(priceTargetData, trimLevel)}\n\n# Latest Web Search\n${trimContextBlock(webSearch, trimLevel)}\n\n# X Sentiment\n${trimContextBlock(xSentiment, trimLevel)}\n\n# Satoshi Market Context\n${trimContextBlock(satoshiMarket, trimLevel)}`;
-    prompt = `${realtimeContext}\n\n${brandDnaPrompt}\n\n${personaPrompt}`;
-    tokenEstimate = estimateTokens(prompt);
-    trimLevel--;
-  }
-  if (tokenEstimate > MAX_PROMPT_TOKENS) {
-    realtimeContext = `\n# Real-Time Market Data\n${trimContextBlock(btcQuote, 1)}${trimContextBlock(marketData, 1)}\n`;
-    prompt = `${realtimeContext}\n\n${brandDnaPrompt}\n\n${personaPrompt}`;
-    tokenEstimate = estimateTokens(prompt);
-    // eslint-disable-next-line no-console
-    console.warn('Prompt aggressively trimmed to fit token limit.');
-  }
+  // The rest are omitted for speed
+}) {
+  // Only include the most essential context
+  const realtimeContext = `\n# Real-Time Market Data\n${btcQuote}${marketData}`;
+  const prompt = `${realtimeContext}\n\n${brandDnaPrompt}\n\n${personaPrompt}`;
+  const tokenEstimate = Math.ceil(prompt.length / 4);
+  const trimLevel = 1;
+  // No trimming loop needed for minimal context
   // eslint-disable-next-line no-console
-  console.log('LLM prompt length:', prompt.length, 'chars,', tokenEstimate, 'tokens');
-  let llmMaxTokens = 1000;
-  if (tokenEstimate > 1500) llmMaxTokens = 500;
+  console.log('LLM prompt (minimal) length:', prompt.length, 'tokens:', tokenEstimate);
+  const llmMaxTokens = 500;
   return { prompt, llmMaxTokens, tokenEstimate, trimLevel };
 } 

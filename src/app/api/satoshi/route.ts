@@ -596,21 +596,12 @@ export async function POST(request: NextRequest): Promise<Response> {
     try {
       const sources = detectDataSource(input);
       const symbol = extractSymbol(input);
-      const { marketData, webSearch, xSentiment, satoshiMarket, insiderSentimentData, earningsData, ipoData, companyNewsData, btcQuote, analystData, priceTargetData, used, timings, warning } = await fetchRelevantMarketData(input, sources, symbol);
+      const { marketData, btcQuote, used, timings, warning } = await fetchRelevantMarketData(input, sources, symbol);
 
       // Compose context block and trim prompt
       const { prompt, llmMaxTokens } = buildPromptContext({
         btcQuote,
         marketData,
-        insiderSentimentData,
-        earningsData,
-        ipoData,
-        companyNewsData,
-        analystData,
-        priceTargetData,
-        webSearch,
-        xSentiment,
-        satoshiMarket,
         personaPrompt,
         brandDnaPrompt: BRAND_DNA_PROMPT
       });
@@ -636,6 +627,11 @@ export async function POST(request: NextRequest): Promise<Response> {
       let fallbackLLMResponse;
       let llmTimedOut = false;
       try {
+        // Debug: Log the trimmed prompt length and content
+        // eslint-disable-next-line no-console
+        console.log('Trimmed LLM prompt length:', prompt.length);
+        // eslint-disable-next-line no-console
+        console.log('Trimmed LLM prompt preview:', prompt.slice(0, 500));
         // Debug: Log the prompt sent to the LLM
         // eslint-disable-next-line no-console
         console.log('LLM prompt being sent:', prompt);
