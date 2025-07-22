@@ -73,24 +73,49 @@ export default function SatoshiTestPage() {
     setPersona('');
     setAutoDetected(false);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    const timeout = setTimeout(() => controller.abort(), 20000); // 20s timeout for streaming
     try {
       // Always send a valid persona key
       const personaKey = getValidPersonaKey(mode);
       const res = await fetch('/api/satoshi', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input: message.trim(), mode: personaKey, options: {} }),
+        body: JSON.stringify({ input: message.trim(), mode: personaKey, options: {}, stream: true }),
         signal: controller.signal,
       });
-      if (res.ok) {
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setError(`Error: ${res.status} - ${errorData.error || 'Failed to get response from Satoshi'}`);
+        return;
+      }
+      // Streaming support
+      const reader = res.body?.getReader();
+      if (reader) {
+        let assistantContent = '';
+        setLoading(true);
+        setResponse('');
+        setPersona(personaKey);
+        setAutoDetected(!mode || mode === 'multimodal' || mode === 'Multi-Modal (Auto-detect)');
+        let done = false;
+        while (!done) {
+          const { value, done: doneReading } = await reader.read();
+          done = doneReading;
+          if (value) {
+            const chunk = new TextDecoder().decode(value);
+            assistantContent += chunk;
+            setResponse(assistantContent);
+          }
+        }
+        setLoading(false);
+        // Optionally, parse JSON if the backend sends a final JSON object at the end
+        // (If your backend streams plain text, this is not needed)
+      } else {
+        // Fallback: non-streaming - expect JSON
         const data = await res.json();
         setResponse(data.processed || data.content || data.error || 'No response content received from Satoshi');
         setPersona(data.persona || personaKey);
         setAutoDetected(!mode || mode === 'multimodal' || mode === 'Multi-Modal (Auto-detect)');
-      } else {
-        const errorData = await res.json().catch(() => ({}));
-        setError(`Error: ${res.status} - ${errorData.error || 'Failed to get response from Satoshi'}`);
+        setLoading(false);
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
@@ -98,9 +123,9 @@ export default function SatoshiTestPage() {
       } else {
         setError(`Error: Failed to connect to Satoshi API - ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
+      setLoading(false);
     } finally {
       clearTimeout(timeout);
-      setLoading(false);
     }
   };
 
