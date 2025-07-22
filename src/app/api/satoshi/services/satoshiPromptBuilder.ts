@@ -17,23 +17,18 @@ export function trimContextBlock(block: string, maxLines: number = 2): string {
 export function buildPromptContext({
   btcQuote,
   marketData,
-  personaPrompt,
-  brandDnaPrompt
+  userQuestion
 }: {
   btcQuote: string;
   marketData: string;
-  personaPrompt: string;
-  brandDnaPrompt: string;
-  // The rest are omitted for speed
+  userQuestion: string;
 }) {
-  // Only include the most essential context
-  const realtimeContext = `\n# Real-Time Market Data\n${btcQuote}${marketData}`;
-  const prompt = `${realtimeContext}\n\n${brandDnaPrompt}\n\n${personaPrompt}`;
+  // Drastically shortened prompt for speed and efficiency
+  const prompt = `# User Question\n${userQuestion}\n\n# Latest Market Data\n${btcQuote}${marketData}\n\n# Persona\nYou are Satoshi AI, a Bitcoin-first expert. Answer concisely, with technical accuracy and philosophical depth. Never use hashtags or meme slang.`;
   const tokenEstimate = Math.ceil(prompt.length / 4);
   const trimLevel = 1;
-  // No trimming loop needed for minimal context
   // eslint-disable-next-line no-console
-  console.log('LLM prompt (minimal) length:', prompt.length, 'tokens:', tokenEstimate);
-  const llmMaxTokens = 500;
+  console.log('LLM prompt (short) length:', prompt.length, 'tokens:', tokenEstimate);
+  const llmMaxTokens = 1500;
   return { prompt, llmMaxTokens, tokenEstimate, trimLevel };
 } 

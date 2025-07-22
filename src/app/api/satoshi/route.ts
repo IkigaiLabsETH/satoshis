@@ -16,7 +16,6 @@ import { SATOSHI_PERSONAS } from '@/services/satoshi/personas';
 import { routeToPersona } from '@/services/satoshi/router';
 import { postProcessLLMOutput } from '@/services/satoshi/postprocess';
 import { Grok4Service, getMarketData, enhancedWebSearch, getXSentiment } from '../grok4/grok4';
-import { BRAND_DNA_PROMPT } from '@/services/satoshi/brand-dna';
 import { getMarketDataWithSatoshiContext } from '@/services/satoshi/enhancedCryptoPrice';
 import { getFinnhubQuote, getInsiderSentiment, getCompanyEarnings, getIPOCalendar, getCompanyNews } from '@/services/market/finnhub';
 import { getAnalystRecommendations, getPriceTarget } from '@/services/market/finnhub';
@@ -602,8 +601,7 @@ export async function POST(request: NextRequest): Promise<Response> {
       const { prompt, llmMaxTokens } = buildPromptContext({
         btcQuote,
         marketData,
-        personaPrompt,
-        brandDnaPrompt: BRAND_DNA_PROMPT
+        userQuestion: input
       });
 
       // Special case: portfolio simulation

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { SATOSHI_EXAMPLE_QUERIES_CATEGORIZED } from '@/app/ask-satoshi/example-queries';
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 
 // Persona icon and description map
 const personaMeta: Record<string, { icon: string; label: string; desc: string }> = {
@@ -62,7 +63,7 @@ export default function SatoshiTestPage() {
     setPersona('');
     setAutoDetected(false);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20000); // 20s timeout for streaming
+    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout for streaming
     try {
       // Always send a valid persona key
       const personaKey = getValidPersonaKey(mode);
@@ -96,8 +97,13 @@ export default function SatoshiTestPage() {
           }
         }
         setLoading(false);
-        // Optionally, parse JSON if the backend sends a final JSON object at the end
-        // (If your backend streams plain text, this is not needed)
+        // After streaming, try to parse as JSON and extract 'processed'
+        try {
+          const parsed = JSON.parse(assistantContent);
+          setResponse(parsed.processed || parsed.content || parsed.error || 'No response content received from Satoshi');
+        } catch {
+          setResponse(assistantContent);
+        }
       } else {
         // Fallback: non-streaming - expect JSON
         const data = await res.json();
@@ -146,7 +152,9 @@ export default function SatoshiTestPage() {
           )}
         </div>
         <hr className="border-yellow-500/30 mb-4" />
-        <div className="text-white/90 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">{resp}</div>
+        <div className="prose prose-invert text-white/90 text-sm sm:text-base leading-relaxed">
+          <ReactMarkdown>{resp}</ReactMarkdown>
+        </div>
       </div>
     );
   }
