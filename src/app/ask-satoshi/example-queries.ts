@@ -103,4 +103,16 @@ export const SATOSHI_EXAMPLE_QUERIES_CATEGORIZED = {
     'What’s the best-performing asset class (crypto, stocks, gold) in the last 90 days, and why?',
     'If I only bought assets with positive insider sentiment, how would my returns compare to BTC?',
   ],
+  "Stock Trading Automation": [
+    "Analyze the current trends in the stock market, focusing on [input sector or stock]. Identify any emerging patterns and suggest potential investment opportunities. Consider recent earnings reports and industry news in your analysis.",
+    "Given a portfolio with a mix of [input current sectors or stocks], suggest strategies to diversify further while minimizing risk. Include potential sectors to explore and specific stocks to consider.",
+    "Discuss effective risk management techniques for a stock trader. Provide detailed examples of how to implement stop-loss orders, diversification, and position sizing in a trading strategy. Use [input current trading strategy or stock] as a reference.",
+    "Using technical analysis, evaluate the stock of [input stock]. Analyze recent price movements, volume, and key indicators such as moving averages and RSI. Provide a buy, sell, or hold recommendation.",
+    "Explain how various economic indicators like GDP, unemployment rates, and inflation impact stock market performance. Provide examples of how investors can use these indicators to make informed trading decisions regarding [input sector or stock].",
+    "Describe the principles of value investing and how to identify undervalued stocks. Use real-world examples, including [input stock or company], to illustrate how investors can apply this strategy in the current market.",
+    "Analyze how market sentiment influences stock prices. Discuss tools and techniques investors can use to gauge sentiment and incorporate it into their trading strategies. Focus on [input stock or sector].",
+    "Explain how to interpret a company's earnings report. Highlight the key metrics investors should focus on and how these metrics can impact stock prices. Use [input company's latest earnings report] as an example.",
+    "Compare and contrast growth stocks and dividend stocks. Discuss the benefits and risks of each type of investment and suggest scenarios where one might be more suitable than the other. Reference [input specific growth stock and dividend stock].",
+    "Analyze the impact of major global events (e.g., geopolitical tensions, pandemics) on the stock market. Provide strategies for investors to protect their portfolios during such events. Consider the impact on [input sector or stock]."
+  ],
 }; 
