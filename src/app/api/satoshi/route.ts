@@ -72,7 +72,7 @@ function isEarningsComparisonQuery(input: string): boolean {
 }
 
 // LLM timeout constant
-const LLM_TIMEOUT = 15000;
+const LLM_TIMEOUT = 30000; // Increased to 30 seconds for debugging
 
 process.on('unhandledRejection', (reason, promise) => {
   // eslint-disable-next-line no-console
@@ -636,10 +636,16 @@ export async function POST(request: NextRequest): Promise<Response> {
       let fallbackLLMResponse;
       let llmTimedOut = false;
       try {
+        // Debug: Log the prompt sent to the LLM
+        // eslint-disable-next-line no-console
+        console.log('LLM prompt being sent:', prompt);
         fallbackLLMResponse = await Promise.race([
           Grok4Service.generateViralResponse(input, prompt, undefined, llmMaxTokens),
           new Promise((_, reject) => setTimeout(() => reject(new Error('LLM timeout')), LLM_TIMEOUT))
         ]);
+        // Debug: Log the LLM response
+        // eslint-disable-next-line no-console
+        console.log('LLM response received:', fallbackLLMResponse);
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error('LLM response failed:', e);
