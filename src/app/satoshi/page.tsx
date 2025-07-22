@@ -72,6 +72,8 @@ export default function SatoshiTestPage() {
     setError('');
     setPersona('');
     setAutoDetected(false);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
     try {
       // Always send a valid persona key
       const personaKey = getValidPersonaKey(mode);
@@ -79,6 +81,7 @@ export default function SatoshiTestPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ input: message.trim(), mode: personaKey, options: {} }),
+        signal: controller.signal,
       });
       if (res.ok) {
         const data = await res.json();
@@ -90,8 +93,13 @@ export default function SatoshiTestPage() {
         setError(`Error: ${res.status} - ${errorData.error || 'Failed to get response from Satoshi'}`);
       }
     } catch (error) {
-      setError(`Error: Failed to connect to Satoshi API - ${error instanceof Error ? error.message : 'Unknown error'}`);
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        setError('Error: Request timed out. Please try again.');
+      } else {
+        setError(`Error: Failed to connect to Satoshi API - ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     } finally {
+      clearTimeout(timeout);
       setLoading(false);
     }
   };
