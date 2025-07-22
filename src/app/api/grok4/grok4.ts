@@ -332,7 +332,8 @@ ${query}
   static async generateViralResponse(
     query: string,
     systemPrompt: string = "You are GROK420, an AI assistant that helps users with various tasks including crypto analysis, content creation, and general assistance.",
-    temperature: number = 0.7
+    temperature: number = 0.7,
+    maxTokens: number = 1000
   ): Promise<string> {
     try {
       logger.info('Generating viral response:', { query: query.substring(0, 100) + '...' });
@@ -378,7 +379,7 @@ User query: ${query}`;
           }
         ],
         temperature: temperature,
-        max_tokens: 4000
+        max_tokens: maxTokens
       });
       
       // Apply Feynman Technique to the response

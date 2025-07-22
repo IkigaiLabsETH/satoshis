@@ -7,6 +7,7 @@ import { BRAND_DNA_PROMPT } from '@/services/satoshi/brand-dna';
 import { getMarketDataWithSatoshiContext } from '@/services/satoshi/enhancedCryptoPrice';
 import { getFinnhubQuote, getInsiderSentiment, getCompanyEarnings, getIPOCalendar, getCompanyNews } from '@/services/market/finnhub';
 import { getAnalystRecommendations, getPriceTarget } from '@/services/market/finnhub';
+import { encode } from 'gpt-3-encoder';
 
 // Timing helpers
 function logDuration(label: string, start: number, end: number) {
@@ -81,6 +82,11 @@ function trimContextBlock(block: string, maxLines: number = 2): string {
   const lines = block.split('\n');
   if (lines.length <= maxLines + 1) return block;
   return lines.slice(0, maxLines + 1).join('\n') + '\n...';
+}
+
+// Helper to estimate token count
+function estimateTokens(text: string): number {
+  return encode(text).length;
 }
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -344,15 +350,33 @@ export async function POST(request: NextRequest): Promise<Response> {
 
       // Compose context block
       let realtimeContext = `\n# Real-Time Market Data\n${btcQuote}${marketData}${insiderSentimentData}${earningsData}${ipoData}${companyNewsData}${analystData}${priceTargetData}\n\n# Latest Web Search\n${webSearch}\n\n# X Sentiment\n${xSentiment}\n\n# Satoshi Market Context\n${satoshiMarket}\n`;
-      // If the context is too long, trim each block
-      const MAX_PROMPT_CHARS = 4000;
-      if (realtimeContext.length > MAX_PROMPT_CHARS) {
-        realtimeContext = `\n# Real-Time Market Data\n${trimContextBlock(btcQuote)}${trimContextBlock(marketData)}${trimContextBlock(insiderSentimentData)}${trimContextBlock(earningsData)}${trimContextBlock(ipoData)}${trimContextBlock(companyNewsData)}${trimContextBlock(analystData)}${trimContextBlock(priceTargetData)}\n\n# Latest Web Search\n${trimContextBlock(webSearch)}\n\n# X Sentiment\n${trimContextBlock(xSentiment)}\n\n# Satoshi Market Context\n${trimContextBlock(satoshiMarket)}`;
-        // eslint-disable-next-line no-console
-        console.warn('Prompt context trimmed for LLM size limit.');
+      // Aggressive prompt trimming by token count
+      const MAX_PROMPT_TOKENS = 2048;
+      let prompt = `${realtimeContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
+      let tokenEstimate = estimateTokens(prompt);
+      let trimLevel = 2;
+      while (tokenEstimate > MAX_PROMPT_TOKENS && trimLevel > 0) {
+        realtimeContext = `\n# Real-Time Market Data\n${trimContextBlock(btcQuote, trimLevel)}${trimContextBlock(marketData, trimLevel)}${trimContextBlock(insiderSentimentData, trimLevel)}${trimContextBlock(earningsData, trimLevel)}${trimContextBlock(ipoData, trimLevel)}${trimContextBlock(companyNewsData, trimLevel)}${trimContextBlock(analystData, trimLevel)}${trimContextBlock(priceTargetData, trimLevel)}\n\n# Latest Web Search\n${trimContextBlock(webSearch, trimLevel)}\n\n# X Sentiment\n${trimContextBlock(xSentiment, trimLevel)}\n\n# Satoshi Market Context\n${trimContextBlock(satoshiMarket, trimLevel)}`;
+        prompt = `${realtimeContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
+        tokenEstimate = estimateTokens(prompt);
+        trimLevel--;
       }
-      // Prepend context to prompt
-      const fullPrompt = `${realtimeContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
+      // If still too long, drop blocks
+      if (tokenEstimate > MAX_PROMPT_TOKENS) {
+        realtimeContext = `\n# Real-Time Market Data\n${trimContextBlock(btcQuote, 1)}${trimContextBlock(marketData, 1)}\n`;
+        prompt = `${realtimeContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
+        tokenEstimate = estimateTokens(prompt);
+        // eslint-disable-next-line no-console
+        console.warn('Prompt aggressively trimmed to fit token limit.');
+      }
+      // Log prompt length and token estimate
+      // eslint-disable-next-line no-console
+      console.log('LLM prompt length:', prompt.length, 'chars,', tokenEstimate, 'tokens');
+      // Lower max_tokens for long/complex queries
+      let llmMaxTokens = 1000;
+      if (tokenEstimate > 1500) llmMaxTokens = 500;
+      // Use prompt in LLM call
+      const fullPrompt = prompt;
 
       // Helper: get Jan 1 price for BTC, ETH, NVDA (hardcoded for now, can be improved with historical API)
       const JAN1_PRICES = {
@@ -553,7 +577,7 @@ export async function POST(request: NextRequest): Promise<Response> {
         let llmTimedOut = false;
         try {
           fallbackLLMResponse = await Promise.race([
-            Grok4Service.generateViralResponse(input, fullPrompt),
+            Grok4Service.generateViralResponse(input, fullPrompt, undefined, llmMaxTokens),
             new Promise((_, reject) => setTimeout(() => reject(new Error('LLM timeout')), LLM_TIMEOUT))
           ]);
         } catch (e) {
@@ -582,7 +606,7 @@ export async function POST(request: NextRequest): Promise<Response> {
       let llmTimedOut = false;
       try {
         fallbackLLMResponse = await Promise.race([
-          Grok4Service.generateViralResponse(input, fallbackPrompt),
+          Grok4Service.generateViralResponse(input, fallbackPrompt, undefined, llmMaxTokens),
           new Promise((_, reject) => setTimeout(() => reject(new Error('LLM timeout')), LLM_TIMEOUT))
         ]);
       } catch (e) {
