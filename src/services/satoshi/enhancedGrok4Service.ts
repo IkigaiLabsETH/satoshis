@@ -827,13 +827,13 @@ Focus on Bitcoin-first solutions and sovereign living principles.`;
 
   // Satoshi Researcher Mode (now aggregates web, X, and LTL results)
   static async conductResearch(topic: string): Promise<string> {
-    // 1. Web search
-    const webResults = await enhancedWebSearch(topic);
-    // 2. X sentiment
-    const xSentiment = await getXSentiment(topic);
-    // 3. LiveTheLifeTV (stub)
-    const ltlResults = await getLiveTheLifeTVResults(topic);
-    // 4. Bitcoin cycle status
+    // Run all async fetches in parallel
+    const [webResults, xSentiment, ltlResults] = await Promise.all([
+      enhancedWebSearch(topic),
+      getXSentiment(topic),
+      getLiveTheLifeTVResults(topic),
+    ]);
+    // Synchronous
     const cycleStatus = getBitcoinCycleStatus();
 
     // 5. Synthesize with LLM
@@ -850,10 +850,10 @@ X Sentiment:\n${xSentiment}
 
 LiveTheLifeTV Insights:\n${ltlResults}
 
-Provide a Bitcoin-first, context-rich synthesis that always references our position in the 500-day strategy cycle.`;
+Provide a Bitcoin-first, narrative-driven research summary.`;
 
     const completion = await this.generateResponseWithTools(
-      `Research ${topic}`,
+      `Conduct research on ${topic}`,
       researchPrompt,
       0.7
     );
@@ -861,11 +861,14 @@ Provide a Bitcoin-first, context-rich synthesis that always references our posit
     return completion.choices[0]?.message?.content || 'Research failed.';
   }
 
-  // Market Research Mode (now aggregates web, X, and LTL results)
   static async conductMarketResearch(industry: string, focus: string = 'market_overview'): Promise<string> {
-    const webResults = await enhancedWebSearch(industry);
-    const xSentiment = await getXSentiment(industry);
-    const ltlResults = await getLiveTheLifeTVResults(industry);
+    // Run all async fetches in parallel
+    const [webResults, xSentiment, ltlResults] = await Promise.all([
+      enhancedWebSearch(industry),
+      getXSentiment(industry),
+      getLiveTheLifeTVResults(industry),
+    ]);
+    // Synchronous
     const cycleStatus = getBitcoinCycleStatus();
 
     const marketResearchPrompt = `
