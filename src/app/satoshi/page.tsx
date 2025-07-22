@@ -5,33 +5,49 @@ import { SATOSHI_EXAMPLE_QUERIES_CATEGORIZED } from '@/app/ask-satoshi/example-q
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 
-// Persona icon and description map
+// Persona icon and description map - using backend-expected keys
 const personaMeta: Record<string, { icon: string; label: string; desc: string }> = {
   multimodal: { icon: '🤖', label: 'Multi-Modal (Auto-detect)', desc: 'Auto-selects the best expert persona for your query.' },
-  validator: { icon: '🔍', label: 'Validator', desc: 'Validates crypto projects using Satoshi frameworks.' },
-  analyst: { icon: '📊', label: 'Analyst', desc: 'Analyzes stocks and markets with a Bitcoin-first perspective.' },
-  educator: { icon: '🎓', label: 'Educator', desc: 'Explains complex concepts in simple terms.' },
-  designer: { icon: '🎨', label: 'Designer', desc: 'Provides UX/UI critique with Bitcoin principles.' },
-  interviewer: { icon: '🎤', label: 'Interviewer', desc: 'Generates insightful interview questions.' },
-  consultant: { icon: '📝', label: 'Consultant', desc: 'Writes strategic whitepapers and reports.' },
-  researcher: { icon: '🔬', label: 'Researcher', desc: 'Conducts academic research and synthesis.' },
-  market_researcher: { icon: '📈', label: 'Market Researcher', desc: 'Deep-dives into market trends and outperformance.' },
-  idea_validator: { icon: '✅', label: 'Idea Validator', desc: 'Critically assesses new crypto or business ideas.' },
-  content_creator: { icon: '🗞️', label: 'Content Creator', desc: 'Generates Bitcoin-native content.' },
-  viral_creator: { icon: '🚀', label: 'Viral Creator', desc: 'Creates viral content for maximum engagement.' },
-  enhanced_viral_creator: { icon: '🚀', label: 'Enhanced Viral Creator', desc: 'Creates platform-specific, human-feeling viral content.' },
-  platform_adaptation: { icon: '🔄', label: 'Platform Adaptation', desc: 'Adapts content for different platforms.' },
-  multi_platform_strategy: { icon: '📊', label: 'Multi-Platform Strategy', desc: 'Creates comprehensive content strategies.' },
-  strategic_advisor: { icon: '🧠', label: 'Strategic Advisor', desc: 'Advises on business, investment, or technical strategy.' },
-  visual_explainer: { icon: '🖼️', label: 'Visual Explainer', desc: 'Creates visual analogies, diagrams, or meme ideas.' },
-  ultimate_tutor: { icon: '🏆', label: 'Ultimate Tutor', desc: 'Personalized, step-by-step teaching for any level.' },
-  crypto_price: { icon: '₿', label: 'Crypto Price', desc: 'Provides real-time crypto prices and commentary.' },
-  x_sentiment: { icon: '🐦', label: 'X Sentiment', desc: 'Analyzes Bitcoin sentiment on X (Twitter).' },
+  Validator: { icon: '🔍', label: 'Validator', desc: 'Validates crypto projects using Satoshi frameworks.' },
+  Analyst: { icon: '📊', label: 'Analyst', desc: 'Analyzes stocks and markets with a Bitcoin-first perspective.' },
+  Educator: { icon: '🎓', label: 'Educator', desc: 'Explains complex concepts in simple terms.' },
+  Designer: { icon: '🎨', label: 'Designer', desc: 'Provides UX/UI critique with Bitcoin principles.' },
+  Interviewer: { icon: '🎤', label: 'Interviewer', desc: 'Generates insightful interview questions.' },
+  Consultant: { icon: '📝', label: 'Consultant', desc: 'Writes strategic whitepapers and reports.' },
+  Researcher: { icon: '🔬', label: 'Researcher', desc: 'Conducts academic research and synthesis.' },
+  MarketResearcher: { icon: '📈', label: 'Market Researcher', desc: 'Deep-dives into market trends and outperformance.' },
+  IdeaValidator: { icon: '✅', label: 'Idea Validator', desc: 'Critically assesses new crypto or business ideas.' },
+  ContentCreator: { icon: '🗞️', label: 'Content Creator', desc: 'Generates Bitcoin-native content.' },
+  ViralCreator: { icon: '🚀', label: 'Viral Creator', desc: 'Creates viral content for maximum engagement.' },
+  EnhancedViralCreator: { icon: '🚀', label: 'Enhanced Viral Creator', desc: 'Creates platform-specific, human-feeling viral content.' },
+  PlatformAdaptation: { icon: '🔄', label: 'Platform Adaptation', desc: 'Adapts content for different platforms.' },
+  MultiPlatformStrategy: { icon: '📊', label: 'Multi-Platform Strategy', desc: 'Creates comprehensive content strategies.' },
+  StrategicAdvisor: { icon: '🧠', label: 'Strategic Advisor', desc: 'Advises on business, investment, or technical strategy.' },
+  VisualExplainer: { icon: '🖼️', label: 'Visual Explainer', desc: 'Creates visual analogies, diagrams, or meme ideas.' },
+  UltimateTutor: { icon: '🏆', label: 'Ultimate Tutor', desc: 'Personalized, step-by-step teaching for any level.' },
+  SatoshiBot: { icon: '₿', label: 'Satoshi Bot', desc: 'Answers as Satoshi Nakamoto himself.' },
+  WealthHacker: { icon: '💰', label: 'Wealth Hacker', desc: 'Cracks hidden wealth codes and income streams.' },
 };
 
-// Helper to get a valid persona key
+// Helper to get a valid persona key that matches backend expectations
 function getValidPersonaKey(mode: string): string {
-  return personaMeta[mode] ? mode : 'multimodal';
+  // Map frontend-friendly keys to backend-expected keys
+  const keyMap: Record<string, string> = {
+    'crypto_price': 'Analyst',
+    'x_sentiment': 'Analyst',
+    'market_researcher': 'MarketResearcher',
+    'idea_validator': 'IdeaValidator',
+    'content_creator': 'ContentCreator',
+    'viral_creator': 'ViralCreator',
+    'enhanced_viral_creator': 'EnhancedViralCreator',
+    'platform_adaptation': 'PlatformAdaptation',
+    'multi_platform_strategy': 'MultiPlatformStrategy',
+    'strategic_advisor': 'StrategicAdvisor',
+    'visual_explainer': 'VisualExplainer',
+    'ultimate_tutor': 'UltimateTutor',
+  };
+  
+  return keyMap[mode] || (personaMeta[mode] ? mode : 'multimodal');
 }
 
 export default function SatoshiTestPage() {
@@ -45,7 +61,30 @@ export default function SatoshiTestPage() {
   const responseRef = useRef<HTMLDivElement>(null);
   const [showPersonaDesc, setShowPersonaDesc] = useState(false);
 
-  const modes = Object.entries(personaMeta).map(([value, meta]) => ({ value, label: meta.label }));
+  // Create modes list with proper mapping
+  const modes = [
+    { value: 'multimodal', label: 'Multi-Modal (Auto-detect)' },
+    { value: 'Analyst', label: 'Analyst' },
+    { value: 'Validator', label: 'Validator' },
+    { value: 'Educator', label: 'Educator' },
+    { value: 'Designer', label: 'Designer' },
+    { value: 'Interviewer', label: 'Interviewer' },
+    { value: 'Consultant', label: 'Consultant' },
+    { value: 'Researcher', label: 'Researcher' },
+    { value: 'MarketResearcher', label: 'Market Researcher' },
+    { value: 'IdeaValidator', label: 'Idea Validator' },
+    { value: 'ContentCreator', label: 'Content Creator' },
+    { value: 'ViralCreator', label: 'Viral Creator' },
+    { value: 'EnhancedViralCreator', label: 'Enhanced Viral Creator' },
+    { value: 'PlatformAdaptation', label: 'Platform Adaptation' },
+    { value: 'MultiPlatformStrategy', label: 'Multi-Platform Strategy' },
+    { value: 'StrategicAdvisor', label: 'Strategic Advisor' },
+    { value: 'VisualExplainer', label: 'Visual Explainer' },
+    { value: 'UltimateTutor', label: 'Ultimate Tutor' },
+    { value: 'SatoshiBot', label: 'Satoshi Bot' },
+    { value: 'WealthHacker', label: 'Wealth Hacker' },
+  ];
+
   const categorizedQueries = SATOSHI_EXAMPLE_QUERIES_CATEGORIZED;
 
   useEffect(() => {
@@ -57,35 +96,57 @@ export default function SatoshiTestPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
+    
     setLoading(true);
     setResponse('');
     setError('');
     setPersona('');
     setAutoDetected(false);
+    
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout for streaming
+    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    
     try {
-      // Always send a valid persona key
       const personaKey = getValidPersonaKey(mode);
       const res = await fetch('/api/satoshi', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input: message.trim(), mode: personaKey, options: {}, stream: true }),
+        body: JSON.stringify({ 
+          input: message.trim(), 
+          mode: personaKey, 
+          options: {}, 
+          stream: true 
+        }),
         signal: controller.signal,
       });
+
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        setError(`Error: ${res.status} - ${errorData.error || 'Failed to get response from Satoshi'}`);
-        return;
+        let errorMsg = 'Failed to get response from Satoshi';
+        try {
+          const contentType = res.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await res.json();
+            errorMsg += `: ${errorData.error || res.statusText}`;
+          } else {
+            const textResponse = await res.text();
+            errorMsg += `: ${res.status} ${res.statusText}`;
+            if (textResponse.length < 500) {
+              errorMsg += ` - ${textResponse}`;
+            }
+          }
+        } catch {
+          errorMsg += `: ${res.status} ${res.statusText}`;
+        }
+        throw new Error(errorMsg);
       }
-      // Streaming support
+
+      // Handle streaming response like grok420
       const reader = res.body?.getReader();
       if (reader) {
         let assistantContent = '';
-        setLoading(true);
-        setResponse('');
         setPersona(personaKey);
         setAutoDetected(!mode || mode === 'multimodal' || mode === 'Multi-Modal (Auto-detect)');
+        
         let done = false;
         while (!done) {
           const { value, done: doneReading } = await reader.read();
@@ -93,30 +154,43 @@ export default function SatoshiTestPage() {
           if (value) {
             const chunk = new TextDecoder().decode(value);
             assistantContent += chunk;
-            setResponse(assistantContent);
+            setResponse(assistantContent); // Update with accumulating content
           }
         }
+        
         setLoading(false);
-        // After streaming, try to parse as JSON and extract 'processed'
+        
+        // After streaming, try to parse as JSON and extract 'processed' field
         try {
           const parsed = JSON.parse(assistantContent);
-          setResponse(parsed.processed || parsed.content || parsed.error || 'No response content received from Satoshi');
+          const finalResponse = parsed.processed || parsed.content || parsed.error || assistantContent;
+          setResponse(finalResponse);
         } catch {
+          // If not JSON, use the raw content
           setResponse(assistantContent);
         }
       } else {
         // Fallback: non-streaming - expect JSON
-        const data = await res.json();
-        setResponse(data.processed || data.content || data.error || 'No response content received from Satoshi');
-        setPersona(data.persona || personaKey);
-        setAutoDetected(!mode || mode === 'multimodal' || mode === 'Multi-Modal (Auto-detect)');
+        try {
+          const data = await res.json();
+          const finalResponse = data.processed || data.content || data.error || 'No response content received from Satoshi';
+          setResponse(finalResponse);
+          setPersona(data.persona || personaKey);
+          setAutoDetected(!mode || mode === 'multimodal' || mode === 'Multi-Modal (Auto-detect)');
+                 } catch {
+           // If JSON parsing fails, try as text
+           const textResponse = await res.text();
+           setResponse(textResponse || 'No response content received from Satoshi');
+           setPersona(personaKey);
+           setAutoDetected(!mode || mode === 'multimodal' || mode === 'Multi-Modal (Auto-detect)');
+         }
         setLoading(false);
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
         setError('Error: Request timed out. Please try again.');
       } else {
-        setError(`Error: Failed to connect to Satoshi API - ${error instanceof Error ? error.message : 'Unknown error'}`);
+        setError(`Error: ${error instanceof Error ? error.message : 'Failed to connect to Satoshi API'}`);
       }
       setLoading(false);
     } finally {
@@ -128,7 +202,6 @@ export default function SatoshiTestPage() {
     setMessage(example);
   };
 
-  // Retry handler (if you have a retry button)
   const handleRetry = () => {
     setMode('multimodal');
     setError('');
