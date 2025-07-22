@@ -4,17 +4,18 @@ import { getCryptoPriceWithSatoshiContext } from './enhancedCryptoPrice';
 import { logger } from '@/lib/logger';
 
 // --- In-memory cache with TTL ---
-const _cache: Record<string, { value: any; expires: number }> = {};
-function getCache(key: string) {
+type CacheValue = unknown;
+const _cache: Record<string, { value: CacheValue; expires: number }> = {};
+function getCache<T = unknown>(key: string): T | undefined {
   const entry = _cache[key];
   if (!entry) return undefined;
   if (Date.now() > entry.expires) {
     delete _cache[key];
     return undefined;
   }
-  return entry.value;
+  return entry.value as T;
 }
-function setCache(key: string, value: any, ttlMs = 60000) {
+function setCache(key: string, value: CacheValue, ttlMs = 60000): void {
   _cache[key] = { value, expires: Date.now() + ttlMs };
 }
 
@@ -861,7 +862,7 @@ Focus on Bitcoin-first solutions and sovereign living principles.`;
     const [webResults, xSentiment, ltlResults] = await Promise.all([
       (async () => {
         const cacheKey = `web:${topic}`;
-        const cached = getCache(cacheKey);
+        const cached = getCache<string>(cacheKey);
         if (cached) return cached;
         const timer = timeStep('webSearch');
         const result = await enhancedWebSearch(topic);
@@ -871,7 +872,7 @@ Focus on Bitcoin-first solutions and sovereign living principles.`;
       })(),
       (async () => {
         const cacheKey = `xsent:${topic}`;
-        const cached = getCache(cacheKey);
+        const cached = getCache<string>(cacheKey);
         if (cached) return cached;
         const timer = timeStep('xSentiment');
         const result = await getXSentiment(topic);
@@ -881,7 +882,7 @@ Focus on Bitcoin-first solutions and sovereign living principles.`;
       })(),
       (async () => {
         const cacheKey = `ltl:${topic}`;
-        const cached = getCache(cacheKey);
+        const cached = getCache<string>(cacheKey);
         if (cached) return cached;
         const timer = timeStep('ltlResults');
         const result = await getLiveTheLifeTVResults(topic);
@@ -923,7 +924,7 @@ Provide a Bitcoin-first, narrative-driven research summary.`;
     const [webResults, xSentiment, ltlResults] = await Promise.all([
       (async () => {
         const cacheKey = `web:${industry}`;
-        const cached = getCache(cacheKey);
+        const cached = getCache<string>(cacheKey);
         if (cached) return cached;
         const timer = timeStep('webSearch');
         const result = await enhancedWebSearch(industry);
@@ -933,7 +934,7 @@ Provide a Bitcoin-first, narrative-driven research summary.`;
       })(),
       (async () => {
         const cacheKey = `xsent:${industry}`;
-        const cached = getCache(cacheKey);
+        const cached = getCache<string>(cacheKey);
         if (cached) return cached;
         const timer = timeStep('xSentiment');
         const result = await getXSentiment(industry);
@@ -943,7 +944,7 @@ Provide a Bitcoin-first, narrative-driven research summary.`;
       })(),
       (async () => {
         const cacheKey = `ltl:${industry}`;
-        const cached = getCache(cacheKey);
+        const cached = getCache<string>(cacheKey);
         if (cached) return cached;
         const timer = timeStep('ltlResults');
         const result = await getLiveTheLifeTVResults(industry);
