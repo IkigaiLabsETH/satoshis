@@ -3,6 +3,35 @@ import type { ChatCompletionTool } from "openai/resources/chat/completions";
 import { getCryptoPriceWithSatoshiContext } from './enhancedCryptoPrice';
 import { logger } from '@/lib/logger';
 
+// --- In-memory cache with TTL ---
+const _cache: Record<string, { value: any; expires: number }> = {};
+function getCache(key: string) {
+  const entry = _cache[key];
+  if (!entry) return undefined;
+  if (Date.now() > entry.expires) {
+    delete _cache[key];
+    return undefined;
+  }
+  return entry.value;
+}
+function setCache(key: string, value: any, ttlMs = 60000) {
+  _cache[key] = { value, expires: Date.now() + ttlMs };
+}
+
+// --- Timing utility ---
+function timeStep(label: string) {
+  const start = Date.now();
+  return () => {
+    const duration = Date.now() - start;
+    // eslint-disable-next-line no-console
+    console.log(`[timing] ${label}: ${duration}ms`);
+    return duration;
+  };
+}
+
+// Export for use in service methods
+export { getCache, setCache, timeStep };
+
 // Current macro and crypto news context (updated regularly)
 const CURRENT_MARKET_CONTEXT = `
 🎯 **CURRENT MARKET CONTEXT (July 16, 2025):**
@@ -827,16 +856,43 @@ Focus on Bitcoin-first solutions and sovereign living principles.`;
 
   // Satoshi Researcher Mode (now aggregates web, X, and LTL results)
   static async conductResearch(topic: string): Promise<string> {
-    // Run all async fetches in parallel
+    const overallTimer = timeStep('conductResearch');
+    // Run all async fetches in parallel, with caching and timing
     const [webResults, xSentiment, ltlResults] = await Promise.all([
-      enhancedWebSearch(topic),
-      getXSentiment(topic),
-      getLiveTheLifeTVResults(topic),
+      (async () => {
+        const cacheKey = `web:${topic}`;
+        const cached = getCache(cacheKey);
+        if (cached) return cached;
+        const timer = timeStep('webSearch');
+        const result = await enhancedWebSearch(topic);
+        timer();
+        setCache(cacheKey, result, 60000);
+        return result;
+      })(),
+      (async () => {
+        const cacheKey = `xsent:${topic}`;
+        const cached = getCache(cacheKey);
+        if (cached) return cached;
+        const timer = timeStep('xSentiment');
+        const result = await getXSentiment(topic);
+        timer();
+        setCache(cacheKey, result, 60000);
+        return result;
+      })(),
+      (async () => {
+        const cacheKey = `ltl:${topic}`;
+        const cached = getCache(cacheKey);
+        if (cached) return cached;
+        const timer = timeStep('ltlResults');
+        const result = await getLiveTheLifeTVResults(topic);
+        timer();
+        setCache(cacheKey, result, 30000);
+        return result;
+      })(),
     ]);
     // Synchronous
     const cycleStatus = getBitcoinCycleStatus();
 
-    // 5. Synthesize with LLM
     const researchPrompt = `
 ${enhancedSatoshiPromptPatterns.researcher}
 
@@ -857,16 +913,44 @@ Provide a Bitcoin-first, narrative-driven research summary.`;
       researchPrompt,
       0.7
     );
-
+    overallTimer();
     return completion.choices[0]?.message?.content || 'Research failed.';
   }
 
   static async conductMarketResearch(industry: string, focus: string = 'market_overview'): Promise<string> {
-    // Run all async fetches in parallel
+    const overallTimer = timeStep('conductMarketResearch');
+    // Run all async fetches in parallel, with caching and timing
     const [webResults, xSentiment, ltlResults] = await Promise.all([
-      enhancedWebSearch(industry),
-      getXSentiment(industry),
-      getLiveTheLifeTVResults(industry),
+      (async () => {
+        const cacheKey = `web:${industry}`;
+        const cached = getCache(cacheKey);
+        if (cached) return cached;
+        const timer = timeStep('webSearch');
+        const result = await enhancedWebSearch(industry);
+        timer();
+        setCache(cacheKey, result, 60000);
+        return result;
+      })(),
+      (async () => {
+        const cacheKey = `xsent:${industry}`;
+        const cached = getCache(cacheKey);
+        if (cached) return cached;
+        const timer = timeStep('xSentiment');
+        const result = await getXSentiment(industry);
+        timer();
+        setCache(cacheKey, result, 60000);
+        return result;
+      })(),
+      (async () => {
+        const cacheKey = `ltl:${industry}`;
+        const cached = getCache(cacheKey);
+        if (cached) return cached;
+        const timer = timeStep('ltlResults');
+        const result = await getLiveTheLifeTVResults(industry);
+        timer();
+        setCache(cacheKey, result, 30000);
+        return result;
+      })(),
     ]);
     // Synchronous
     const cycleStatus = getBitcoinCycleStatus();
@@ -892,7 +976,7 @@ Provide Gartner-style market analysis with competitive intelligence and Bitcoin-
       marketResearchPrompt,
       0.7
     );
-
+    overallTimer();
     return completion.choices[0]?.message?.content || 'Market research failed.';
   }
 
