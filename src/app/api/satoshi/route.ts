@@ -47,17 +47,52 @@ function detectDataSource(input: string): Array<
 > {
   const lower = input.toLowerCase();
   const sources: Array<string> = [];
-  if (/(btc|bitcoin|eth|sol|altcoin|crypto|token|defi|nft|ratio|market cap|volume|gainer|loser|hash rate|gas fee|staking|yield|tvl|floor price|on-chain|wallet|address|mvrv|whale|liquidation|vault|makerdao|uniswap|lido|rocket pool|pancake|curve|sushiswap|opensea|blur|mint|airdrop)/.test(lower)) sources.push('coingecko');
-  if (/(stock|equity|nasdaq|sp500|s&p|mstr|nvda|aapl|msft|tesla|price to earnings|pe ratio|sharpe|company|public company|etf|fund|institutional|holding|microstrategy|apple|microsoft|tesla|nvda|nvidea|earnings|dividend|ytd|quarter|fomc|fed|cpi|unemployment|macro|dxy|dollar index|coinbase|coin)/.test(lower)) sources.push('finnhub');
-  if (/(insider sentiment|insider activity)/.test(lower)) sources.push('finnhub-insider');
-  if (/(earnings|eps|quarterly results)/.test(lower)) sources.push('finnhub-earnings');
-  if (/(ipo|initial public offering)/.test(lower)) sources.push('finnhub-ipo');
-  if (/(company news|stock news|press release)/.test(lower)) sources.push('finnhub-news');
-  if (/(analyst|recommendation|target price|price target|buy|hold|sell)/.test(lower)) sources.push('finnhub-analyst');
-  if (/(price target|target price)/.test(lower)) sources.push('finnhub-price-target');
-  if (/(news|sentiment|twitter|x.com|headline|trending|regulation|sec|catalyst|event|conference|upgrade|decision|google trends|meme|retweet|shared|trending|reddit|forum|breaking|update)/.test(lower)) sources.push('web');
-  if (sources.length === 0) sources.push('web');
-  return Array.from(new Set(sources)) as Array<
+  
+  // Optimize: Be more conservative with data source detection
+  // Only add sources that are clearly needed based on the query
+  
+  // Crypto-specific queries
+  if (/(btc|bitcoin|eth|ethereum|sol|solana|altcoin|crypto|token|defi|nft|ratio|market cap|volume|gainer|loser|hash rate|gas fee|staking|yield|tvl|floor price|on-chain|wallet|address|mvrv|whale|liquidation|vault|makerdao|uniswap|lido|rocket pool|pancake|curve|sushiswap|opensea|blur|mint|airdrop)/.test(lower)) {
+    sources.push('coingecko');
+  }
+  
+  // Stock/equity specific queries
+  if (/(stock|equity|nasdaq|sp500|s&p|mstr|nvda|aapl|msft|tesla|price to earnings|pe ratio|sharpe|company|public company|etf|fund|institutional|holding|microstrategy|apple|microsoft|tesla|nvda|nvidea|earnings|dividend|ytd|quarter|fomc|fed|cpi|unemployment|macro|dxy|dollar index|coinbase|coin)/.test(lower)) {
+    sources.push('finnhub');
+  }
+  
+  // Specific Finnhub data types - only add if explicitly mentioned
+  if (/(insider sentiment|insider activity)/.test(lower)) {
+    sources.push('finnhub-insider');
+  }
+  if (/(earnings|eps|quarterly results)/.test(lower)) {
+    sources.push('finnhub-earnings');
+  }
+  if (/(ipo|initial public offering)/.test(lower)) {
+    sources.push('finnhub-ipo');
+  }
+  if (/(company news|stock news|press release)/.test(lower)) {
+    sources.push('finnhub-news');
+  }
+  if (/(analyst|recommendation|target price|price target|buy|hold|sell)/.test(lower)) {
+    sources.push('finnhub-analyst');
+  }
+  if (/(price target|target price)/.test(lower)) {
+    sources.push('finnhub-price-target');
+  }
+  
+  // Web search - only for news/sentiment queries or if no other sources detected
+  if (/(news|sentiment|twitter|x.com|headline|trending|regulation|sec|catalyst|event|conference|upgrade|decision|google trends|meme|retweet|shared|trending|reddit|forum|breaking|update)/.test(lower)) {
+    sources.push('web');
+  }
+  
+  // If no specific sources detected, default to web search for general queries
+  if (sources.length === 0) {
+    sources.push('web');
+  }
+  
+  // Limit to max 3 sources to prevent timeout
+  return Array.from(new Set(sources)).slice(0, 3) as Array<
     'coingecko' | 'finnhub' | 'web' | 'finnhub-insider' | 'finnhub-earnings' | 'finnhub-ipo' | 'finnhub-news' | 'finnhub-analyst' | 'finnhub-price-target'
   >;
 }
@@ -71,7 +106,7 @@ function isEarningsComparisonQuery(input: string): boolean {
 }
 
 // LLM timeout constant
-const LLM_TIMEOUT = 30000; // Increased to 30 seconds for debugging
+const LLM_TIMEOUT = 20000; // Reduced to 20 seconds to prevent function timeout
 
 process.on('unhandledRejection', (reason, promise) => {
   // eslint-disable-next-line no-console
@@ -162,77 +197,91 @@ async function fetchRelevantMarketData(input: string, sources: string[], symbol:
   let analystData = '';
   let priceTargetData = '';
   const used: string[] = [];
+  
+  // Optimize: Detect simple queries to reduce API calls
   const isSimpleCryptoQuery = sources.length === 1 && sources[0] === 'coingecko';
   const isSimpleStockQuery = sources.length === 1 && sources[0] === 'finnhub';
   const isNewsQuery = sources.includes('web') && sources.length === 1;
+  const isSimpleQuery = isSimpleCryptoQuery || isSimpleStockQuery || isNewsQuery;
+  
   const apiCalls: Promise<unknown>[] = [];
+  
+  // Always get BTC price (essential)
   apiCalls.push(Promise.race([
     getMarketData(['BTC']),
-    new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko BTC price timeout')), 5000))
+    new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko BTC price timeout')), 3000))
   ]));
-  if (!isSimpleCryptoQuery && !isSimpleStockQuery && !isNewsQuery) {
-    apiCalls.push(
+  
+  if (isSimpleQuery) {
+    // For simple queries, only make the essential API call
+    if (isSimpleCryptoQuery) {
+      apiCalls.push(Promise.race([
+        getMarketData(['BTC', 'ETH', 'SOL']),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 3000))
+      ]));
+    } else if (isSimpleStockQuery) {
+      apiCalls.push(Promise.race([
+        getFinnhubQuote(symbol),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub quote timeout')), 3000))
+      ]));
+    } else if (isNewsQuery) {
+      apiCalls.push(Promise.race([
+        enhancedWebSearch(input),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 3000))
+      ]));
+    }
+  } else {
+    // For complex queries, make all relevant API calls but with shorter timeouts
+    const promises = [
       sources.includes('coingecko') ? Promise.race([
         getMarketData(['BTC', 'ETH', 'SOL']),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 5000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 3000))
       ]) : Promise.resolve(null),
       sources.includes('web') ? Promise.race([
         enhancedWebSearch(input),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 5000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 3000))
       ]) : Promise.resolve(null),
       sources.includes('web') ? Promise.race([
         getXSentiment(input),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('X sentiment timeout')), 5000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('X sentiment timeout')), 3000))
       ]) : Promise.resolve(null),
       sources.includes('finnhub') ? Promise.race([
         getFinnhubQuote(symbol),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub quote timeout')), 5000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub quote timeout')), 3000))
       ]) : Promise.resolve(null),
       sources.includes('finnhub-insider') ? Promise.race([
         getInsiderSentiment(symbol),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub insider timeout')), 5000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub insider timeout')), 3000))
       ]) : Promise.resolve(null),
       sources.includes('finnhub-earnings') ? Promise.race([
         getCompanyEarnings(symbol),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub earnings timeout')), 5000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub earnings timeout')), 3000))
       ]) : Promise.resolve(null),
       sources.includes('finnhub-ipo') ? Promise.race([
         getIPOCalendar(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub IPO timeout')), 5000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub IPO timeout')), 3000))
       ]) : Promise.resolve(null),
       sources.includes('finnhub-news') ? Promise.race([
         getCompanyNews(symbol),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub news timeout')), 5000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub news timeout')), 3000))
       ]) : Promise.resolve(null),
       sources.includes('finnhub-analyst') ? Promise.race([
         getAnalystRecommendations(symbol),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub analyst timeout')), 5000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub analyst timeout')), 3000))
       ]) : Promise.resolve(null),
       sources.includes('finnhub-price-target') ? Promise.race([
         getPriceTarget(symbol),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub price target timeout')), 5000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub price target timeout')), 3000))
       ]) : Promise.resolve(null),
       Promise.race([
         getMarketDataWithSatoshiContext(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Satoshi market context timeout')), 5000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Satoshi market context timeout')), 3000))
       ])
-    );
-  } else if (isSimpleCryptoQuery) {
-    apiCalls.push(Promise.race([
-      getMarketData(['BTC', 'ETH', 'SOL']),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 5000))
-    ]));
-  } else if (isSimpleStockQuery) {
-    apiCalls.push(Promise.race([
-      getFinnhubQuote(symbol),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub quote timeout')), 5000))
-    ]));
-  } else if (isNewsQuery) {
-    apiCalls.push(Promise.race([
-      enhancedWebSearch(input),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 5000))
-    ]));
+    ];
+    
+    apiCalls.push(...promises);
   }
+  
   const timings: { label: string; duration: number }[] = [];
   const apiCallWrappers = apiCalls.map((call, idx) => {
     const label = `API call ${idx}`;
@@ -244,8 +293,10 @@ async function fetchRelevantMarketData(input: string, sources: string[], symbol:
       return result;
     });
   });
+  
   const results = await Promise.allSettled(apiCallWrappers);
   let warning = '';
+  
   if (results[0].status === 'fulfilled' && typeof results[0].value === 'string') {
     btcQuote = `\nBTC Price Benchmark:\n${results[0].value}`;
   } else {
@@ -565,121 +616,142 @@ async function handleAnalystCompare(input: string, persona: string, prompt: stri
 }
 
 export async function POST(request: NextRequest): Promise<Response> {
-  try {
-    const body = await request.json();
-    // Defensive logging
-    // eslint-disable-next-line no-console
-    console.log('Satoshi API received body:', body);
-    const { input, mode } = body;
-    if (!input) {
-      return NextResponse.json({ error: 'Input is required' }, { status: 400 });
-    }
-    let persona: string;
-    if (!mode || mode === 'Multi-Modal' || mode === 'Multi-Modal (Auto-detect)') {
-      persona = routeToPersona(input);
-    } else {
-      persona = normalizePersonaMode(mode);
-    }
-    const personaPrompt = SATOSHI_PERSONAS[persona];
-    if (!personaPrompt) {
-      const bitcoinNarrative = 'Bitcoin is the signal. Even when data is missing, the narrative remains: decentralization, sound money, and antifragility. Stay sovereign.';
-      return NextResponse.json({
-        persona,
-        prompt: '',
-        processed: `${bitcoinNarrative}\n\n**Warning:** Unknown persona: ${persona}. Partial data is available.`,
-        dataSourceUsed: []
-      }, { status: 200 });
-    }
-
-    // --- Dynamic Data Source Selection ---
-    try {
-      const sources = detectDataSource(input);
-      const symbol = extractSymbol(input);
-      const { marketData, btcQuote, used, timings, warning } = await fetchRelevantMarketData(input, sources, symbol);
-
-      // Compose context block and trim prompt
-      const { prompt, llmMaxTokens } = buildPromptContext({
-        btcQuote,
-        marketData,
-        userQuestion: input
-      });
-
-      // Special case: portfolio simulation
-      if (isPortfolioSimQuery(input)) {
-        return handlePortfolioSimulation(input, persona, used);
-      }
-
-      // Special case: earnings comparison
-      if (isEarningsComparisonQuery(input)) {
-        return handleEarningsComparison(input, persona, used);
-      }
-
-      // Special case: analyst recommendations and compare COIN to BTC
-      const isAnalystCompareQuery = /analyst recommendations.*compare.*coin.*btc|compare.*coin.*btc.*analyst recommendations/i.test(input);
-      if (isAnalystCompareQuery) {
-        return handleAnalystCompare(input, persona, prompt, llmMaxTokens);
-      }
-
-      // Fallback: always answer with whatever data is available
-      const llmStart = Date.now();
-      let fallbackLLMResponse;
-      let llmTimedOut = false;
+  // Global timeout wrapper to prevent function timeout
+  const GLOBAL_TIMEOUT = 25000; // 25 seconds for Vercel serverless
+  
+  return Promise.race([
+    (async () => {
       try {
-        // Debug: Log the trimmed prompt length and content
+        const body = await request.json();
+        // Defensive logging
         // eslint-disable-next-line no-console
-        console.log('Trimmed LLM prompt length:', prompt.length);
-        // eslint-disable-next-line no-console
-        console.log('Trimmed LLM prompt preview:', prompt.slice(0, 500));
-        // Debug: Log the prompt sent to the LLM
-        // eslint-disable-next-line no-console
-        console.log('LLM prompt being sent:', prompt);
-        fallbackLLMResponse = await Promise.race([
-          Grok4Service.generateViralResponse(input, prompt, undefined, llmMaxTokens),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('LLM timeout')), LLM_TIMEOUT))
-        ]);
-        // Debug: Log the LLM response
-        // eslint-disable-next-line no-console
-        console.log('LLM response received:', fallbackLLMResponse);
+        console.log('Satoshi API received body:', body);
+        const { input, mode } = body;
+        if (!input) {
+          return NextResponse.json({ error: 'Input is required' }, { status: 400 });
+        }
+        let persona: string;
+        if (!mode || mode === 'Multi-Modal' || mode === 'Multi-Modal (Auto-detect)') {
+          persona = routeToPersona(input);
+        } else {
+          persona = normalizePersonaMode(mode);
+        }
+        const personaPrompt = SATOSHI_PERSONAS[persona];
+        if (!personaPrompt) {
+          const bitcoinNarrative = 'Bitcoin is the signal. Even when data is missing, the narrative remains: decentralization, sound money, and antifragility. Stay sovereign.';
+          return NextResponse.json({
+            persona,
+            prompt: '',
+            processed: `${bitcoinNarrative}\n\n**Warning:** Unknown persona: ${persona}. Partial data is available.`,
+            dataSourceUsed: []
+          }, { status: 200 });
+        }
+
+        // --- Dynamic Data Source Selection ---
+        try {
+          const sources = detectDataSource(input);
+          const symbol = extractSymbol(input);
+          const { marketData, btcQuote, used, timings, warning } = await fetchRelevantMarketData(input, sources, symbol);
+
+          // Compose context block and trim prompt
+          const { prompt, llmMaxTokens } = buildPromptContext({
+            btcQuote,
+            marketData,
+            userQuestion: input
+          });
+
+          // Special case: portfolio simulation
+          if (isPortfolioSimQuery(input)) {
+            return handlePortfolioSimulation(input, persona, used);
+          }
+
+          // Special case: earnings comparison
+          if (isEarningsComparisonQuery(input)) {
+            return handleEarningsComparison(input, persona, used);
+          }
+
+          // Special case: analyst recommendations and compare COIN to BTC
+          const isAnalystCompareQuery = /analyst recommendations.*compare.*coin.*btc|compare.*coin.*btc.*analyst recommendations/i.test(input);
+          if (isAnalystCompareQuery) {
+            return handleAnalystCompare(input, persona, prompt, llmMaxTokens);
+          }
+
+          // Fallback: always answer with whatever data is available
+          const llmStart = Date.now();
+          let fallbackLLMResponse;
+          let llmTimedOut = false;
+          try {
+            // Debug: Log the trimmed prompt length and content
+            // eslint-disable-next-line no-console
+            console.log('Trimmed LLM prompt length:', prompt.length);
+            // eslint-disable-next-line no-console
+            console.log('Trimmed LLM prompt preview:', prompt.slice(0, 500));
+            // Debug: Log the prompt sent to the LLM
+            // eslint-disable-next-line no-console
+            console.log('LLM prompt being sent:', prompt);
+            fallbackLLMResponse = await Promise.race([
+              Grok4Service.generateViralResponse(input, prompt, undefined, llmMaxTokens),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('LLM timeout')), LLM_TIMEOUT))
+            ]);
+            // Debug: Log the LLM response
+            // eslint-disable-next-line no-console
+            console.log('LLM response received:', fallbackLLMResponse);
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error('LLM response failed:', e);
+            llmTimedOut = true;
+          }
+          const llmEnd = Date.now();
+          logDuration('LLM response', llmStart, llmEnd);
+          timings.push({ label: 'LLM response', duration: llmEnd - llmStart });
+          // Print slowest step
+          const slowest = timings.reduce((a, b) => (a.duration > b.duration ? a : b), { label: '', duration: 0 });
+          // eslint-disable-next-line no-console
+          console.log('Slowest step:', slowest.label, slowest.duration, 'ms');
+          let fallbackProcessedString: string;
+          if (llmTimedOut) {
+            fallbackProcessedString = formatLLMTimeoutResponse();
+          } else {
+            const fallbackProcessed = postProcessLLMOutput(persona, String(fallbackLLMResponse)) as string | { content?: string; text?: string; [key: string]: unknown };
+            fallbackProcessedString = typeof fallbackProcessed === 'string'
+              ? fallbackProcessed
+              : (fallbackProcessed.content || fallbackProcessed.text) ?? JSON.stringify(fallbackProcessed, null, 2);
+          }
+          if (warning) {
+            fallbackProcessedString = `Bitcoin is the signal. Even when data is missing, the narrative remains: decentralization, sound money, and antifragility. Stay sovereign.\n\n**Warning:** ${warning}\n\n${fallbackProcessedString}`;
+          }
+          return NextResponse.json({ persona, prompt: prompt, processed: fallbackProcessedString, dataSourceUsed: used });
+        } catch (apiError) {
+          // If any API call fails unexpectedly, return a 200 with a warning and partial data
+          let warningMsg: string;
+          if (typeof apiError === 'string') warningMsg = apiError;
+          else if (apiError instanceof Error) warningMsg = apiError.message;
+          else warningMsg = String(apiError);
+          return formatAPIErrorResponse(persona, warningMsg);
+        }
       } catch (e) {
         // eslint-disable-next-line no-console
-        console.error('LLM response failed:', e);
-        llmTimedOut = true;
+        console.error('Satoshi API error:', e);
+        const errorMsg = e instanceof Error ? e.message : String(e);
+        const bitcoinNarrative = 'Bitcoin is the signal. Even when data is missing, the narrative remains: decentralization, sound money, and antifragility. Stay sovereign.';
+        return NextResponse.json({ error: 'Malformed request or server error', details: `${bitcoinNarrative}\n${errorMsg}` }, { status: 400 });
       }
-      const llmEnd = Date.now();
-      logDuration('LLM response', llmStart, llmEnd);
-      timings.push({ label: 'LLM response', duration: llmEnd - llmStart });
-      // Print slowest step
-      const slowest = timings.reduce((a, b) => (a.duration > b.duration ? a : b), { label: '', duration: 0 });
-      // eslint-disable-next-line no-console
-      console.log('Slowest step:', slowest.label, slowest.duration, 'ms');
-      let fallbackProcessedString: string;
-      if (llmTimedOut) {
-        fallbackProcessedString = formatLLMTimeoutResponse();
-      } else {
-        const fallbackProcessed = postProcessLLMOutput(persona, String(fallbackLLMResponse)) as string | { content?: string; text?: string; [key: string]: unknown };
-        fallbackProcessedString = typeof fallbackProcessed === 'string'
-          ? fallbackProcessed
-          : (fallbackProcessed.content || fallbackProcessed.text) ?? JSON.stringify(fallbackProcessed, null, 2);
-      }
-      if (warning) {
-        fallbackProcessedString = `Bitcoin is the signal. Even when data is missing, the narrative remains: decentralization, sound money, and antifragility. Stay sovereign.\n\n**Warning:** ${warning}\n\n${fallbackProcessedString}`;
-      }
-      return NextResponse.json({ persona, prompt: prompt, processed: fallbackProcessedString, dataSourceUsed: used });
-    } catch (apiError) {
-      // If any API call fails unexpectedly, return a 200 with a warning and partial data
-      let warningMsg: string;
-      if (typeof apiError === 'string') warningMsg = apiError;
-      else if (apiError instanceof Error) warningMsg = apiError.message;
-      else warningMsg = String(apiError);
-      return formatAPIErrorResponse(persona, warningMsg);
-    }
-  } catch (e) {
+    })(),
+    new Promise<Response>((_, reject) => 
+      setTimeout(() => reject(new Error('Function timeout - request took too long')), GLOBAL_TIMEOUT)
+    )
+  ]).catch((error) => {
     // eslint-disable-next-line no-console
-    console.error('Satoshi API error:', e);
-    const errorMsg = e instanceof Error ? e.message : String(e);
+    console.error('Satoshi API global timeout:', error);
     const bitcoinNarrative = 'Bitcoin is the signal. Even when data is missing, the narrative remains: decentralization, sound money, and antifragility. Stay sovereign.';
-    return NextResponse.json({ error: 'Malformed request or server error', details: `${bitcoinNarrative}\n${errorMsg}` }, { status: 400 });
-  }
+    return NextResponse.json({ 
+      error: 'Function timeout', 
+      details: `${bitcoinNarrative}\n\n**Warning:** Request timed out. The query was too complex or external APIs were slow. Try a simpler question or try again later.`,
+      persona: 'multimodal',
+      processed: `${bitcoinNarrative}\n\n**Warning:** Request timed out. Try a simpler question or try again later.`,
+      dataSourceUsed: []
+    }, { status: 504 });
+  });
 }
 
 // Healthcheck endpoint for monitoring
