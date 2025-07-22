@@ -107,6 +107,7 @@ export default function AIContent() {
           <div className="space-y-4 text-gray-300">
             <p className="text-lg">Let&apos;s not sugarcoat it. The old startup playbook is dead. Long live the weird, modular, agent-powered, meme-led, micro-app-driven new world. The rules have changed—not just slightly, but at a cellular level. And the founders who understand this aren&apos;t just adapting. They&apos;re building from first principles in a new reality, one where small teams wield infinite leverage and identity is the product.</p>
             <p className="text-lg">This isn&apos;t a &quot;pivot.&quot; This is a paradigm shift.</p>
+
           </div>
         </div>
       </motion.div>
