@@ -29,6 +29,6 @@ export function buildPromptContext({
   const trimLevel = 1;
   // eslint-disable-next-line no-console
   console.log('LLM prompt (short) length:', prompt.length, 'tokens:', tokenEstimate);
-  const llmMaxTokens = 500;
+  const llmMaxTokens = 1500;
   return { prompt, llmMaxTokens, tokenEstimate, trimLevel };
 } 
