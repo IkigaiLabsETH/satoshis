@@ -76,6 +76,13 @@ function normalizePersonaMode(mode: string | undefined): string {
     .join('');
 }
 
+// Helper to trim/summarize context blocks
+function trimContextBlock(block: string, maxLines: number = 2): string {
+  const lines = block.split('\n');
+  if (lines.length <= maxLines + 1) return block;
+  return lines.slice(0, maxLines + 1).join('\n') + '\n...';
+}
+
 process.on('unhandledRejection', (reason, promise) => {
   // eslint-disable-next-line no-console
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
@@ -336,7 +343,14 @@ export async function POST(request: NextRequest): Promise<Response> {
       }
 
       // Compose context block
-      const realtimeContext = `\n# Real-Time Market Data\n${btcQuote}${marketData}${insiderSentimentData}${earningsData}${ipoData}${companyNewsData}${analystData}${priceTargetData}\n\n# Latest Web Search\n${webSearch}\n\n# X Sentiment\n${xSentiment}\n\n# Satoshi Market Context\n${satoshiMarket}\n`;
+      let realtimeContext = `\n# Real-Time Market Data\n${btcQuote}${marketData}${insiderSentimentData}${earningsData}${ipoData}${companyNewsData}${analystData}${priceTargetData}\n\n# Latest Web Search\n${webSearch}\n\n# X Sentiment\n${xSentiment}\n\n# Satoshi Market Context\n${satoshiMarket}\n`;
+      // If the context is too long, trim each block
+      const MAX_PROMPT_CHARS = 4000;
+      if (realtimeContext.length > MAX_PROMPT_CHARS) {
+        realtimeContext = `\n# Real-Time Market Data\n${trimContextBlock(btcQuote)}${trimContextBlock(marketData)}${trimContextBlock(insiderSentimentData)}${trimContextBlock(earningsData)}${trimContextBlock(ipoData)}${trimContextBlock(companyNewsData)}${trimContextBlock(analystData)}${trimContextBlock(priceTargetData)}\n\n# Latest Web Search\n${trimContextBlock(webSearch)}\n\n# X Sentiment\n${trimContextBlock(xSentiment)}\n\n# Satoshi Market Context\n${trimContextBlock(satoshiMarket)}`;
+        // eslint-disable-next-line no-console
+        console.warn('Prompt context trimmed for LLM size limit.');
+      }
       // Prepend context to prompt
       const fullPrompt = `${realtimeContext}\n\n${BRAND_DNA_PROMPT}\n\n${personaPrompt}`;
 
