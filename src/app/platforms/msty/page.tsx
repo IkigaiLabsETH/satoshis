@@ -275,11 +275,16 @@ export default function MSTYPlatformsPage() {
                 <p>Over half of MSTYs distributions are just giving your own money back. Literally. Since inception, ~55% of payouts have been return of capital—not yield, not option premiums, just principal repackaged as &quot;dividends.&quot;</p>
                 
                 <div className="mt-4">
-                  <p className="font-medium text-red-400 mb-2">One recent &quot;yield&quot; breakdown?</p>
+                  <p className="font-medium text-red-400 mb-2">Latest distribution breakdown (07/07/2025):</p>
                   <ul className="space-y-1 text-white/80 list-none">
-                    <li>• 97.4% return of capital</li>
-                    <li>• 2.6% actual yield</li>
+                    <li>• <span className="font-bold text-red-400">96.86% return of capital</span></li>
+                    <li>• <span className="font-bold text-red-400">3.14% actual income</span></li>
                   </ul>
+                </div>
+                
+                <div className="mt-4 p-4 bg-black/30 border border-yellow-500/30 rounded">
+                  <p className="font-bold text-yellow-400 mb-2">🚨 ALWAYS READ THE FINE PRINT</p>
+                  <p className="text-white/90 text-sm">MSTY advertises a 75% yield, but the reality is that 96.86% of your &quot;dividend&quot; is just getting your own money back. You&apos;re paying taxes on money that was already yours.</p>
                 </div>
                 
                 <p className="mt-4 text-white/90">So unless you bought in early and got lucky with entry price, you&apos;re not compounding—you&apos;re eroding.</p>
@@ -468,15 +473,21 @@ export default function MSTYPlatformsPage() {
           </AccordionItem>
           <AccordionItem title="What are MSTY&apos;s dividend yields and sustainability?">
             <p className="text-white/90">
-              MSTY currently offers a distribution rate of approximately 101.29% annually. However, these yields 
+              MSTY currently offers a distribution rate of approximately 75% annually. However, these yields 
               can fluctuate based on several factors:
               <br/><br/>
               • MSTR&apos;s stock price volatility and Bitcoin&apos;s value movements<br/>
               • Market conditions and options market dynamics<br/>
               • Changes in implied volatility affecting option premiums<br/>
               <br/>
-              While the yield is attractive, it&apos;s important to understand that distributions aren&apos;t guaranteed 
-              and can vary monthly based on market conditions.
+              <span className="font-bold text-red-400">CRITICAL: Always read the fine print!</span>
+              <br/><br/>
+              The latest distribution (07/07/2025) contained:
+              <br/>
+              • <span className="text-red-400">96.86% return of capital</span> (your own money back)<br/>
+              • <span className="text-red-400">3.14% actual income</span><br/>
+              <br/>
+              This means you&apos;re paying taxes on money that was already yours. The headline yield is misleading.
             </p>
           </AccordionItem>
           <AccordionItem title="What are the tax implications for MSTY distributions?">
