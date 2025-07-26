@@ -1038,11 +1038,145 @@ export default function BitcoinPage() {
           </Card>
         </motion.div>
 
-        {/* Final Note - Market Analysis */}
+        {/* Galaxy Digital Sale Analysis */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.7 }}
+          className="mt-16"
+        >
+          <Card>
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-bold text-yellow-500">Galaxy Digital&apos;s $9.5B Bitcoin Sale: A Bullish Stress Test</h2>
+                <span className="px-3 py-1 text-sm bg-yellow-500/10 text-yellow-500 rounded-full">July 2025</span>
+              </div>
+              
+              <div className="mt-8 space-y-8">
+                <div className="prose prose-invert max-w-none">
+                  <p className="text-lg text-white/80 leading-relaxed">
+                    On July 25, 2025, Galaxy Digital completed the sale of over 80,000 BTC, valued at approximately $9.5 billion, on behalf of a Satoshi-era investor. While this initially sparked fear, uncertainty, and doubt (FUD) among market participants, the market&apos;s response revealed something far more significant: Bitcoin&apos;s remarkable resilience and institutional readiness.
+                  </p>
+                </div>
+
+                <div className="grid gap-8 md:grid-cols-2 mt-12">
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-yellow-500">Market Resilience and Recovery</h3>
+                    <p className="text-white/80 leading-relaxed">
+                      The sale initially caused Bitcoin&apos;s price to dip to around $115,000 on July 25, 2025. However, within 36 hours, the price had rebounded to approximately $118,200 by July 26, 2025. This rapid recovery suggests that the market has sufficient liquidity to handle large transactions without prolonged disruption.
+                    </p>
+                    <p className="text-white/80 leading-relaxed">
+                      The 24-hour trading volume on July 26, 2025, was around $60 billion, indicating that the $9.5 billion sale was well within the market&apos;s capacity to absorb, especially given the over-the-counter (OTC) nature of the transaction.
+                    </p>
+                  </div>
+
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-yellow-500">Institutional Implications</h3>
+                    <p className="text-white/80 leading-relaxed">
+                      This event is particularly encouraging for large fund managers and sovereign wealth funds, as it demonstrates they can enter and exit Bitcoin positions with relative ease. The use of OTC deals by Galaxy Digital helped minimize market impact, further supporting Bitcoin&apos;s attractiveness to institutional investors.
+                    </p>
+                    <p className="text-white/80 leading-relaxed">
+                      The quick recovery also indicates strong underlying demand, likely driven by institutional adoption and increasing interest from treasury companies.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-12 space-y-6">
+                  <h3 className="text-xl font-bold text-yellow-500">Key Market Metrics</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-white/80 text-sm">
+                      <thead>
+                        <tr className="border-b border-yellow-500/20">
+                          <th className="text-left py-2 px-2 text-yellow-500">Date</th>
+                          <th className="text-left py-2 px-2 text-yellow-500">Price (USD)</th>
+                          <th className="text-left py-2 px-2 text-yellow-500">24-Hour Change</th>
+                          <th className="text-left py-2 px-2 text-yellow-500">Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b border-yellow-500/20">
+                          <td className="py-2 px-2">July 14, 2025</td>
+                          <td className="py-2 px-2">123,153.22</td>
+                          <td className="py-2 px-2 text-green-400">+3%</td>
+                          <td className="py-2 px-2">Record high before sale</td>
+                        </tr>
+                        <tr className="border-b border-yellow-500/20">
+                          <td className="py-2 px-2">July 24, 2025</td>
+                          <td className="py-2 px-2">116,254.40</td>
+                          <td className="py-2 px-2 text-red-400">-5.6%</td>
+                          <td className="py-2 px-2">Pre-sale decline</td>
+                        </tr>
+                        <tr className="border-b border-yellow-500/20">
+                          <td className="py-2 px-2">July 25, 2025</td>
+                          <td className="py-2 px-2">115,600</td>
+                          <td className="py-2 px-2 text-red-400">-0.6%</td>
+                          <td className="py-2 px-2">Dip during sale execution</td>
+                        </tr>
+                        <tr>
+                          <td className="py-2 px-2">July 26, 2025</td>
+                          <td className="py-2 px-2">118,200</td>
+                          <td className="py-2 px-2 text-green-400">+2.2%</td>
+                          <td className="py-2 px-2">Full recovery achieved</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="mt-12 space-y-6">
+                  <h3 className="text-xl font-bold text-yellow-500">Bullish Implications</h3>
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-white">Market Liquidity & Resilience</h4>
+                      <p className="text-white/80">
+                        The ability to absorb a $9.5 billion sell order without significant price drops demonstrates Bitcoin&apos;s exceptional liquidity. This is crucial for institutional investors who require confidence in market depth for large transactions.
+                      </p>
+                    </div>
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-white">Strong Buyer Demand</h4>
+                      <p className="text-white/80">
+                        The quick recovery suggests strong underlying demand from institutional players and retail investors, indicating robust market fundamentals and positive sentiment.
+                      </p>
+                    </div>
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-white">OTC Execution Success</h4>
+                      <p className="text-white/80">
+                        The use of OTC deals helped mitigate immediate selling pressure on public exchanges, demonstrating sophisticated market infrastructure for large transactions.
+                      </p>
+                    </div>
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-white">Institutional Confidence</h4>
+                      <p className="text-white/80">
+                        Recent ETF inflows reaching $14.4 billion through early July 2025, combined with corporate treasury adoption, suggest sufficient institutional demand to absorb large sales.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-12 space-y-6">
+                  <h3 className="text-xl font-bold text-yellow-500">Strategic Significance</h3>
+                  <p className="text-white/80 leading-relaxed">
+                    This event serves as a stress test for Bitcoin&apos;s institutional readiness. The market&apos;s ability to handle such a large transaction with minimal disruption sends a clear signal to large investors: Bitcoin can accommodate significant capital flows without breaking.
+                  </p>
+                  <p className="text-white/80 leading-relaxed">
+                    For sovereign wealth funds, pension funds, and other large institutional players, this demonstration of liquidity and resilience is exactly what they need to see before committing substantial capital to Bitcoin allocations.
+                  </p>
+                  <div className="bg-yellow-500/10 p-6 rounded-lg border border-yellow-500/20 mt-6">
+                    <p className="text-lg text-yellow-500 font-bold">
+                      The Galaxy Digital sale wasn&apos;t a bearish event—it was a bullish validation of Bitcoin&apos;s institutional maturity.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+
+        {/* Final Note - Market Analysis */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
           className="mt-16"
         >
           <Card>
