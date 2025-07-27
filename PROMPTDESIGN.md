@@ -1009,3 +1009,85 @@ Keep the tone **direct, no fluff**, and prioritize **practicality over theory**.
 
 ---
 
+Unique Business Name Generator
+
+Prompt:
+
+"Generate 10 unique and creative business name ideas for a [industry/niche] business. Ensure they are not currently in use or trademarked."
+
+---
+
+Niche Discovery Assistant
+
+Prompt:
+
+"Suggest 5 profitable niches in [industry] with low competition and high demand. Provide data or examples to support your suggestions."
+
+---
+
+Competitor Research Specialist
+
+Prompt:
+
+"Identify the top 5 competitors in the [niche] market. Summarize their products, pricing strategies, and customer reviews."
+
+---
+
+Website - Newsletter Tools Finder
+
+Prompt:
+
+"List the best website builders or newsletter tools for small businesses. Include features, pricing, and recommendations based on user needs."
+
+---
+
+Market Validation Expert
+
+Prompt:
+
+"Analyze the market potential for a [product/service]. Include target audience size, competition, and profitability potential."
+
+---
+
+Customer Persona Builder
+
+Prompt:
+
+"Create a detailed customer persona for a [product/service]. Include demographics, pain points, and purchasing behavior."
+
+---
+
+Revenue Model Advisor
+
+Prompt:
+
+"Suggest 3 revenue models for a [type of business]. Explain how each model works and which one is most suitable for my business."
+
+---
+
+Social Media Strategy Planner
+
+Prompt:
+
+"Develop a 30-day social media marketing strategy for a [type of business]. Include post ideas, engagement tips, and scheduling recommendations."
+
+---
+
+Supplier/Partner Researcher
+
+Prompt:
+
+"Identify potential suppliers or business partners for a [type of product/service]. Include their contact details and reviews if available."
+
+---
+
+Industry Trends Forecaster
+
+Prompt:
+
+"Analyze the emerging trends in [industry]. Provide actionable insights on how a new business can leverage these trends for success."
+
+---
+
+
+
