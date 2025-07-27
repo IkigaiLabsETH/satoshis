@@ -24,6 +24,14 @@
 				"no-console": "off",
 				"no-restricted-globals": "off"
 			}
+		},
+		{
+			"files": ["src/tests/**/*.ts", "src/tests/**/*.tsx", "scripts/**/*.js"],
+			"rules": {
+				"no-console": "off",
+				"no-restricted-globals": "off",
+				"@typescript-eslint/no-explicit-any": "off"
+			}
 		}
 	]
 }
