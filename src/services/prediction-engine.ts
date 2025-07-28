@@ -80,10 +80,8 @@ export class PredictionEngine {
     stockData: StockData[],
     newsData: NewsData[]
   ): Promise<MarketPrediction[]> {
-    const predictions: MarketPrediction[] = [];
-
-    // Generate predictions for each timeframe with better error handling
-    for (const timeframe of watchlistConfig.timeframes) {
+    // Generate predictions in parallel for better performance
+    const predictionPromises = watchlistConfig.timeframes.map(async (timeframe) => {
       try {
         const prediction = await this.generatePredictionForTimeframe(
           timeframe,
@@ -92,16 +90,35 @@ export class PredictionEngine {
           stockData,
           newsData
         );
-        predictions.push(prediction);
+        return prediction;
       } catch {
         // If Grok 4 fails, use intelligent fallback
-        const fallbackPrediction = this.createIntelligentPrediction(
+        return this.createIntelligentPrediction(
           timeframe,
           bitcoinData,
           cryptoData,
           stockData
         );
-        predictions.push(fallbackPrediction);
+      }
+    });
+
+    // Wait for all predictions with Promise.allSettled to handle individual failures
+    const results = await Promise.allSettled(predictionPromises);
+    
+    // Filter out failed predictions and use fallbacks if needed
+    const predictions: MarketPrediction[] = [];
+    for (let i = 0; i < results.length; i++) {
+      const timeframe = watchlistConfig.timeframes[i];
+      if (results[i].status === 'fulfilled') {
+        predictions.push((results[i] as PromiseFulfilledResult<MarketPrediction>).value);
+      } else {
+        // Create fallback prediction if all else fails
+        predictions.push(this.createIntelligentPrediction(
+          timeframe,
+          bitcoinData,
+          cryptoData,
+          stockData
+        ));
       }
     }
 
