@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MarketPrediction, MarketState } from '@/types/watchlist';
 
 export default function WatchlistPage() {
@@ -10,8 +10,12 @@ export default function WatchlistPage() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [selectedTimeframe, setSelectedTimeframe] = useState<string>('day');
+  const hasMounted = useRef(false);
 
   useEffect(() => {
+    if (hasMounted.current) return;
+    hasMounted.current = true;
+
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -76,7 +80,8 @@ export default function WatchlistPage() {
     if (!loading) {
       fetchData();
     }
-  }, []); // Empty dependency array - only run once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []); // Empty dependency array - only run once on mount
 
   const handleRefresh = async () => {
     if (loading) return; // Prevent multiple simultaneous requests
