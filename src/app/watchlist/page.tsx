@@ -55,61 +55,66 @@ interface MarketState {
 
 export default function MarketDashboardPage() {
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedTimeframe, setSelectedTimeframe] = useState('day');
   const [cryptoData, setCryptoData] = useState<CryptoData[]>([]);
   const [predictions, setPredictions] = useState<MarketPrediction[]>([]);
   const [marketState, setMarketState] = useState<MarketState | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   // Fetch data from APIs
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
       setLoading(true);
-      setError(null);
+    }
+    setError(null);
+    
+    try {
+      // Fetch crypto data
+      const cryptoResponse = await fetch('/api/watchlist/crypto?period=daily');
+      const cryptoResult = await cryptoResponse.json();
       
-      try {
-        // Fetch crypto data
-        const cryptoResponse = await fetch('/api/watchlist/crypto?period=daily');
-        const cryptoResult = await cryptoResponse.json();
-        
-        if (cryptoResult.success) {
-          setCryptoData(cryptoResult.data);
-        } else {
-          throw new Error('Failed to fetch crypto data');
-        }
-
-
-
-        // Fetch market predictions
-        const predictionsResponse = await fetch('/api/watchlist/predictions');
-        const predictionsResult = await predictionsResponse.json();
-        
-        if (predictionsResult.success) {
-          setPredictions(predictionsResult.data);
-        } else {
-          throw new Error('Failed to fetch predictions');
-        }
-
-        // Fetch market state
-        const marketStateResponse = await fetch('/api/watchlist/market-state');
-        const marketStateResult = await marketStateResponse.json();
-        
-        if (marketStateResult.success) {
-          setMarketState(marketStateResult.data);
-        } else {
-          throw new Error('Failed to fetch market state');
-        }
-
-
-
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-        // Error handling for data fetching
-      } finally {
-        setLoading(false);
+      if (cryptoResult.success) {
+        setCryptoData(cryptoResult.data);
+      } else {
+        throw new Error('Failed to fetch crypto data');
       }
-    };
 
+      // Fetch market predictions
+      const predictionsResponse = await fetch('/api/watchlist/predictions');
+      const predictionsResult = await predictionsResponse.json();
+      
+      if (predictionsResult.success) {
+        setPredictions(predictionsResult.data);
+      } else {
+        throw new Error('Failed to fetch predictions');
+      }
+
+      // Fetch market state
+      const marketStateResponse = await fetch('/api/watchlist/market-state');
+      const marketStateResult = await marketStateResponse.json();
+      
+      if (marketStateResult.success) {
+        setMarketState(marketStateResult.data);
+      } else {
+        throw new Error('Failed to fetch market state');
+      }
+
+      setLastUpdated(new Date());
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      // Error handling for data fetching
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -223,6 +228,34 @@ export default function MarketDashboardPage() {
               <p className="mx-6 text-lg text-white/70 font-light italic font-satoshi">Grok 4 AI Market Predictions & Analysis</p>
               <div className="h-px w-24 bg-yellow-500/30"></div>
             </div>
+            
+            {/* Refresh Controls */}
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <Button
+                onClick={() => fetchData(true)}
+                disabled={refreshing}
+                className="bg-yellow-500 text-black font-bold px-6 py-3 rounded-none hover:bg-yellow-400 transition-all duration-300 disabled:opacity-50"
+              >
+                {refreshing ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
+                    Refreshing...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh Data
+                  </div>
+                )}
+              </Button>
+              {lastUpdated && (
+                <p className="text-white/60 text-sm">
+                  Last updated: {lastUpdated.toLocaleTimeString()}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Current Market State */}
@@ -278,6 +311,72 @@ export default function MarketDashboardPage() {
               </div>
             </div>
           )}
+
+          {/* Performance Summary */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
+              Performance Summary
+            </h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-black p-6 rounded-none border border-yellow-500/20">
+                <p className="text-white/60 text-sm mb-2">Top Performer (24h)</p>
+                {cryptoData.length > 0 && (() => {
+                  const topPerformer = cryptoData.reduce((prev, current) => 
+                    prev.price_change_percentage_24h > current.price_change_percentage_24h ? prev : current
+                  );
+                  return (
+                    <div>
+                      <p className="text-xl font-bold text-green-400">{topPerformer.symbol.toUpperCase()}</p>
+                      <p className="text-lg text-green-400">+{topPerformer.price_change_percentage_24h.toFixed(2)}%</p>
+                    </div>
+                  );
+                })()}
+              </div>
+              <div className="bg-black p-6 rounded-none border border-yellow-500/20">
+                <p className="text-white/60 text-sm mb-2">Worst Performer (24h)</p>
+                {cryptoData.length > 0 && (() => {
+                  const worstPerformer = cryptoData.reduce((prev, current) => 
+                    prev.price_change_percentage_24h < current.price_change_percentage_24h ? prev : current
+                  );
+                  return (
+                    <div>
+                      <p className="text-xl font-bold text-red-400">{worstPerformer.symbol.toUpperCase()}</p>
+                      <p className="text-lg text-red-400">{worstPerformer.price_change_percentage_24h.toFixed(2)}%</p>
+                    </div>
+                  );
+                })()}
+              </div>
+              <div className="bg-black p-6 rounded-none border border-yellow-500/20">
+                <p className="text-white/60 text-sm mb-2">Average Change (24h)</p>
+                {cryptoData.length > 0 && (() => {
+                  const avgChange = cryptoData.reduce((sum, crypto) => sum + crypto.price_change_percentage_24h, 0) / cryptoData.length;
+                  return (
+                    <div>
+                      <p className={`text-xl font-bold ${getChangeColor(avgChange)}`}>
+                        {avgChange > 0 ? '+' : ''}{avgChange.toFixed(2)}%
+                      </p>
+                      <p className="text-sm text-white/60">Across {cryptoData.length} assets</p>
+                    </div>
+                  );
+                })()}
+              </div>
+              <div className="bg-black p-6 rounded-none border border-yellow-500/20">
+                <p className="text-white/60 text-sm mb-2">Market Momentum</p>
+                {cryptoData.length > 0 && (() => {
+                  const positiveCount = cryptoData.filter(crypto => crypto.price_change_percentage_24h > 0).length;
+                  const negativeCount = cryptoData.filter(crypto => crypto.price_change_percentage_24h < 0).length;
+                  const momentum = positiveCount > negativeCount ? 'Bullish' : negativeCount > positiveCount ? 'Bearish' : 'Neutral';
+                  const color = momentum === 'Bullish' ? 'text-green-400' : momentum === 'Bearish' ? 'text-red-400' : 'text-yellow-400';
+                  return (
+                    <div>
+                      <p className={`text-xl font-bold ${color}`}>{momentum}</p>
+                      <p className="text-sm text-white/60">{positiveCount} up, {negativeCount} down</p>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
 
           {/* AI Predictions */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
@@ -461,6 +560,51 @@ export default function MarketDashboardPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
+              Quick Actions
+            </h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Button
+                onClick={() => window.open('https://www.coingecko.com/en/coins/bitcoin', '_blank')}
+                className="bg-black text-yellow-500 border-2 border-yellow-500 font-bold px-6 py-4 rounded-none hover:bg-yellow-500 hover:text-black transition-all duration-300"
+              >
+                <div className="text-center">
+                  <p className="text-lg font-bold">Bitcoin Chart</p>
+                  <p className="text-sm opacity-80">View on CoinGecko</p>
+                </div>
+              </Button>
+              <Button
+                onClick={() => window.open('https://www.tradingview.com/symbols/CRYPTOCAP-BTC.D/', '_blank')}
+                className="bg-black text-yellow-500 border-2 border-yellow-500 font-bold px-6 py-4 rounded-none hover:bg-yellow-500 hover:text-black transition-all duration-300"
+              >
+                <div className="text-center">
+                  <p className="text-lg font-bold">BTC Analysis</p>
+                  <p className="text-sm opacity-80">TradingView Charts</p>
+                </div>
+              </Button>
+              <Button
+                onClick={() => window.open('https://alternative.me/crypto/fear-and-greed-index/', '_blank')}
+                className="bg-black text-yellow-500 border-2 border-yellow-500 font-bold px-6 py-4 rounded-none hover:bg-yellow-500 hover:text-black transition-all duration-300"
+              >
+                <div className="text-center">
+                  <p className="text-lg font-bold">Fear & Greed</p>
+                  <p className="text-sm opacity-80">Market Sentiment</p>
+                </div>
+              </Button>
+              <Button
+                onClick={() => window.open('https://www.lookintobitcoin.com/charts/bitcoin-halving-countdown/', '_blank')}
+                className="bg-black text-yellow-500 border-2 border-yellow-500 font-bold px-6 py-4 rounded-none hover:bg-yellow-500 hover:text-black transition-all duration-300"
+              >
+                <div className="text-center">
+                  <p className="text-lg font-bold">Halving Countdown</p>
+                  <p className="text-sm opacity-80">Next Bitcoin Halving</p>
+                </div>
+              </Button>
             </div>
           </div>
 
