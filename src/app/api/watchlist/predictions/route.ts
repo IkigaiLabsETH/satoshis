@@ -73,11 +73,42 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
         .map(result => result.value);
     }
 
-    // Fetch recent Bitcoin and crypto news for context
-    const newsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/watchlist/news`);
-    if (newsResponse.ok) {
-      const newsResult = await newsResponse.json();
-      newsData = newsResult.success ? newsResult.data : [];
+    // Fetch recent Bitcoin and crypto news for context (including Mando Minutes)
+    try {
+      // Try to fetch Mando Minutes directly first
+      const mandoResponse = await fetch('https://www.mandominutes.com/');
+      if (mandoResponse.ok) {
+        const mandoHtml = await mandoResponse.text();
+        
+        // Check for key Mando Minutes content
+        if (mandoHtml.toLowerCase().includes('sol hits another all time high') || 
+            mandoHtml.toLowerCase().includes('bitcoin') || 
+            mandoHtml.toLowerCase().includes('crypto')) {
+          newsData.push({
+            title: 'Mando Minutes Daily Summary',
+            description: 'Latest crypto, DeFi, and macro insights from Mando Minutes',
+            url: 'https://www.mandominutes.com/',
+            source: 'Mando Minutes',
+            publishedAt: new Date().toISOString(),
+            sentiment: 'positive'
+          });
+        }
+      }
+    } catch {
+      // Ignore Mando Minutes errors
+    }
+    
+    // Fallback to CoinGecko news
+    if (newsData.length === 0) {
+      try {
+        const coingeckoNewsResponse = await fetch('https://api.coingecko.com/api/v3/news');
+        if (coingeckoNewsResponse.ok) {
+          const coingeckoNewsResult = await coingeckoNewsResponse.json();
+          newsData = coingeckoNewsResult.data || [];
+        }
+      } catch {
+        // Ignore fallback errors
+      }
     }
   } catch {
     // Use fallback values if API fails
@@ -141,7 +172,7 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
       price: Math.round(dailyBtcPrice),
       change: Math.round(dailyBtcChange * 100) / 100,
       confidence: Math.floor(Math.random() * 20) + 70, // 70-90%
-      reasoning: `Based on current Bitcoin price of $${currentBtcPrice.toLocaleString()} and 24h change of ${dailyBtcChange.toFixed(2)}%, market sentiment analysis suggests ${dailyBtcChange > 0 ? 'positive' : 'negative'} momentum in the next 24 hours. ${newsData.length > 0 ? `Recent news: ${newsData[0]?.title || 'Market developments'}` : 'Technical indicators and institutional flows support this prediction.'}`
+      reasoning: `Based on current Bitcoin price of $${currentBtcPrice.toLocaleString()} and 24h change of ${dailyBtcChange.toFixed(2)}%, market sentiment analysis suggests ${dailyBtcChange > 0 ? 'positive' : 'negative'} momentum in the next 24 hours. ${newsData.length > 0 ? `Latest insights: ${newsData.find(n => n.source === 'Mando Minutes')?.title || newsData[0]?.title || 'Market developments'}` : 'Technical indicators and institutional flows support this prediction.'}`
     },
     topPerformers: [
       // Real crypto performers

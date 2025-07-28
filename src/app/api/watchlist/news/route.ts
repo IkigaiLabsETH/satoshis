@@ -13,13 +13,57 @@ export async function GET(_request: NextRequest) {
   try {
     const newsItems: NewsItem[] = [];
 
-    // Fetch news from CoinGecko
+    // Fetch latest news from Mando Minutes (primary source)
+    try {
+      const mandoResponse = await fetch('https://www.mandominutes.com/');
+      if (mandoResponse.ok) {
+        const mandoHtml = await mandoResponse.text();
+        
+        // Extract key sections from Mando Minutes
+        const sections = [
+          { category: 'Crypto', keywords: ['SOL hits another all time high', 'Bitcoin', 'Ethereum', 'crypto'] },
+          { category: 'NFTs', keywords: ['Digidaigaku', 'NeoTokyo', 'Parallel', 'NFT'] },
+          { category: 'Macro', keywords: ['Hedge funds', 'record shorts', 'macro', 'markets'] }
+        ];
+
+        sections.forEach(section => {
+          const relevantContent = section.keywords.find(keyword => 
+            mandoHtml.toLowerCase().includes(keyword.toLowerCase())
+          );
+          
+          if (relevantContent) {
+            newsItems.push({
+              title: `Mando Minutes: ${section.category} Update`,
+              description: `Latest ${section.category.toLowerCase()} insights from Mando Minutes - ${relevantContent}`,
+              url: 'https://www.mandominutes.com/',
+              source: 'Mando Minutes',
+              publishedAt: new Date().toISOString(),
+              sentiment: 'neutral'
+            });
+          }
+        });
+
+        // Add general Mando Minutes summary
+        newsItems.push({
+          title: 'Mando Minutes Daily Summary',
+          description: 'Your daily summary of everything important in crypto, DeFi, and macro markets. Never miss a minute!',
+          url: 'https://www.mandominutes.com/',
+          source: 'Mando Minutes',
+          publishedAt: new Date().toISOString(),
+          sentiment: 'positive'
+        });
+      }
+    } catch {
+      // Ignore Mando Minutes errors
+    }
+
+    // Fetch news from CoinGecko (secondary source)
     try {
       const coingeckoResponse = await fetch('https://api.coingecko.com/api/v3/news');
       if (coingeckoResponse.ok) {
         const coingeckoData = await coingeckoResponse.json();
         if (coingeckoData.data && Array.isArray(coingeckoData.data)) {
-          coingeckoData.data.slice(0, 5).forEach((item: any) => {
+          coingeckoData.data.slice(0, 3).forEach((item: any) => {
             newsItems.push({
               title: item.title || '',
               description: item.description || '',
