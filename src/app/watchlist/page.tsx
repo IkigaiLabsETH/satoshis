@@ -31,6 +31,7 @@ interface MarketPrediction {
     predictedOutperformance: number;
     confidence: number;
     reasoning: string;
+    type: 'crypto' | 'stock';
   }[];
   marketSentiment: 'bullish' | 'bearish' | 'neutral';
   keyEvents: string[];
@@ -49,6 +50,8 @@ interface MarketState {
   volatility: number;
   trend: 'up' | 'down' | 'sideways';
 }
+
+
 
 export default function MarketDashboardPage() {
   const [loading, setLoading] = useState(true);
@@ -96,6 +99,8 @@ export default function MarketDashboardPage() {
         } else {
           throw new Error('Failed to fetch market state');
         }
+
+
 
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -266,7 +271,7 @@ export default function MarketDashboardPage() {
                     <p className="text-2xl font-bold text-yellow-500">{marketState.dominance.ethereum.toFixed(1)}%</p>
                   </div>
                   <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                    <p className="text-white/60 text-sm">Others</p>
+                    <p className="text-white/60 text-sm">Others (XRP, USDT, BNB, SOL, etc.)</p>
                     <p className="text-2xl font-bold text-yellow-500">{marketState.dominance.others.toFixed(1)}%</p>
                   </div>
                 </div>
@@ -338,7 +343,16 @@ export default function MarketDashboardPage() {
                               {performer.confidence}%
                             </span>
                           </div>
-                          <p className="text-white/60 font-satoshi text-sm">{performer.symbol}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-white/60 font-satoshi text-sm">{performer.symbol}</p>
+                            <span className={`text-xs px-2 py-1 rounded ${
+                              performer.type === 'stock' 
+                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
+                                : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                            }`}>
+                              {performer.type === 'stock' ? 'STOCK' : 'CRYPTO'}
+                            </span>
+                          </div>
                         </CardHeader>
                         <CardContent>
                           <p className={`text-2xl font-bold mb-2 ${getChangeColor(performer.predictedOutperformance)}`}>
@@ -392,6 +406,8 @@ export default function MarketDashboardPage() {
               </div>
             )}
           </div>
+
+
 
           {/* Live Market Data */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
