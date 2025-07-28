@@ -13,7 +13,7 @@ export const watchlistConfig: WatchlistConfig = {
     'CLSK', 'WULF', 'HUT', 'MARA', 'GLXY', 'SQ', 'TSLA', 'NVDA', 'AMD'
   ],
   timeframes: ['day', 'week', 'month', 'year'],
-  grok4Timeout: 10000, // 10 seconds
+  grok4Timeout: 6000, // 6 seconds (reduced from 10)
   maxTopPerformers: 6
 };
 

@@ -82,6 +82,7 @@ export class PredictionEngine {
   ): Promise<MarketPrediction[]> {
     const predictions: MarketPrediction[] = [];
 
+    // Generate predictions for each timeframe with better error handling
     for (const timeframe of watchlistConfig.timeframes) {
       try {
         const prediction = await this.generatePredictionForTimeframe(
@@ -93,10 +94,14 @@ export class PredictionEngine {
         );
         predictions.push(prediction);
       } catch {
-        // Fallback to intelligent prediction
-        predictions.push(
-          this.createIntelligentPrediction(timeframe, bitcoinData, cryptoData, stockData)
+        // If Grok 4 fails, use intelligent fallback
+        const fallbackPrediction = this.createIntelligentPrediction(
+          timeframe,
+          bitcoinData,
+          cryptoData,
+          stockData
         );
+        predictions.push(fallbackPrediction);
       }
     }
 
