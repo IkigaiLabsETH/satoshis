@@ -32,8 +32,17 @@ interface NewsItem {
   keywords: string[];
 }
 
+interface RawNewsItem {
+  title: string;
+  description?: string;
+  url: string;
+  source: string;
+  publishedAt: string;
+  sentiment?: 'positive' | 'negative' | 'neutral';
+}
+
 // Real Grok 4 AI sentiment analysis and news categorization
-const analyzeNewsWithGrok4 = async (newsItems: any[]): Promise<NewsItem[]> => {
+const analyzeNewsWithGrok4 = async (newsItems: RawNewsItem[]): Promise<NewsItem[]> => {
   const enhancedNewsItems: NewsItem[] = [];
 
   for (const item of newsItems.slice(0, 8)) { // Limit to 8 items for API efficiency
@@ -131,8 +140,7 @@ Be realistic and data-driven in your assessment.`;
           };
           
           enhancedNewsItems.push(enhancedItem);
-        } catch (parseError) {
-          console.error('Failed to parse Grok 4 news analysis:', parseError);
+        } catch {
           // Fallback to basic analysis
           enhancedNewsItems.push(createFallbackNewsItem(item));
         }
@@ -141,8 +149,7 @@ Be realistic and data-driven in your assessment.`;
         enhancedNewsItems.push(createFallbackNewsItem(item));
       }
       
-    } catch (grok4Error) {
-      console.error('Grok 4 news analysis error:', grok4Error);
+    } catch {
       // Fallback to basic analysis
       enhancedNewsItems.push(createFallbackNewsItem(item));
     }
@@ -152,7 +159,7 @@ Be realistic and data-driven in your assessment.`;
 };
 
 // Fallback news analysis when Grok 4 is unavailable
-const createFallbackNewsItem = (item: any): NewsItem => {
+const createFallbackNewsItem = (item: RawNewsItem): NewsItem => {
   const title = item.title.toLowerCase();
   const description = (item.description || '').toLowerCase();
   
@@ -248,7 +255,7 @@ Make the insights relevant, timely, and impactful for crypto market participants
     if (jsonMatch) {
       try {
         const insightsData = JSON.parse(jsonMatch[0]);
-        return insightsData.insights?.map((insight: any) => ({
+        return insightsData.insights?.map((insight: { title: string; description: string; sentiment?: string; impact_score?: number; category?: string; keywords?: string[] }) => ({
           title: insight.title,
           description: insight.description,
           url: 'https://grok420.ai/market-insights',
@@ -259,22 +266,20 @@ Make the insights relevant, timely, and impactful for crypto market participants
           category: insight.category || 'Market Sentiment',
           keywords: insight.keywords || []
         })) || [];
-      } catch (parseError) {
-        console.error('Failed to parse Grok 4 market insights:', parseError);
+      } catch {
         return [];
       }
     }
     
     return [];
-  } catch (grok4Error) {
-    console.error('Grok 4 market insights error:', grok4Error);
+  } catch {
     return [];
   }
 };
 
 export async function GET(_request: NextRequest) {
   try {
-    const newsItems: any[] = [];
+    const newsItems: RawNewsItem[] = [];
 
     // Fetch CoinGecko news (limited to 3 for API efficiency)
     try {
@@ -340,9 +345,7 @@ export async function GET(_request: NextRequest) {
       source: 'Grok 4 AI News Analysis'
     });
 
-  } catch (error) {
-    console.error('News aggregation failed:', error);
-    
+  } catch {
     return NextResponse.json({
       success: false,
       error: 'Failed to aggregate news',

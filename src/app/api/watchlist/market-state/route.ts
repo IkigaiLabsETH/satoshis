@@ -22,8 +22,19 @@ interface MarketState {
   };
 }
 
+interface GlobalMarketData {
+  data: {
+    total_market_cap: { usd: number };
+    total_volume: { usd: number };
+    market_cap_percentage: { btc: number; eth: number };
+    market_cap_change_percentage_24h_usd?: number;
+    active_cryptocurrencies: number;
+    market_cap_rank: number;
+  };
+}
+
 // Real Grok 4 AI market state analysis
-const analyzeMarketState = async (globalData: any): Promise<MarketState> => {
+const analyzeMarketState = async (globalData: GlobalMarketData): Promise<MarketState> => {
   try {
     // Create comprehensive market context for Grok 4
     const marketContext = {
@@ -135,23 +146,21 @@ Be realistic and data-driven in your assessment.`;
         };
         
         return marketState;
-      } catch (parseError) {
-        console.error('Failed to parse Grok 4 market analysis:', parseError);
-        return createFallbackMarketState(globalData);
-      }
+              } catch {
+          return createFallbackMarketState(globalData);
+        }
     } else {
       // Fallback if no JSON found
       return createFallbackMarketState(globalData);
     }
     
-  } catch (grok4Error) {
-    console.error('Grok 4 market analysis error:', grok4Error);
+  } catch {
     return createFallbackMarketState(globalData);
   }
 };
 
 // Fallback market state when Grok 4 is unavailable
-const createFallbackMarketState = (globalData: any): MarketState => {
+const createFallbackMarketState = (globalData: GlobalMarketData): MarketState => {
   const volumeRatio = globalData.data.total_volume.usd / globalData.data.total_market_cap.usd;
   
   return {
@@ -197,9 +206,7 @@ export async function GET(_request: NextRequest) {
       source: 'Grok 4 AI Market Analysis'
     });
     
-  } catch (error) {
-    console.error('Market state analysis failed:', error);
-    
+  } catch {
     return NextResponse.json({
       success: false,
       error: 'Failed to analyze market state',

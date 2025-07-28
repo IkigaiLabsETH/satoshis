@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Grok4Service } from '../grok4/grok4';
+import { Grok4Service } from '../../grok4/grok4';
 
 interface CryptoData {
   id: string;
@@ -286,8 +286,7 @@ Be realistic with predictions and provide detailed reasoning based on the data p
           };
           
           predictions.push(prediction);
-        } catch (parseError) {
-          console.error(`Failed to parse Grok 4 response for ${timeframe}:`, parseError);
+        } catch {
           // Fallback to basic prediction
           predictions.push(createFallbackPrediction(timeframe, currentBtcPrice, btc24hChange));
         }
@@ -296,11 +295,10 @@ Be realistic with predictions and provide detailed reasoning based on the data p
         predictions.push(createFallbackPrediction(timeframe, currentBtcPrice, btc24hChange));
       }
       
-    } catch (grok4Error) {
-      console.error(`Grok 4 API error for ${timeframe}:`, grok4Error);
-      // Fallback to basic prediction
-      predictions.push(createFallbackPrediction(timeframe, currentBtcPrice, btc24hChange));
-    }
+          } catch {
+        // Fallback to basic prediction
+        predictions.push(createFallbackPrediction(timeframe, currentBtcPrice, btc24hChange));
+      }
   }
 
   return predictions;
@@ -360,9 +358,7 @@ export async function GET(_request: NextRequest) {
       timestamp: new Date().toISOString(),
       source: 'Grok 4 AI Market Analysis'
     });
-  } catch (error) {
-    console.error('Failed to generate predictions:', error);
-    
+  } catch {
     return NextResponse.json({
       success: false,
       error: 'Failed to generate market predictions',
