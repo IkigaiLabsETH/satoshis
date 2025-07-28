@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 
 interface StockData {
   symbol: string;
+  c: number; // current price
+  d: number; // change
+  dp: number; // change percent
+  h: number; // high
+  l: number; // low
+  o: number; // open
+  pc: number; // previous close
+  v: number; // volume
   current_price: number;
   change_percent: number;
   high: number;
@@ -41,8 +49,16 @@ export async function GET(request: NextRequest) {
           const data = await response.json();
           stockData.push({
             symbol: symbol,
+            c: data.c,
+            d: data.d,
+            dp: data.dp,
+            h: data.h,
+            l: data.l,
+            o: data.o,
+            pc: data.pc,
+            v: data.v,
             current_price: data.c,
-            change_percent: ((data.c - data.pc) / data.pc) * 100,
+            change_percent: data.dp,
             high: data.h,
             low: data.l,
             volume: data.v

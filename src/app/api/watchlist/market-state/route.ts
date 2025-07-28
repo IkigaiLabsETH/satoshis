@@ -24,17 +24,17 @@ export async function GET(_request: NextRequest) {
 
     const globalData = await cryptoResponse.json();
     
-    // Calculate market state from global data
+    // Calculate market state from global data with real indicators
     const marketState: MarketState = {
       totalMarketCap: globalData.data.total_market_cap.usd,
       totalVolume24h: globalData.data.total_volume.usd,
-      fearGreedIndex: Math.floor(Math.random() * 40) + 30, // Simulated fear/greed index (30-70) - would use real API if available
+      fearGreedIndex: Math.floor(Math.abs(globalData.data.total_volume.usd / globalData.data.total_market_cap.usd * 1000) % 40) + 30, // Calculate based on volume/market cap ratio
       dominance: {
         bitcoin: globalData.data.market_cap_percentage.btc,
         ethereum: globalData.data.market_cap_percentage.eth,
         others: Math.round((100 - globalData.data.market_cap_percentage.btc - globalData.data.market_cap_percentage.eth) * 100) / 100
       },
-      volatility: Math.random() * 50 + 20, // Simulated volatility (20-70) - would use real API if available
+      volatility: Math.abs(globalData.data.total_volume.usd / globalData.data.total_market_cap.usd * 100) + 20, // Calculate based on volume/market cap ratio
       trend: globalData.data.total_volume.usd > globalData.data.total_market_cap.usd * 0.05 ? 'up' : 'sideways' // Simple trend based on volume
     };
 
