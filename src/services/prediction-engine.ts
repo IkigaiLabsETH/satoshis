@@ -144,7 +144,7 @@ export class PredictionEngine {
         )
       ]);
 
-      return this.parseGrok4Response(timeframe, grok4Response, bitcoinData.price);
+      return this.parseGrok4Response(timeframe, grok4Response, bitcoinData.price, cryptoData, stockData);
     } catch (error) {
       throw error; // Let caller handle fallback
     }
@@ -267,7 +267,11 @@ Focus on:
 7. Consider meme coins, DeFi tokens, and Layer 1/2 solutions
 8. Analyze which crypto-related stocks (MSTR, COIN, RIOT, etc.) could benefit from crypto rallies
 
-**IMPORTANT:** Look for the next potential 10x-100x performers that could follow the pattern of recent outperformers. Focus on coins with strong community, high volume, and momentum indicators.
+**IMPORTANT:** 
+1. Look for the next potential 10x-100x performers that could follow the pattern of recent outperformers. Focus on coins with strong community, high volume, and momentum indicators.
+2. **CRITICAL:** Only use symbols that are listed in the TOP CRYPTO ASSETS section above. Do NOT make up or invent new symbols.
+3. For crypto assets, use the exact symbol from the data (e.g., "IMX" for Immutable, not "dara").
+4. For stocks, use the exact symbol from the data (e.g., "MSTR", "COIN", "RIOT").
 
 Be realistic with predictions and provide detailed reasoning based on the data provided.`;
   }
@@ -278,14 +282,49 @@ Be realistic with predictions and provide detailed reasoning based on the data p
   private static parseGrok4Response(
     timeframe: string, 
     grok4Response: ChatCompletion, 
-    currentBtcPrice: number
+    currentBtcPrice: number,
+    cryptoData: CryptoData[],
+    stockData: StockData[]
   ): MarketPrediction {
-          const responseContent = grok4Response.choices?.[0]?.message?.content || '';
-      const jsonMatch = responseContent.match(/\{[\s\S]*\}/);
-      
-      if (jsonMatch) {
-        try {
-          const predictionData = JSON.parse(jsonMatch[0]) as Grok4PredictionData;
+    const responseContent = grok4Response.choices?.[0]?.message?.content || '';
+    const jsonMatch = responseContent.match(/\{[\s\S]*\}/);
+    
+    if (jsonMatch) {
+      try {
+        const predictionData = JSON.parse(jsonMatch[0]) as Grok4PredictionData;
+        
+        // Validate and correct symbols in top performers
+        const validatedTopPerformers = predictionData.topPerformers?.map(performer => {
+          // Create a map of valid symbols for quick lookup
+          const validCryptoSymbols = new Map(cryptoData.map(c => [c.symbol.toLowerCase(), c]));
+          const validStockSymbols = new Map(stockData.map(s => [s.symbol.toLowerCase(), s]));
+          
+          // Check if the symbol exists in our data
+          const lowerSymbol = performer.symbol.toLowerCase();
+          const validCrypto = validCryptoSymbols.get(lowerSymbol);
+          const validStock = validStockSymbols.get(lowerSymbol);
+          
+          if (validCrypto) {
+            return {
+              ...performer,
+              symbol: validCrypto.symbol, // Use the correct case
+              asset: validCrypto.name,
+              type: 'crypto' as const
+            };
+          } else if (validStock) {
+            return {
+              ...performer,
+              symbol: validStock.symbol, // Use the correct case
+              asset: validStock.symbol,
+              type: 'stock' as const
+            };
+          } else {
+            // If symbol doesn't exist, try to find a similar one or skip
+            // eslint-disable-next-line no-console
+            console.warn(`Invalid symbol "${performer.symbol}" in Grok 4 prediction, skipping`);
+            return null;
+          }
+        }).filter((performer): performer is NonNullable<typeof performer> => performer !== null) || [];
         
         return {
           timeframe,
@@ -295,12 +334,12 @@ Be realistic with predictions and provide detailed reasoning based on the data p
             confidence: predictionData.btcPrediction?.confidence || 70,
             reasoning: predictionData.btcPrediction?.reasoning || 'Grok 4 analysis based on current market conditions'
           },
-          topPerformers: predictionData.topPerformers?.slice(0, watchlistConfig.maxTopPerformers) || [],
+          topPerformers: validatedTopPerformers.slice(0, watchlistConfig.maxTopPerformers),
           marketSentiment: predictionData.marketSentiment || 'neutral'
         };
-             } catch {
-         throw new Error('Failed to parse Grok 4 response');
-       }
+      } catch {
+        throw new Error('Failed to parse Grok 4 response');
+      }
     } else {
       throw new Error('No JSON found in Grok 4 response');
     }
