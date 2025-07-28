@@ -65,6 +65,10 @@ interface EnhancedStockData extends StockData {
 }
 
 export class MarketDataService {
+  // Simple cache for global market data
+  private static globalDataCache: { data: GlobalMarketData | null; timestamp: number } | null = null;
+  private static readonly CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
   static async getBitcoinData(): Promise<{ price: number; change24h: number }> {
     try {
       const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
@@ -197,14 +201,28 @@ export class MarketDataService {
   }
 
   static async getGlobalMarketData(): Promise<GlobalMarketData | null> {
+    const now = Date.now();
+    if (this.globalDataCache && (now - this.globalDataCache.timestamp) < this.CACHE_TTL) {
+      return this.globalDataCache.data;
+    }
+
     try {
-      const response = await fetch('https://api.coingecko.com/api/v3/global');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+      const response = await fetch('https://api.coingecko.com/api/v3/global', {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         throw new Error('Failed to fetch global market data');
       }
       
-      return await response.json();
+      const data = await response.json();
+      this.globalDataCache = { data, timestamp: now };
+      return data;
     } catch {
       return null;
     }
