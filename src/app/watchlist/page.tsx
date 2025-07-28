@@ -217,7 +217,7 @@ export default function MarketDashboardPage() {
         <div className="space-y-16">
           {/* Hero Section */}
           <div className="text-center space-y-8">
-            <p className="uppercase tracking-[0.4em] text-yellow-500/90 text-sm mb-4 font-light font-satoshi">80% of gains come in the last 20% of the cycle • Alt season is here • DCA into Bitcoin</p>
+            <p className="uppercase tracking-[0.4em] text-yellow-500/90 text-sm mb-4 font-light font-satoshi">80% gains in last 20% • 2Y MA x5 = Exit Signal • Generational Wealth Transfer</p>
             <h1 className="text-center">
               <span className="text-6xl md:text-8xl font-bold text-yellow-500 tracking-tight [text-shadow:_0_1px_20px_rgba(234,179,8,0.3)] font-satoshi">
                 North Star
@@ -225,17 +225,17 @@ export default function MarketDashboardPage() {
             </h1>
             <div className="flex items-center justify-center mt-6">
               <div className="h-px w-24 bg-yellow-500/30"></div>
-              <p className="mx-6 text-lg text-white/70 font-light italic font-satoshi">TWAP out of alts • DCA into Bitcoin • Build capital cycle to cycle</p>
+              <p className="mx-6 text-lg text-white/70 font-light italic font-satoshi">Millennials reshape markets • Exponential Age • Bitcoin to $1M+</p>
               <div className="h-px w-24 bg-yellow-500/30"></div>
             </div>
             
-            {/* Cycle Strategy Summary */}
+            {/* Market Philosophy Summary */}
             <div className="bg-black/20 p-6 rounded-none border border-yellow-500/30 mt-8">
-              <h4 className="text-yellow-500 font-bold text-lg mb-4 text-center">🎯 Cycle Strategy: The Endgame</h4>
+              <h4 className="text-yellow-500 font-bold text-lg mb-4 text-center">🎯 Market Philosophy: The Endgame</h4>
               <div className="grid md:grid-cols-4 gap-4 text-center">
                 <div>
-                  <p className="text-yellow-500 font-bold text-lg">📈 Alt Season</p>
-                  <p className="text-white/70 text-sm">80% gains in last 20%</p>
+                  <p className="text-yellow-500 font-bold text-lg">📈 2Y MA x5</p>
+                  <p className="text-white/70 text-sm">Exit signal</p>
                 </div>
                 <div>
                   <p className="text-yellow-500 font-bold text-lg">💰 TWAP Strategy</p>
@@ -246,8 +246,8 @@ export default function MarketDashboardPage() {
                   <p className="text-white/70 text-sm">The only guarantee</p>
                 </div>
                 <div>
-                  <p className="text-yellow-500 font-bold text-lg">🚀 Capital Building</p>
-                  <p className="text-white/70 text-sm">Cycle to cycle growth</p>
+                  <p className="text-yellow-500 font-bold text-lg">🚀 Generational Shift</p>
+                  <p className="text-white/70 text-sm">$90T wealth transfer</p>
                 </div>
               </div>
             </div>
@@ -540,9 +540,9 @@ export default function MarketDashboardPage() {
               🚀 Alt Season Watchlist: TWAP Strategy
             </h3>
             
-            {/* Cycle Status Summary */}
+            {/* Market Context Summary */}
             <div className="mb-8">
-              <h4 className="text-xl font-bold text-yellow-500 mb-4">🎯 Cycle Status: Endgame Strategy</h4>
+              <h4 className="text-xl font-bold text-yellow-500 mb-4">🎯 Market Context: The Great Shift</h4>
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="bg-black p-4 rounded-none border border-yellow-500/20">
                   <p className="text-yellow-500 font-bold text-sm">Bitcoin Dominance</p>
@@ -550,21 +550,21 @@ export default function MarketDashboardPage() {
                   <p className="text-white/60 text-xs">Dropping = Alt season</p>
                 </div>
                 <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                  <p className="text-yellow-500 font-bold text-sm">Cycle Phase</p>
-                  <p className="text-white font-bold text-lg">End Game</p>
-                  <p className="text-white/60 text-xs">Last 20% = 80% gains</p>
+                  <p className="text-yellow-500 font-bold text-sm">Generational Shift</p>
+                  <p className="text-white font-bold text-lg">Millennials</p>
+                  <p className="text-white/60 text-xs">49% comfortable with crypto</p>
                 </div>
                 <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                  <p className="text-yellow-500 font-bold text-sm">Strategy</p>
-                  <p className="text-white font-bold text-lg">TWAP → DCA</p>
-                  <p className="text-white/60 text-xs">Sell alts, buy Bitcoin</p>
+                  <p className="text-yellow-500 font-bold text-sm">Wealth Transfer</p>
+                  <p className="text-white font-bold text-lg">$90T</p>
+                  <p className="text-white/60 text-xs">By 2044 to Gen X/Millennials</p>
                 </div>
               </div>
             </div>
 
-            {/* TWAP Targets */}
+            {/* Exit Strategy Targets */}
             <div className="mb-8">
-              <h4 className="text-xl font-bold text-yellow-500 mb-4">🔥 TWAP Targets: Sell 80-90% of Bags</h4>
+              <h4 className="text-xl font-bold text-yellow-500 mb-4">🔥 Exit Strategy: 2Y MA x5 = Sell Signal</h4>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {currentPrediction?.topPerformers.slice(0, 6).map((performer, index) => (
                   <div key={index} className="bg-black p-4 rounded-none border-2 border-yellow-500 shadow-[3px_3px_0px_0px_rgba(234,179,8,1)]">
@@ -593,9 +593,9 @@ export default function MarketDashboardPage() {
               </div>
             </div>
 
-            {/* Alt Season Momentum */}
+            {/* Exponential Age Momentum */}
             <div className="mb-8">
-              <h4 className="text-xl font-bold text-yellow-500 mb-4">📈 Alt Season Momentum: Pack Your Bags</h4>
+              <h4 className="text-xl font-bold text-yellow-500 mb-4">📈 Exponential Age: Metcalfe&apos;s Law Assets</h4>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
@@ -603,7 +603,7 @@ export default function MarketDashboardPage() {
                       <th className="py-4 px-4 text-yellow-400 font-bold">Asset</th>
                       <th className="py-4 px-4 text-yellow-400 font-bold">Current Price</th>
                       <th className="py-4 px-4 text-yellow-400 font-bold">24h Change</th>
-                      <th className="py-4 px-4 text-yellow-400 font-bold">TWAP Status</th>
+                      <th className="py-4 px-4 text-yellow-400 font-bold">2Y MA Status</th>
                       <th className="py-4 px-4 text-yellow-400 font-bold">Exit Strategy</th>
                     </tr>
                   </thead>
@@ -646,8 +646,8 @@ export default function MarketDashboardPage() {
                               isOutperformer ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
                               'bg-red-500/20 text-red-400 border border-red-500/30'
                             }`}>
-                              {isStrongOutperformer ? '💰 TWAP Now' :
-                               isOutperformer ? '📈 Start TWAP' : '⏳ Wait'}
+                              {isStrongOutperformer ? '🔴 Exit Signal' :
+                               isOutperformer ? '📈 Monitor' : '⏳ Accumulate'}
                             </span>
                           </td>
                           <td className="py-4 px-4 text-white/80">
@@ -669,7 +669,7 @@ export default function MarketDashboardPage() {
                 </table>
               </div>
               <p className="text-white/60 text-sm mt-4 text-center">
-                TWAP out of alts as they pump • DCA into Bitcoin • Everything comes back to Bitcoin
+                2Y MA x5 = Exit • DCA into Bitcoin • Millennials reshape markets • Bitcoin to $1M+
               </p>
             </div>
           </div>
@@ -683,17 +683,18 @@ export default function MarketDashboardPage() {
             </h3>
             <div className="space-y-4 text-gray-300">
               <p className="text-lg">
-                <strong>80% of gains come in the last 20% of the cycle.</strong> We are entering the endgame now. Bitcoin dominance is dropping, alts are rallying. <strong>TWAP out of your alt bags as prices move higher and DCA into Bitcoin.</strong> The only guarantee in crypto is that Bitcoin will outperform every altcoin forever.
+                <strong>80% of gains come in the last 20% of the cycle.</strong> We are entering the endgame now. <strong>The 2-Year Moving Average x5 is the exit signal that has called every Bitcoin top since 2013.</strong> Millennials are reshaping markets with $90T wealth transfer coming. <strong>TWAP out of alts as they pump and DCA into Bitcoin.</strong> The only guarantee: Bitcoin to $1M+.
               </p>
                               <div className="mt-6">
-                  <h4 className="text-xl font-bold text-yellow-500 mb-4">Cycle Strategy & Risk Disclosure:</h4>
+                  <h4 className="text-xl font-bold text-yellow-500 mb-4">Market Philosophy & Risk Disclosure:</h4>
                   <ul className="list-disc list-inside space-y-2">
-                    <li><strong>Endgame Strategy:</strong> 80% of gains come in the last 20% of the cycle</li>
+                    <li><strong>2Y MA x5 Exit Signal:</strong> Has called every Bitcoin top since 2013</li>
+                    <li><strong>Generational Shift:</strong> Millennials reshape markets with $90T wealth transfer</li>
+                    <li><strong>Exponential Age:</strong> Growth stocks trade off Metcalfe&apos;s Law, not mean reversion</li>
                     <li><strong>TWAP Strategy:</strong> Sell 80-90% of alt bags as prices move higher</li>
                     <li><strong>DCA Bitcoin:</strong> The only guarantee - Bitcoin to $1M+</li>
                     <li><strong>Capital Building:</strong> Build wealth cycle to cycle, not trade to trade</li>
                     <li>Don&apos;t chase trades - your bags should be packed already</li>
-                    <li>Only on small timeframes will alts outperform Bitcoin</li>
                     <li>Everything comes back to Bitcoin - this is fact, not opinion</li>
                     <li>Never invest more than you can afford to lose</li>
                   </ul>
