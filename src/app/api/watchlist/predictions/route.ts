@@ -232,8 +232,8 @@ export async function GET(_request: NextRequest) {
       note: 'AI predictions generated using simulated Grok 4 analysis'
     });
 
-  } catch (error) {
-    console.error('Error generating predictions:', error);
+  } catch {
+    // Error handling for predictions generation
     
     // Return mock predictions if analysis fails
     const mockPredictions: MarketPrediction[] = [

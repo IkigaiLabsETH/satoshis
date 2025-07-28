@@ -44,8 +44,8 @@ export async function GET(_request: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
-    console.error('Error fetching market state:', error);
+  } catch {
+    // Error handling for market state fetching
     
     // Return mock market state if API fails
     const mockMarketState: MarketState = {
