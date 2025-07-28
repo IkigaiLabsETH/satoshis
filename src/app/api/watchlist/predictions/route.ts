@@ -124,7 +124,7 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
       if (newsResponse.ok) {
         const newsResult = await newsResponse.json();
         if (newsResult.success && newsResult.data) {
-          newsData = newsResult.data.slice(0, 3); // Use top 3 news items
+          newsData = newsResult.data.slice(0, 5); // Use top 5 news items including X sentiment
         }
       }
     } catch {
@@ -159,6 +159,16 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
           sentiment: 'positive',
           impact_score: 7,
           category: 'Technical Analysis'
+        },
+        {
+          title: 'Bitcoin X Sentiment Analysis',
+          description: 'Real-time sentiment analysis from X (Twitter) for Bitcoin',
+          url: 'https://x.com/search?q=bitcoin',
+          source: 'X Sentiment Analysis',
+          publishedAt: new Date().toISOString(),
+          sentiment: 'positive',
+          impact_score: 6,
+          category: 'Social Sentiment'
         }
       ];
     }
@@ -308,10 +318,16 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     predictionReasoning = `Bitcoin showing bearish pressure with ${dailyBtcChange.toFixed(2)}% 24h decline. Advanced technical analysis: RSI ${rsi.toFixed(1)} (${rsi < 30 ? 'oversold' : 'bearish'}), MACD ${macd > 0 ? 'positive' : 'negative'}, Stochastic ${stochasticOscillator.toFixed(1)} (${stochasticOscillator < 20 ? 'oversold' : 'bearish'}), Williams %R ${williamsR.toFixed(1)}. Market structure: ${deathCross ? 'Death Cross warning' : goldenCross ? 'Golden Cross support' : 'Neutral'}, ${isAbove200SMA ? 'Above 200-day SMA' : 'Below 200-day SMA'}. Institutional flows: ETF ${etfFlows > 0 ? 'inflows' : 'outflows'} $${Math.abs(etfFlows).toFixed(0)}M, Funding rate ${(futuresFundingRate * 100).toFixed(3)}%, OBV ${onBalanceVolume < 0.95 ? 'weak' : 'strong'}.`;
   }
   
-  // Add market context from news
+  // Add market context from news and X sentiment
   if (newsData.length > 0) {
-    const relevantNews = newsData.find(n => n.source === 'Mando Minutes') || newsData[0];
+    const relevantNews = newsData.find(n => n.source === 'Market Analysis') || newsData[0];
+    const xSentiment = newsData.find(n => n.source === 'X Sentiment Analysis');
+    
     predictionReasoning += ` Market context: ${relevantNews.title} - this ${relevantNews.sentiment} news may ${relevantNews.sentiment === 'positive' ? 'support' : relevantNews.sentiment === 'negative' ? 'pressure' : 'influence'} Bitcoin's price movement.`;
+    
+    if (xSentiment) {
+      predictionReasoning += ` X sentiment: ${xSentiment.sentiment} social sentiment (${xSentiment.impact_score}/10 impact) may ${xSentiment.sentiment === 'positive' ? 'amplify' : xSentiment.sentiment === 'negative' ? 'counteract' : 'moderate'} market momentum.`;
+    }
   }
   
   // Enhanced crypto performer analysis

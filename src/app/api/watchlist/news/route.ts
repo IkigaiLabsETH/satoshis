@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { env } from '@/env.mjs';
 
 interface NewsItem {
   title: string;
@@ -140,12 +141,104 @@ const generateMarketInsights = (): NewsItem[] => {
   return insights;
 };
 
+// Fetch X (Twitter) sentiment for crypto topics
+const fetchXSentiment = async (topics: string[]): Promise<NewsItem[]> => {
+  const xNewsItems: NewsItem[] = [];
+  
+  if (!env.XAI_API_KEY) {
+    return xNewsItems; // Return empty if no X AI API key
+  }
+  
+  try {
+    // Use X AI API to analyze sentiment for key crypto topics
+    const xaiClient = new (await import('openai')).default({
+      baseURL: "https://api.x.ai/v1",
+      apiKey: env.XAI_API_KEY,
+    });
+    
+    for (const topic of topics.slice(0, 3)) { // Limit to 3 topics to avoid rate limits
+      try {
+        const response = await xaiClient.chat.completions.create({
+          model: 'grok-4',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a crypto market sentiment analyst. Analyze the current sentiment on X (Twitter) for "${topic}". 
+              Return a JSON object with: 
+              - title: A concise headline about the sentiment
+              - description: A brief description of the sentiment and key points
+              - sentiment: "positive", "negative", or "neutral"
+              - impact_score: 1-10 rating of market impact
+              - category: Relevant category (Bitcoin, Altcoin, DeFi, etc.)
+              - keywords: Array of relevant keywords
+              Focus on real sentiment, not predictions.`
+            },
+            {
+              role: 'user',
+              content: `Analyze current X sentiment for: ${topic}`
+            }
+          ],
+          temperature: 0.3,
+          max_tokens: 300
+        });
+        
+        const content = response.choices[0]?.message?.content;
+        if (content) {
+          try {
+            const sentimentData = JSON.parse(content);
+            xNewsItems.push({
+              title: sentimentData.title || `${topic} X Sentiment Analysis`,
+              description: sentimentData.description || `Current X sentiment analysis for ${topic}`,
+              url: `https://x.com/search?q=${encodeURIComponent(topic)}`,
+              source: 'X Sentiment Analysis',
+              publishedAt: new Date().toISOString(),
+              sentiment: sentimentData.sentiment || 'neutral',
+              impact_score: sentimentData.impact_score || 5,
+              category: sentimentData.category || 'Social Sentiment',
+              keywords: sentimentData.keywords || [topic.toLowerCase()]
+            });
+          } catch {
+            // If JSON parsing fails, create a basic sentiment item
+            xNewsItems.push({
+              title: `${topic} X Sentiment Analysis`,
+              description: `Real-time sentiment analysis from X (Twitter) for ${topic}`,
+              url: `https://x.com/search?q=${encodeURIComponent(topic)}`,
+              source: 'X Sentiment Analysis',
+              publishedAt: new Date().toISOString(),
+              sentiment: 'neutral',
+              impact_score: 6,
+              category: 'Social Sentiment',
+              keywords: [topic.toLowerCase()]
+            });
+          }
+        }
+        
+        // Rate limiting for X AI API
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+      } catch {
+        // Continue with other topics if one fails
+        continue;
+      }
+    }
+  } catch {
+    // Return empty array if X AI API fails
+  }
+  
+  return xNewsItems;
+};
+
 export async function GET(_request: NextRequest) {
   try {
     const newsItems: NewsItem[] = [];
 
     // Add market insights first
     newsItems.push(...generateMarketInsights());
+
+    // Fetch X sentiment for key crypto topics
+    const xTopics = ['Bitcoin', 'Ethereum', 'Solana', 'Crypto ETFs', 'Bitcoin Halving'];
+    const xSentimentItems = await fetchXSentiment(xTopics);
+    newsItems.push(...xSentimentItems);
 
     // Fetch news from CoinGecko (primary source) - optimized for free tier
     try {
