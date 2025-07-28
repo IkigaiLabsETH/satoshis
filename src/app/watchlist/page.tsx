@@ -217,7 +217,7 @@ export default function MarketDashboardPage() {
         <div className="space-y-16">
           {/* Hero Section */}
           <div className="text-center space-y-8">
-            <p className="uppercase tracking-[0.4em] text-yellow-500/90 text-sm mb-4 font-light font-satoshi">Real-Time Data → Grok 4 AI → Live Predictions</p>
+            <p className="uppercase tracking-[0.4em] text-yellow-500/90 text-sm mb-4 font-light font-satoshi">80% of gains come in the last 20% of the cycle • Alt season is here • DCA into Bitcoin</p>
             <h1 className="text-center">
               <span className="text-6xl md:text-8xl font-bold text-yellow-500 tracking-tight [text-shadow:_0_1px_20px_rgba(234,179,8,0.3)] font-satoshi">
                 North Star
@@ -225,29 +225,29 @@ export default function MarketDashboardPage() {
             </h1>
             <div className="flex items-center justify-center mt-6">
               <div className="h-px w-24 bg-yellow-500/30"></div>
-              <p className="mx-6 text-lg text-white/70 font-light italic font-satoshi">Live Data Feeds Grok 4 • Real-Time AI Analysis • X Sentiment Integration</p>
+              <p className="mx-6 text-lg text-white/70 font-light italic font-satoshi">TWAP out of alts • DCA into Bitcoin • Build capital cycle to cycle</p>
               <div className="h-px w-24 bg-yellow-500/30"></div>
             </div>
             
-            {/* Data Pipeline Summary */}
+            {/* Cycle Strategy Summary */}
             <div className="bg-black/20 p-6 rounded-none border border-yellow-500/30 mt-8">
-              <h4 className="text-yellow-500 font-bold text-lg mb-4 text-center">🔄 Real-Time Data Pipeline</h4>
+              <h4 className="text-yellow-500 font-bold text-lg mb-4 text-center">🎯 Cycle Strategy: The Endgame</h4>
               <div className="grid md:grid-cols-4 gap-4 text-center">
                 <div>
-                  <p className="text-yellow-500 font-bold text-lg">📊 Market Data</p>
-                  <p className="text-white/70 text-sm">CoinGecko APIs</p>
+                  <p className="text-yellow-500 font-bold text-lg">📈 Alt Season</p>
+                  <p className="text-white/70 text-sm">80% gains in last 20%</p>
                 </div>
                 <div>
-                  <p className="text-yellow-500 font-bold text-lg">📈 Stock Data</p>
-                  <p className="text-white/70 text-sm">Finnhub APIs</p>
+                  <p className="text-yellow-500 font-bold text-lg">💰 TWAP Strategy</p>
+                  <p className="text-white/70 text-sm">Sell 80-90% of bags</p>
                 </div>
                 <div>
-                  <p className="text-yellow-500 font-bold text-lg">🤖 Grok 4 AI</p>
-                  <p className="text-white/70 text-sm">Live Analysis</p>
+                  <p className="text-yellow-500 font-bold text-lg">₿ DCA Bitcoin</p>
+                  <p className="text-white/70 text-sm">The only guarantee</p>
                 </div>
                 <div>
-                  <p className="text-yellow-500 font-bold text-lg">📱 X Sentiment</p>
-                  <p className="text-white/70 text-sm">Social Analysis</p>
+                  <p className="text-yellow-500 font-bold text-lg">🚀 Capital Building</p>
+                  <p className="text-white/70 text-sm">Cycle to cycle growth</p>
                 </div>
               </div>
             </div>
@@ -534,37 +534,37 @@ export default function MarketDashboardPage() {
 
 
 
-          {/* Outperform Bitcoin Watchlist */}
+          {/* Alt Season Watchlist */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
             <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
-              🚀 Outperform Bitcoin Watchlist
+              🚀 Alt Season Watchlist: TWAP Strategy
             </h3>
             
-            {/* Watchlist Summary */}
+            {/* Cycle Status Summary */}
             <div className="mb-8">
-              <h4 className="text-xl font-bold text-yellow-500 mb-4">🎯 Grok 4 AI Watchlist Picks</h4>
+              <h4 className="text-xl font-bold text-yellow-500 mb-4">🎯 Cycle Status: Endgame Strategy</h4>
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                  <p className="text-yellow-500 font-bold text-sm">Bitcoin Status</p>
-                  <p className="text-white font-bold text-lg">{marketState ? `${marketState.dominance.bitcoin.toFixed(1)}%` : 'Calculating...'} Dominance</p>
-                  <p className="text-white/60 text-xs">Market benchmark</p>
+                  <p className="text-yellow-500 font-bold text-sm">Bitcoin Dominance</p>
+                  <p className="text-white font-bold text-lg">{marketState ? `${marketState.dominance.bitcoin.toFixed(1)}%` : 'Calculating...'}</p>
+                  <p className="text-white/60 text-xs">Dropping = Alt season</p>
                 </div>
                 <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                  <p className="text-yellow-500 font-bold text-sm">Market Sentiment</p>
-                  <p className="text-white font-bold text-lg">{marketState ? getFearGreedLabel(marketState.fearGreedIndex) : 'Calculating...'}</p>
-                  <p className="text-white/60 text-xs">Grok 4 sentiment analysis</p>
+                  <p className="text-yellow-500 font-bold text-sm">Cycle Phase</p>
+                  <p className="text-white font-bold text-lg">End Game</p>
+                  <p className="text-white/60 text-xs">Last 20% = 80% gains</p>
                 </div>
                 <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                  <p className="text-yellow-500 font-bold text-sm">Watchlist Assets</p>
-                  <p className="text-white font-bold text-lg">{cryptoData.length + (currentPrediction?.topPerformers.length || 0)} Total</p>
-                  <p className="text-white/60 text-xs">Crypto + Stock picks</p>
+                  <p className="text-yellow-500 font-bold text-sm">Strategy</p>
+                  <p className="text-white font-bold text-lg">TWAP → DCA</p>
+                  <p className="text-white/60 text-xs">Sell alts, buy Bitcoin</p>
                 </div>
               </div>
             </div>
 
-            {/* Top Outperformers */}
+            {/* TWAP Targets */}
             <div className="mb-8">
-              <h4 className="text-xl font-bold text-yellow-500 mb-4">🔥 Top Outperformers vs Bitcoin</h4>
+              <h4 className="text-xl font-bold text-yellow-500 mb-4">🔥 TWAP Targets: Sell 80-90% of Bags</h4>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {currentPrediction?.topPerformers.slice(0, 6).map((performer, index) => (
                   <div key={index} className="bg-black p-4 rounded-none border-2 border-yellow-500 shadow-[3px_3px_0px_0px_rgba(234,179,8,1)]">
@@ -593,9 +593,9 @@ export default function MarketDashboardPage() {
               </div>
             </div>
 
-            {/* Momentum Watchlist */}
+            {/* Alt Season Momentum */}
             <div className="mb-8">
-              <h4 className="text-xl font-bold text-yellow-500 mb-4">📈 Momentum Watchlist</h4>
+              <h4 className="text-xl font-bold text-yellow-500 mb-4">📈 Alt Season Momentum: Pack Your Bags</h4>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
@@ -603,8 +603,8 @@ export default function MarketDashboardPage() {
                       <th className="py-4 px-4 text-yellow-400 font-bold">Asset</th>
                       <th className="py-4 px-4 text-yellow-400 font-bold">Current Price</th>
                       <th className="py-4 px-4 text-yellow-400 font-bold">24h Change</th>
-                      <th className="py-4 px-4 text-yellow-400 font-bold">Watchlist Status</th>
-                      <th className="py-4 px-4 text-yellow-400 font-bold">Grok 4 Rating</th>
+                      <th className="py-4 px-4 text-yellow-400 font-bold">TWAP Status</th>
+                      <th className="py-4 px-4 text-yellow-400 font-bold">Exit Strategy</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -646,8 +646,8 @@ export default function MarketDashboardPage() {
                               isOutperformer ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
                               'bg-red-500/20 text-red-400 border border-red-500/30'
                             }`}>
-                              {isStrongOutperformer ? '🔥 Hot Pick' :
-                               isOutperformer ? '📈 Outperforming' : '📉 Underperforming'}
+                              {isStrongOutperformer ? '💰 TWAP Now' :
+                               isOutperformer ? '📈 Start TWAP' : '⏳ Wait'}
                             </span>
                           </td>
                           <td className="py-4 px-4 text-white/80">
@@ -657,7 +657,9 @@ export default function MarketDashboardPage() {
                               grokRating === 'Hold' ? 'bg-blue-500/20 text-blue-400' :
                               'bg-red-500/20 text-red-400'
                             }`}>
-                              {grokRating}
+                              {grokRating === 'Strong Buy' ? 'Sell 90%' :
+                               grokRating === 'Buy' ? 'Sell 80%' :
+                               grokRating === 'Hold' ? 'Hold' : 'Avoid'}
                             </span>
                           </td>
                         </tr>
@@ -667,7 +669,7 @@ export default function MarketDashboardPage() {
                 </table>
               </div>
               <p className="text-white/60 text-sm mt-4 text-center">
-                Grok 4 AI analyzes real-time data to identify assets likely to outperform Bitcoin
+                TWAP out of alts as they pump • DCA into Bitcoin • Everything comes back to Bitcoin
               </p>
             </div>
           </div>
@@ -681,18 +683,18 @@ export default function MarketDashboardPage() {
             </h3>
             <div className="space-y-4 text-gray-300">
               <p className="text-lg">
-                This dashboard features <strong>real-time AI-generated market predictions</strong> powered by Grok 4 analysis. All predictions are based on <strong>live market data</strong> from CoinGecko APIs, <strong>real-time stock data</strong> from Finnhub, and <strong>social sentiment analysis</strong> from X AI API.
+                <strong>80% of gains come in the last 20% of the cycle.</strong> We are entering the endgame now. Bitcoin dominance is dropping, alts are rallying. <strong>TWAP out of your alt bags as prices move higher and DCA into Bitcoin.</strong> The only guarantee in crypto is that Bitcoin will outperform every altcoin forever.
               </p>
                               <div className="mt-6">
-                  <h4 className="text-xl font-bold text-yellow-500 mb-4">Data Pipeline & Risk Disclosure:</h4>
+                  <h4 className="text-xl font-bold text-yellow-500 mb-4">Cycle Strategy & Risk Disclosure:</h4>
                   <ul className="list-disc list-inside space-y-2">
-                    <li><strong>Real-time data feeds</strong> from CoinGecko, Finnhub, and X AI APIs</li>
-                    <li><strong>Grok 4 AI analysis</strong> processes live market data for predictions</li>
-                    <li>AI predictions are for informational purposes only</li>
-                    <li>Past performance does not guarantee future results</li>
-                    <li>Cryptocurrency markets are highly volatile and unpredictable</li>
-                    <li>Always conduct your own research before making investment decisions</li>
-                    <li>Consider consulting with a financial advisor</li>
+                    <li><strong>Endgame Strategy:</strong> 80% of gains come in the last 20% of the cycle</li>
+                    <li><strong>TWAP Strategy:</strong> Sell 80-90% of alt bags as prices move higher</li>
+                    <li><strong>DCA Bitcoin:</strong> The only guarantee - Bitcoin to $1M+</li>
+                    <li><strong>Capital Building:</strong> Build wealth cycle to cycle, not trade to trade</li>
+                    <li>Don&apos;t chase trades - your bags should be packed already</li>
+                    <li>Only on small timeframes will alts outperform Bitcoin</li>
+                    <li>Everything comes back to Bitcoin - this is fact, not opinion</li>
                     <li>Never invest more than you can afford to lose</li>
                   </ul>
                 </div>
