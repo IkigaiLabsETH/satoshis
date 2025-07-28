@@ -217,7 +217,7 @@ export default function MarketDashboardPage() {
         <div className="space-y-16">
           {/* Hero Section */}
           <div className="text-center space-y-8">
-            <p className="uppercase tracking-[0.4em] text-yellow-500/90 text-sm mb-4 font-light font-satoshi">AI-Powered Market Analysis • Grok 4 Predictions • Real-Time Insights</p>
+            <p className="uppercase tracking-[0.4em] text-yellow-500/90 text-sm mb-4 font-light font-satoshi">Real-Time Data → Grok 4 AI → Live Predictions</p>
             <h1 className="text-center">
               <span className="text-6xl md:text-8xl font-bold text-yellow-500 tracking-tight [text-shadow:_0_1px_20px_rgba(234,179,8,0.3)] font-satoshi">
                 North Star
@@ -225,28 +225,29 @@ export default function MarketDashboardPage() {
             </h1>
             <div className="flex items-center justify-center mt-6">
               <div className="h-px w-24 bg-yellow-500/30"></div>
-              <p className="mx-6 text-lg text-white/70 font-light italic font-satoshi">Your Daily Market Compass • AI-Powered Predictions</p>
+              <p className="mx-6 text-lg text-white/70 font-light italic font-satoshi">Live Data Feeds Grok 4 • Real-Time AI Analysis • X Sentiment Integration</p>
               <div className="h-px w-24 bg-yellow-500/30"></div>
             </div>
             
-            {/* Quick Summary */}
+            {/* Data Pipeline Summary */}
             <div className="bg-black/20 p-6 rounded-none border border-yellow-500/30 mt-8">
+              <h4 className="text-yellow-500 font-bold text-lg mb-4 text-center">🔄 Real-Time Data Pipeline</h4>
               <div className="grid md:grid-cols-4 gap-4 text-center">
                 <div>
-                  <p className="text-yellow-500 font-bold text-lg">📊 Market State</p>
-                  <p className="text-white/70 text-sm">Current overview</p>
+                  <p className="text-yellow-500 font-bold text-lg">📊 Market Data</p>
+                  <p className="text-white/70 text-sm">CoinGecko APIs</p>
                 </div>
                 <div>
-                  <p className="text-yellow-500 font-bold text-lg">₿ Bitcoin</p>
-                  <p className="text-white/70 text-sm">Price predictions</p>
+                  <p className="text-yellow-500 font-bold text-lg">📈 Stock Data</p>
+                  <p className="text-white/70 text-sm">Finnhub APIs</p>
                 </div>
                 <div>
-                  <p className="text-yellow-500 font-bold text-lg">🚀 Altcoins</p>
-                  <p className="text-white/70 text-sm">Outperformance picks</p>
+                  <p className="text-yellow-500 font-bold text-lg">🤖 Grok 4 AI</p>
+                  <p className="text-white/70 text-sm">Live Analysis</p>
                 </div>
                 <div>
-                  <p className="text-yellow-500 font-bold text-lg">📈 Stocks</p>
-                  <p className="text-white/70 text-sm">Crypto-related picks</p>
+                  <p className="text-yellow-500 font-bold text-lg">📱 X Sentiment</p>
+                  <p className="text-white/70 text-sm">Social Analysis</p>
                 </div>
               </div>
             </div>
@@ -403,7 +404,7 @@ export default function MarketDashboardPage() {
           {/* AI Predictions */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
             <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
-              🎯 AI Predictions: Bitcoin, Altcoins & Stocks
+              🤖 Grok 4 AI Predictions: Live Data Analysis
             </h3>
             
             {/* Timeframe Selector */}
@@ -430,7 +431,7 @@ export default function MarketDashboardPage() {
               <div className="space-y-8">
                 {/* Bitcoin Prediction */}
                 <div className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-                  <h4 className="text-xl font-bold text-yellow-500 mb-4">₿ Bitcoin Prediction</h4>
+                  <h4 className="text-xl font-bold text-yellow-500 mb-4">₿ Bitcoin Prediction (Live Data Analysis)</h4>
                   <div className="grid md:grid-cols-3 gap-6">
                     <div className="text-center">
                       <p className="text-white/60 text-sm mb-2">Predicted Price</p>
@@ -456,7 +457,7 @@ export default function MarketDashboardPage() {
 
                 {/* Top Performers Prediction */}
                 <div>
-                  <h4 className="text-xl font-bold text-yellow-500 mb-4">🚀 Assets Predicted to Outperform Bitcoin</h4>
+                  <h4 className="text-xl font-bold text-yellow-500 mb-4">🚀 Assets Predicted to Outperform Bitcoin (Grok 4 Analysis)</h4>
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {currentPrediction.topPerformers.map((performer, index) => (
                       <Card key={index} className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
@@ -492,7 +493,7 @@ export default function MarketDashboardPage() {
                 {/* Market Sentiment & Events */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-                    <h4 className="text-xl font-bold text-yellow-500 mb-4">📊 Market Sentiment</h4>
+                    <h4 className="text-xl font-bold text-yellow-500 mb-4">📊 Market Sentiment (Grok 4 + X Analysis)</h4>
                     <div className="flex items-center gap-4 mb-4">
                       <span className="text-4xl">{getSentimentIcon(currentPrediction.marketSentiment)}</span>
                       <span className={`text-2xl font-bold ${getSentimentColor(currentPrediction.marketSentiment)}`}>
@@ -533,59 +534,138 @@ export default function MarketDashboardPage() {
 
 
 
-          {/* Live Market Data */}
+          {/* Data Sources & Live Market Data */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
             <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
-              📈 Live Market Data
+              🔄 Data Sources & Live Market Data
             </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-yellow-500/30">
-                    <th className="py-4 px-4 text-yellow-400 font-bold">Asset</th>
-                    <th className="py-4 px-4 text-yellow-400 font-bold">Price</th>
-                    <th className="py-4 px-4 text-yellow-400 font-bold">24h Change</th>
-                    <th className="py-4 px-4 text-yellow-400 font-bold">Market Cap</th>
-                    <th className="py-4 px-4 text-yellow-400 font-bold">Volume</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cryptoData.map((crypto, index) => (
-                    <tr key={index} className="border-b border-white/10 hover:bg-white/5 transition-colors">
-                      <td className="py-4 px-4">
-                        <div className="flex items-center space-x-3">
-                          {crypto.image && (
-                            <Image 
-                              src={crypto.image} 
-                              alt={crypto.id} 
-                              width={32}
-                              height={32}
-                              className="rounded-full"
-                            />
-                          )}
-                          <div>
-                            <p className="font-bold text-white">{crypto.id.charAt(0).toUpperCase() + crypto.id.slice(1)}</p>
-                            <p className="text-white/60 text-sm">{crypto.symbol.toUpperCase()}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 font-bold text-white">
-                        {formatPrice(crypto.current_price)}
-                      </td>
-                      <td className={`py-4 px-4 font-bold ${getChangeColor(crypto.price_change_percentage_24h)}`}>
-                        {crypto.price_change_percentage_24h > 0 ? '+' : ''}{crypto.price_change_percentage_24h.toFixed(2)}%
-                      </td>
-                      <td className="py-4 px-4 text-white/80">
-                        {formatMarketCap(crypto.market_cap)}
-                      </td>
-                      <td className="py-4 px-4 text-white/80">
-                        {formatMarketCap(crypto.total_volume)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            
+            {/* Data Sources */}
+            <div className="mb-8">
+              <h4 className="text-xl font-bold text-yellow-500 mb-4">📡 Real-Time Data Feeds</h4>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="bg-black p-4 rounded-none border border-yellow-500/20">
+                  <p className="text-yellow-500 font-bold">📊 CoinGecko APIs</p>
+                  <p className="text-white/70 text-sm">Crypto prices, market cap, volume, dominance</p>
+                </div>
+                <div className="bg-black p-4 rounded-none border border-yellow-500/20">
+                  <p className="text-yellow-500 font-bold">📈 Finnhub APIs</p>
+                  <p className="text-white/70 text-sm">Stock prices, volume, technical indicators</p>
+                </div>
+                <div className="bg-black p-4 rounded-none border border-yellow-500/20">
+                  <p className="text-yellow-500 font-bold">📱 X AI API</p>
+                  <p className="text-white/70 text-sm">Social sentiment analysis & market mood</p>
+                </div>
+              </div>
             </div>
+                                        {/* Data Analysis Process */}
+              <div className="mb-8">
+                <h4 className="text-xl font-bold text-yellow-500 mb-4">🔍 How Live Data Feeds Grok 4 Predictions</h4>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="bg-black p-6 rounded-none border border-yellow-500/20">
+                    <h5 className="text-yellow-400 font-bold mb-3">📊 Market Data Analysis</h5>
+                    <ul className="space-y-2 text-sm text-white/80">
+                      <li>• <strong>Volume Analysis:</strong> {cryptoData.length > 0 ? `${cryptoData.filter(c => c.total_volume > 1000000000).length} assets with >$1B volume` : 'Analyzing volume patterns'}</li>
+                      <li>• <strong>Market Cap Distribution:</strong> {cryptoData.length > 0 ? `${cryptoData.filter(c => c.market_cap > 10000000000).length} assets >$10B market cap` : 'Evaluating market dominance'}</li>
+                      <li>• <strong>Price Momentum:</strong> {cryptoData.length > 0 ? `${cryptoData.filter(c => c.price_change_percentage_24h > 0).length} assets in positive territory` : 'Tracking price movements'}</li>
+                      <li>• <strong>Volatility Assessment:</strong> Analyzing price swings and market stability</li>
+                    </ul>
+                  </div>
+                  <div className="bg-black p-6 rounded-none border border-yellow-500/20">
+                    <h5 className="text-yellow-400 font-bold mb-3">🤖 Grok 4 Processing</h5>
+                    <ul className="space-y-2 text-sm text-white/80">
+                      <li>• <strong>Technical Indicators:</strong> RSI, MACD, Bollinger Bands analysis</li>
+                      <li>• <strong>Sentiment Integration:</strong> X social sentiment + market data</li>
+                      <li>• <strong>Correlation Analysis:</strong> Bitcoin vs altcoin relationships</li>
+                      <li>• <strong>Pattern Recognition:</strong> Historical data pattern matching</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Key Data Points for Predictions */}
+              <div className="mb-8">
+                <h4 className="text-xl font-bold text-yellow-500 mb-4">🎯 Key Data Points Driving Predictions</h4>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="bg-black p-4 rounded-none border border-yellow-500/20">
+                    <p className="text-yellow-500 font-bold text-sm">Bitcoin Dominance</p>
+                    <p className="text-white font-bold text-lg">{marketState ? `${marketState.dominance.bitcoin.toFixed(1)}%` : 'Calculating...'}</p>
+                    <p className="text-white/60 text-xs">Market leadership indicator</p>
+                  </div>
+                  <div className="bg-black p-4 rounded-none border border-yellow-500/20">
+                    <p className="text-yellow-500 font-bold text-sm">Fear & Greed Index</p>
+                    <p className="text-white font-bold text-lg">{marketState ? marketState.fearGreedIndex : 'Calculating...'}</p>
+                    <p className="text-white/60 text-xs">Market sentiment gauge</p>
+                  </div>
+                  <div className="bg-black p-4 rounded-none border border-yellow-500/20">
+                    <p className="text-yellow-500 font-bold text-sm">Total Market Cap</p>
+                    <p className="text-white font-bold text-lg">{marketState ? formatMarketCap(marketState.totalMarketCap) : 'Calculating...'}</p>
+                    <p className="text-white/60 text-xs">Overall market size</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Data Table */}
+              <div className="overflow-x-auto">
+                <h4 className="text-xl font-bold text-yellow-500 mb-4">📊 Live Data Feeding Predictions</h4>
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-yellow-500/30">
+                      <th className="py-4 px-4 text-yellow-400 font-bold">Asset</th>
+                      <th className="py-4 px-4 text-yellow-400 font-bold">Current Price</th>
+                      <th className="py-4 px-4 text-yellow-400 font-bold">24h Change</th>
+                      <th className="py-4 px-4 text-yellow-400 font-bold">Volume</th>
+                      <th className="py-4 px-4 text-yellow-400 font-bold">Prediction Impact</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cryptoData.slice(0, 8).map((crypto, index) => (
+                      <tr key={index} className="border-b border-white/10 hover:bg-white/5 transition-colors">
+                        <td className="py-4 px-4">
+                          <div className="flex items-center space-x-3">
+                            {crypto.image && (
+                              <Image 
+                                src={crypto.image} 
+                                alt={crypto.id} 
+                                width={32}
+                                height={32}
+                                className="rounded-full"
+                              />
+                            )}
+                            <div>
+                              <p className="font-bold text-white">{crypto.id.charAt(0).toUpperCase() + crypto.id.slice(1)}</p>
+                              <p className="text-white/60 text-sm">{crypto.symbol.toUpperCase()}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 font-bold text-white">
+                          {formatPrice(crypto.current_price)}
+                        </td>
+                        <td className={`py-4 px-4 font-bold ${getChangeColor(crypto.price_change_percentage_24h)}`}>
+                          {crypto.price_change_percentage_24h > 0 ? '+' : ''}{crypto.price_change_percentage_24h.toFixed(2)}%
+                        </td>
+                        <td className="py-4 px-4 text-white/80">
+                          {formatMarketCap(crypto.total_volume)}
+                        </td>
+                        <td className="py-4 px-4 text-white/80">
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            crypto.price_change_percentage_24h > 5 ? 'bg-green-500/20 text-green-400' :
+                            crypto.price_change_percentage_24h > 0 ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-red-500/20 text-red-400'
+                          }`}>
+                            {crypto.price_change_percentage_24h > 5 ? 'Strong Bullish' :
+                             crypto.price_change_percentage_24h > 0 ? 'Moderate Bullish' :
+                             crypto.price_change_percentage_24h > -5 ? 'Neutral' : 'Bearish'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="text-white/60 text-sm mt-4 text-center">
+                  Showing top 8 assets by market cap • Data feeds Grok 4 AI for real-time prediction analysis
+                </p>
+              </div>
           </div>
 
 
@@ -593,23 +673,25 @@ export default function MarketDashboardPage() {
           {/* Disclaimer */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
             <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
-              Important Notice
+              🤖 AI-Powered Analysis Notice
             </h3>
             <div className="space-y-4 text-gray-300">
               <p className="text-lg">
-                This dashboard features AI-generated market predictions powered by Grok 4 analysis. All predictions are based on historical data, technical analysis, and market sentiment analysis.
+                This dashboard features <strong>real-time AI-generated market predictions</strong> powered by Grok 4 analysis. All predictions are based on <strong>live market data</strong> from CoinGecko APIs, <strong>real-time stock data</strong> from Finnhub, and <strong>social sentiment analysis</strong> from X AI API.
               </p>
-              <div className="mt-6">
-                <h4 className="text-xl font-bold text-yellow-500 mb-4">Risk Disclosure:</h4>
-                <ul className="list-disc list-inside space-y-2">
-                  <li>AI predictions are for informational purposes only</li>
-                  <li>Past performance does not guarantee future results</li>
-                  <li>Cryptocurrency markets are highly volatile and unpredictable</li>
-                  <li>Always conduct your own research before making investment decisions</li>
-                  <li>Consider consulting with a financial advisor</li>
-                  <li>Never invest more than you can afford to lose</li>
-                </ul>
-              </div>
+                              <div className="mt-6">
+                  <h4 className="text-xl font-bold text-yellow-500 mb-4">Data Pipeline & Risk Disclosure:</h4>
+                  <ul className="list-disc list-inside space-y-2">
+                    <li><strong>Real-time data feeds</strong> from CoinGecko, Finnhub, and X AI APIs</li>
+                    <li><strong>Grok 4 AI analysis</strong> processes live market data for predictions</li>
+                    <li>AI predictions are for informational purposes only</li>
+                    <li>Past performance does not guarantee future results</li>
+                    <li>Cryptocurrency markets are highly volatile and unpredictable</li>
+                    <li>Always conduct your own research before making investment decisions</li>
+                    <li>Consider consulting with a financial advisor</li>
+                    <li>Never invest more than you can afford to lose</li>
+                  </ul>
+                </div>
             </div>
           </div>
         </div>
