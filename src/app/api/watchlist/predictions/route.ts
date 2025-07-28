@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Grok4Service } from '../grok4/grok4';
 
 interface CryptoData {
   id: string;
@@ -35,18 +36,6 @@ interface NewsData {
   keywords?: string[];
 }
 
-interface EnhancedCryptoData extends CryptoData {
-  momentumScore: number;
-  relativeStrength: number;
-  volumeStrength: number;
-}
-
-interface EnhancedStockData extends StockData {
-  momentumScore: number;
-  relativeStrength: number;
-  volumeStrength: number;
-}
-
 interface MarketPrediction {
   timeframe: string;
   btcPrediction: {
@@ -68,12 +57,12 @@ interface MarketPrediction {
   riskFactors: string[];
 }
 
-// Real Grok 4 AI prediction function using live data
+// Real Grok 4 AI prediction function using actual Grok 4 API
 const generatePredictions = async (): Promise<MarketPrediction[]> => {
   const predictions: MarketPrediction[] = [];
 
-  // Fetch current Bitcoin price and market data
-  let currentBtcPrice = 120000; // Default fallback
+  // Fetch current market data to feed to Grok 4
+  let currentBtcPrice = 120000;
   let btc24hChange = 0;
   let cryptoData: CryptoData[] = [];
   let stockData: StockData[] = [];
@@ -88,16 +77,15 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
       btc24hChange = btcData.bitcoin?.usd_24h_change || 0;
     }
 
-    // Fetch real crypto data for predictions
+    // Fetch real crypto data for Grok 4 analysis
     const cryptoResponse = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,solana,bittensor,arweave,kaspa,hyperliquid,render-token,sui&order=market_cap_desc&per_page=20&page=1&sparkline=false');
     if (cryptoResponse.ok) {
       cryptoData = await cryptoResponse.json();
     }
 
-    // Fetch real stock data for predictions
+    // Fetch real stock data for Grok 4 analysis
     const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
     if (FINNHUB_API_KEY) {
-      // Fetch key crypto-related stocks
       const stockSymbols = ['MSTR', 'COIN', 'HOOD', 'CRCL', 'IREN', 'CORZ', 'CIFR'];
       const stockPromises = stockSymbols.map(async (symbol) => {
         try {
@@ -118,17 +106,17 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
         .map(result => result.value);
     }
 
-    // Fetch recent Bitcoin and crypto news for context using our enhanced news API
+    // Fetch recent news for Grok 4 context
     try {
       const newsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/watchlist/news`);
       if (newsResponse.ok) {
         const newsResult = await newsResponse.json();
         if (newsResult.success && newsResult.data) {
-          newsData = newsResult.data.slice(0, 5); // Use top 5 news items including X sentiment
+          newsData = newsResult.data.slice(0, 5);
         }
       }
     } catch {
-      // Fallback to market insights if news API fails
+      // Fallback news data
       newsData = [
         {
           title: 'Bitcoin ETF Flows Continue Strong Institutional Adoption',
@@ -139,36 +127,6 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
           sentiment: 'positive',
           impact_score: 8,
           category: 'Institutional Adoption'
-        },
-        {
-          title: 'Bitcoin Halving Approaching - Supply Reduction Expected',
-          description: 'Bitcoin halving countdown continues with supply reduction from 6.25 to 3.125 BTC per block',
-          url: 'https://www.blockchain.com/explorer/charts/halving',
-          source: 'Market Analysis',
-          publishedAt: new Date().toISOString(),
-          sentiment: 'positive',
-          impact_score: 9,
-          category: 'Bitcoin Fundamentals'
-        },
-        {
-          title: 'Market Technical Analysis: Key Support and Resistance Levels',
-          description: 'Bitcoin showing strong support at key levels with increasing institutional adoption',
-          url: 'https://www.tradingview.com/symbols/CRYPTOCAP-BTC.D/',
-          source: 'Technical Analysis',
-          publishedAt: new Date().toISOString(),
-          sentiment: 'positive',
-          impact_score: 7,
-          category: 'Technical Analysis'
-        },
-        {
-          title: 'Bitcoin X Sentiment Analysis',
-          description: 'Real-time sentiment analysis from X (Twitter) for Bitcoin',
-          url: 'https://x.com/search?q=bitcoin',
-          source: 'X Sentiment Analysis',
-          publishedAt: new Date().toISOString(),
-          sentiment: 'positive',
-          impact_score: 6,
-          category: 'Social Sentiment'
         }
       ];
     }
@@ -176,534 +134,239 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     // Use fallback values if API fails
   }
 
-      // Note: In a real Grok 4 implementation, stockData would be used to generate
-    // more sophisticated predictions based on actual stock performance data
-    // For now, we're using predefined predictions for crypto-related stocks (MSTR, COIN, HOOD, etc.)
-    // stockData would be analyzed to adjust predictions based on current market conditions
-    
-    // Integration with altcoins page knowledge:
-    // - Promising altcoins: Qubetics, Arweave, Kaspa, Bittensor, PEAQ, Radix, Nervos, Ocean Protocol, Fetch.ai
-    // - Rotation playbook: 60-70% BTC core, 15-20% ETH large-cap, 10-15% mid-cap, 3-5% degen
-    // - Market sentiment: Bitcoin dominance analysis, $1M Bitcoin thesis, supply mechanics
-    // - Cycle analysis: Halving progress math, historical patterns, institutional influence
-    
-    // Integration with stocks page knowledge:
-    // - Crypto-related stocks: HOOD, CRCL, COIN, MSTR, MARA, IREN, CORZ, CIFR, RIOT, CLSK, WULF, HUT, GLXY
-    // - Bitcoin mining sector: IREN (63% return), CORZ (56% return), CIFR (31% return), RIOT (29% return)
-    // - Mining developments: IREN $550M convertible notes, CORZ CoreWeave acquisition talks, CIFR Black Pearl mining
-    
-    // Integration with downbad page knowledge:
-    // - U.S. national debt: $36.4T with 122-125% debt-to-GDP ratio
-    // - Inflation risks: U.S. CPI at ~3.0%, housing costs high, food prices up 25% since 2020
-    // - Bitcoin hedge: Best performing asset in history, outperformed traditional hedges during high inflation
-    // - AI impact: Could add $15.7T to global GDP by 2030, but may increase inequality
-    
-    // Integration with bitcoin page knowledge:
-    // - Bitcoin manifesto: "The Final Protest Vote" against fiat system
-    // - Market stats: $1.6T+ market cap, 60%+ dominance, 19.5M BTC circulating
-    // - Key events: 2024 halving, 2025 sovereign adoption, 2026 quantum resistance
-    // - Cultural significance: Bitcoin as monetary rebellion, not just crypto
-    
-    // Integration with PriceTicker assets:
-    // - Crypto: BTC (Bitcoin)
-    // - Stocks: MSTR, STRF, STRK, MTPLF, BMNR, COIN, CRCL, HOOD, SBET, SQNS, MBAV
-    // - Strategy rebrand: STRF and STRK are MicroStrategy rebranded entities
-    // - Bitcoin Miners ETF: BMNR provides diversified mining exposure
-    // - Gaming/Media: SBET (SharpLink), MBAV (Madison Ave Media)
-    // - Communications: SQNS (Sequans) - IoT and 5G focus
+  // Generate predictions for different timeframes using real Grok 4 API
+  const timeframes = ['day', 'week', 'month', 'year'];
+  
+  for (const timeframe of timeframes) {
+    try {
+      // Create comprehensive market data context for Grok 4
+      const marketContext = {
+        bitcoin: {
+          currentPrice: currentBtcPrice,
+          change24h: btc24hChange,
+          marketCap: cryptoData.find(c => c.symbol === 'BTC')?.market_cap || 0,
+          volume: cryptoData.find(c => c.symbol === 'BTC')?.total_volume || 0
+        },
+        cryptoAssets: cryptoData.map(crypto => ({
+          symbol: crypto.symbol,
+          name: crypto.name,
+          price: crypto.current_price,
+          change24h: crypto.price_change_percentage_24h,
+          marketCap: crypto.market_cap,
+          volume: crypto.total_volume
+        })),
+        stocks: stockData.map(stock => ({
+          symbol: stock.symbol,
+          price: stock.c,
+          change: stock.dp,
+          volume: stock.v,
+          high: stock.h,
+          low: stock.l
+        })),
+        news: newsData.map(news => ({
+          title: news.title,
+          description: news.description,
+          sentiment: news.sentiment,
+          impact: news.impact_score,
+          category: news.category
+        })),
+        marketPhilosophy: {
+          twoYearMA: currentBtcPrice * 0.6,
+          twoYearMAx5: currentBtcPrice * 0.6 * 5,
+          millennialAdoption: '49% of Millennials comfortable with crypto',
+          wealthTransfer: '$90T wealth transfer by 2044',
+          exponentialAge: 'Metcalfe\'s Law vs mean reversion'
+        }
+      };
 
-  // Enhanced Bitcoin price prediction with real technical analysis and market philosophy
-  const dailyBtcChange = btc24hChange || 0; // Use real data only
-  
-  // Advanced Bitcoin prediction algorithm incorporating market philosophy
-  const btcMomentum = dailyBtcChange > 0 ? 'bullish' : 'bearish';
-  const btcVolatility = Math.abs(dailyBtcChange);
-  const marketCap = cryptoData.find(c => c.symbol === 'BTC')?.market_cap || 0;
-  const btcVolume = cryptoData.find(c => c.symbol === 'BTC')?.total_volume || 0;
-  
-  // Market Philosophy Integration: 2Y MA x5 Exit Signal Analysis
-  // Calculate approximate 2Y MA based on current price and market conditions
-  const twoYearMA = currentBtcPrice * 0.6; // Approximate 2Y MA (60% of current price)
-  const twoYearMAx5 = twoYearMA * 5; // Exit signal level
-  const distanceToExitSignal = ((twoYearMAx5 - currentBtcPrice) / currentBtcPrice) * 100;
-  const isNearExitSignal = distanceToExitSignal < 20; // Within 20% of exit signal
-  
-  // Generational Wealth Transfer Impact
-  const millennialAdoptionFactor = 1.15; // 49% of Millennials comfortable with crypto
-  const wealthTransferFactor = 1.25; // $90T wealth transfer by 2044
-  const exponentialAgeFactor = 1.2; // Metcalfe's Law vs mean reversion
-  
-  // Calculate prediction based on multiple factors including market philosophy
-  let dailyBtcPrice = currentBtcPrice;
-  let predictionConfidence = 70;
-  let predictionReasoning = '';
-  
-  // Apply market philosophy factors to base prediction
-  const philosophyMultiplier = millennialAdoptionFactor * wealthTransferFactor * exponentialAgeFactor;
-  const exitSignalWarning = isNearExitSignal ? 0.9 : 1.0; // Reduce prediction if near exit signal
-  
-  // Real technical analysis factors based on actual price action
-  const volumeRatio = btcVolume / (marketCap * 0.01); // Volume to market cap ratio
-  
-  // Calculate RSI based on real price movement (simplified calculation)
-  const rsi = dailyBtcChange > 0 ? Math.min(50 + (dailyBtcChange * 5), 85) : Math.max(50 + (dailyBtcChange * 5), 15);
-  
-  // Calculate MACD based on momentum (simplified)
-  const macd = dailyBtcChange > 2 ? 1.5 : dailyBtcChange > 0 ? 0.5 : dailyBtcChange < -2 ? -1.5 : -0.5;
-  
-  // Calculate Bollinger Band position based on volatility
-  const bollingerBandPosition = btcVolatility > 5 ? 0.8 : btcVolatility > 2 ? 0.6 : 0.4;
-  
-  // Calculate Stochastic based on price range
-  const stochasticOscillator = dailyBtcChange > 3 ? 85 : dailyBtcChange > 1 ? 70 : dailyBtcChange > 0 ? 55 : dailyBtcChange > -1 ? 45 : dailyBtcChange > -3 ? 30 : 15;
-  
-  // Calculate Williams %R based on momentum
-  const williamsR = dailyBtcChange > 2 ? -15 : dailyBtcChange > 0 ? -35 : dailyBtcChange > -2 ? -65 : -85;
-  
-  // Calculate ATR based on volatility
-  const averageTrueRange = currentBtcPrice * (btcVolatility / 100);
-  
-  // Calculate OBV based on volume trend
-  const onBalanceVolume = volumeRatio > 0.15 ? 1.2 : volumeRatio > 0.1 ? 1.1 : volumeRatio > 0.05 ? 1.0 : 0.9;
-  
-  // Real market structure analysis based on current price
-  const isAbove200SMA = currentBtcPrice > 88000; // Approximate 200-day SMA
-  const isAbove50SMA = currentBtcPrice > 95000; // Approximate 50-day SMA
-  const goldenCross = isAbove50SMA && isAbove200SMA && (currentBtcPrice / 88000) > 1.05;
-  const deathCross = !isAbove50SMA && !isAbove200SMA && (currentBtcPrice / 88000) < 0.95;
-  
-  // Real institutional flow indicators (simplified but based on market conditions)
-  const etfFlows = dailyBtcChange > 1 ? 200 + (dailyBtcChange * 100) : dailyBtcChange < -1 ? -300 - (Math.abs(dailyBtcChange) * 100) : 50;
-  const futuresFundingRate = dailyBtcChange > 2 ? 0.025 : dailyBtcChange > 0 ? 0.015 : dailyBtcChange < -2 ? -0.025 : -0.015;
-  const openInterest = dailyBtcChange > 1 ? 1.08 : dailyBtcChange > 0 ? 1.02 : dailyBtcChange < -1 ? 0.92 : 0.98;
-  
-  // Enhanced price prediction calculation with advanced indicators
-  if (btcMomentum === 'bullish') {
-    const momentumFactor = Math.min(btcVolatility * 1.5, 8); // Cap at 8%
-    const volumeFactor = volumeRatio > 0.1 ? 1.2 : 1.0;
-    const technicalFactor = rsi > 70 ? 0.8 : 1.2; // RSI overbought = lower prediction
-    
-    // Advanced factor calculations
-    const bollingerFactor = bollingerBandPosition > 0.8 ? 0.9 : bollingerBandPosition < 0.2 ? 1.3 : 1.0;
-    const stochasticFactor = stochasticOscillator > 80 ? 0.85 : stochasticOscillator < 20 ? 1.25 : 1.0;
-    const williamsFactor = williamsR > -20 ? 0.9 : williamsR < -80 ? 1.2 : 1.0;
-    const atrFactor = averageTrueRange > currentBtcPrice * 0.04 ? 1.1 : 1.0; // High volatility = higher potential
-    const obvFactor = onBalanceVolume > 1.15 ? 1.2 : onBalanceVolume < 0.95 ? 0.8 : 1.0;
-    
-    // Market structure factors
-    const smaFactor = goldenCross ? 1.3 : deathCross ? 0.7 : 1.0;
-    const institutionalFactor = etfFlows > 200 ? 1.2 : etfFlows < -100 ? 0.8 : 1.0;
-    const fundingFactor = futuresFundingRate > 0.02 ? 1.1 : futuresFundingRate < -0.01 ? 0.9 : 1.0;
-    const oiFactor = openInterest > 1.1 ? 1.15 : openInterest < 0.95 ? 0.85 : 1.0;
-    
-    // Combined prediction calculation with market philosophy integration
-    const combinedFactor = momentumFactor * volumeFactor * technicalFactor * bollingerFactor * 
-                          stochasticFactor * williamsFactor * atrFactor * obvFactor * 
-                          smaFactor * institutionalFactor * fundingFactor * oiFactor;
-    
-    // Apply market philosophy factors
-    const finalFactor = combinedFactor * philosophyMultiplier * exitSignalWarning;
-    
-    dailyBtcPrice = currentBtcPrice * (1 + (finalFactor / 100));
-    predictionConfidence = Math.min(85 + (rsi - 50) / 2 + (etfFlows > 0 ? 5 : 0) + (goldenCross ? 3 : 0) + (isNearExitSignal ? -10 : 0), 95);
-    
-    predictionReasoning = `Bitcoin showing bullish momentum with ${dailyBtcChange.toFixed(2)}% 24h gain. Advanced technical analysis: RSI ${rsi.toFixed(1)} (${rsi > 70 ? 'overbought' : 'bullish'}), MACD ${macd > 0 ? 'positive' : 'negative'}, Stochastic ${stochasticOscillator.toFixed(1)} (${stochasticOscillator > 80 ? 'overbought' : 'bullish'}), Williams %R ${williamsR.toFixed(1)}. Market structure: ${goldenCross ? 'Golden Cross active' : deathCross ? 'Death Cross warning' : 'Neutral'}, ${isAbove200SMA ? 'Above 200-day SMA' : 'Below 200-day SMA'}. Institutional flows: ETF ${etfFlows > 0 ? 'inflows' : 'outflows'} $${Math.abs(etfFlows).toFixed(0)}M, Funding rate ${(futuresFundingRate * 100).toFixed(3)}%, OBV ${onBalanceVolume > 1.1 ? 'strong' : 'weak'}. Market philosophy: ${isNearExitSignal ? '⚠️ NEAR 2Y MA x5 EXIT SIGNAL - CAUTION' : '✅ Clear of exit signal'}, Millennial adoption factor: ${(millennialAdoptionFactor * 100 - 100).toFixed(0)}%, Wealth transfer impact: ${(wealthTransferFactor * 100 - 100).toFixed(0)}%, Exponential Age factor: ${(exponentialAgeFactor * 100 - 100).toFixed(0)}%.`;
-  } else {
-    const momentumFactor = Math.min(btcVolatility * 1.2, 6); // Cap at 6%
-    const volumeFactor = volumeRatio > 0.15 ? 0.8 : 1.0; // High volume on decline = more bearish
-    const technicalFactor = rsi < 30 ? 0.7 : 1.1; // RSI oversold = less bearish
-    
-    // Advanced factor calculations for bearish scenario
-    const bollingerFactor = bollingerBandPosition < 0.2 ? 0.8 : bollingerBandPosition > 0.8 ? 1.1 : 1.0;
-    const stochasticFactor = stochasticOscillator < 20 ? 0.75 : stochasticOscillator > 80 ? 1.1 : 1.0;
-    const williamsFactor = williamsR < -80 ? 0.8 : williamsR > -20 ? 1.1 : 1.0;
-    const atrFactor = averageTrueRange > currentBtcPrice * 0.04 ? 0.9 : 1.0; // High volatility = more downside
-    const obvFactor = onBalanceVolume < 0.95 ? 0.8 : onBalanceVolume > 1.15 ? 1.1 : 1.0;
-    
-    // Market structure factors for bearish scenario
-    const smaFactor = deathCross ? 0.7 : goldenCross ? 1.2 : 1.0;
-    const institutionalFactor = etfFlows < -200 ? 0.8 : etfFlows > 100 ? 1.1 : 1.0;
-    const fundingFactor = futuresFundingRate < -0.02 ? 0.9 : futuresFundingRate > 0.01 ? 1.1 : 1.0;
-    const oiFactor = openInterest < 0.95 ? 0.85 : openInterest > 1.1 ? 1.1 : 1.0;
-    
-    // Combined prediction calculation for bearish scenario with market philosophy
-    const combinedFactor = momentumFactor * volumeFactor * technicalFactor * bollingerFactor * 
-                          stochasticFactor * williamsFactor * atrFactor * obvFactor * 
-                          smaFactor * institutionalFactor * fundingFactor * oiFactor;
-    
-    // Apply market philosophy factors (less impact on bearish scenarios)
-    const finalFactor = combinedFactor * (philosophyMultiplier * 0.8) * exitSignalWarning;
-    
-    dailyBtcPrice = currentBtcPrice * (1 - (finalFactor / 100));
-    predictionConfidence = Math.min(80 + (50 - rsi) / 2 + (etfFlows < 0 ? 3 : 0) + (deathCross ? 5 : 0) + (isNearExitSignal ? 5 : 0), 90);
-    
-    predictionReasoning = `Bitcoin showing bearish pressure with ${dailyBtcChange.toFixed(2)}% 24h decline. Advanced technical analysis: RSI ${rsi.toFixed(1)} (${rsi < 30 ? 'oversold' : 'bearish'}), MACD ${macd > 0 ? 'positive' : 'negative'}, Stochastic ${stochasticOscillator.toFixed(1)} (${stochasticOscillator < 20 ? 'oversold' : 'bearish'}), Williams %R ${williamsR.toFixed(1)}. Market structure: ${deathCross ? 'Death Cross warning' : goldenCross ? 'Golden Cross support' : 'Neutral'}, ${isAbove200SMA ? 'Above 200-day SMA' : 'Below 200-day SMA'}. Institutional flows: ETF ${etfFlows > 0 ? 'inflows' : 'outflows'} $${Math.abs(etfFlows).toFixed(0)}M, Funding rate ${(futuresFundingRate * 100).toFixed(3)}%, OBV ${onBalanceVolume < 0.95 ? 'weak' : 'strong'}. Market philosophy: ${isNearExitSignal ? '✅ EXIT SIGNAL APPROACHING - OPPORTUNITY' : '⚠️ Clear of exit signal'}, Millennial adoption factor: ${(millennialAdoptionFactor * 100 - 100).toFixed(0)}%, Wealth transfer impact: ${(wealthTransferFactor * 100 - 100).toFixed(0)}%, Exponential Age factor: ${(exponentialAgeFactor * 100 - 100).toFixed(0)}%.`;
-  }
-  
-  // Add market context from news and X sentiment
-  if (newsData.length > 0) {
-    const relevantNews = newsData.find(n => n.source === 'Market Analysis') || newsData[0];
-    const xSentiment = newsData.find(n => n.source === 'X Sentiment Analysis');
-    
-    predictionReasoning += ` Market context: ${relevantNews.title} - this ${relevantNews.sentiment} news may ${relevantNews.sentiment === 'positive' ? 'support' : relevantNews.sentiment === 'negative' ? 'pressure' : 'influence'} Bitcoin's price movement.`;
-    
-    if (xSentiment) {
-      predictionReasoning += ` X sentiment: ${xSentiment.sentiment} social sentiment (${xSentiment.impact_score}/10 impact) may ${xSentiment.sentiment === 'positive' ? 'amplify' : xSentiment.sentiment === 'negative' ? 'counteract' : 'moderate'} market momentum.`;
+      // Create Grok 4 prompt with comprehensive market data
+      const grok4Prompt = `You are GROK420, an expert AI market analyst specializing in Bitcoin and cryptocurrency markets. 
+
+Analyze the following market data and provide predictions for the next ${timeframe}:
+
+**CURRENT MARKET DATA:**
+- Bitcoin Price: $${marketContext.bitcoin.currentPrice.toLocaleString()}
+- Bitcoin 24h Change: ${marketContext.bitcoin.change24h.toFixed(2)}%
+- Bitcoin Market Cap: $${(marketContext.bitcoin.marketCap / 1e12).toFixed(2)}T
+- Bitcoin Volume: $${(marketContext.bitcoin.volume / 1e9).toFixed(2)}B
+
+**TOP CRYPTO ASSETS:**
+${marketContext.cryptoAssets.map(asset => 
+  `- ${asset.symbol}: $${asset.price.toLocaleString()} (${asset.change24h >= 0 ? '+' : ''}${asset.change24h.toFixed(2)}%)`
+).join('\n')}
+
+**CRYPTO-RELATED STOCKS:**
+${marketContext.stocks.map(stock => 
+  `- ${stock.symbol}: $${stock.price.toFixed(2)} (${stock.change >= 0 ? '+' : ''}${stock.change.toFixed(2)}%)`
+).join('\n')}
+
+**RECENT NEWS & SENTIMENT:**
+${marketContext.news.map(news => 
+  `- ${news.title} (${news.sentiment || 'neutral'} sentiment, ${news.impact || 5}/10 impact)`
+).join('\n')}
+
+**MARKET PHILOSOPHY CONTEXT:**
+- 2Y MA x5 Exit Signal: $${marketContext.marketPhilosophy.twoYearMAx5.toLocaleString()}
+- Millennial Adoption: ${marketContext.marketPhilosophy.millennialAdoption}
+- Wealth Transfer: ${marketContext.marketPhilosophy.wealthTransfer}
+- Exponential Age: ${marketContext.marketPhilosophy.exponentialAge}
+
+Provide a structured prediction for the next ${timeframe} in this exact JSON format:
+
+{
+  "btcPrediction": {
+    "price": <predicted_price_number>,
+    "change": <predicted_percentage_change_number>,
+    "confidence": <confidence_percentage_0_100>,
+    "reasoning": "<detailed_reasoning_with_technical_analysis>"
+  },
+  "topPerformers": [
+    {
+      "asset": "<asset_name>",
+      "symbol": "<symbol>",
+      "predictedOutperformance": <percentage_vs_bitcoin_number>,
+      "confidence": <confidence_percentage_0_100>,
+      "reasoning": "<why_this_asset_will_outperform>",
+      "type": "<crypto_or_stock>"
+    }
+  ],
+  "marketSentiment": "<bullish_bearish_or_neutral>",
+  "keyEvents": ["<event1>", "<event2>", "<event3>"],
+  "riskFactors": ["<risk1>", "<risk2>", "<risk3>"]
+}
+
+Focus on:
+1. Technical analysis of current price action
+2. Market sentiment from news and social data
+3. Institutional flows and ETF data
+4. Market philosophy factors (2Y MA x5, generational shift, exponential age)
+5. Assets most likely to outperform Bitcoin
+6. Key events and risk factors to watch
+
+Be realistic with predictions and provide detailed reasoning based on the data provided.`;
+
+      // Call Grok 4 API with comprehensive market data
+      const grok4Response = await Grok4Service.chatCompletion({
+        messages: [
+          {
+            role: 'system',
+            content: 'You are GROK420, an expert AI market analyst. Provide market predictions in the exact JSON format requested. Be realistic and data-driven.'
+          },
+          {
+            role: 'user',
+            content: grok4Prompt
+          }
+        ],
+        temperature: 0.3, // Lower temperature for more consistent predictions
+        max_tokens: 2000
+      });
+
+      // Parse Grok 4 response
+      const responseContent = grok4Response.choices?.[0]?.message?.content || '';
+      
+      // Extract JSON from Grok 4 response
+      const jsonMatch = responseContent.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          const predictionData = JSON.parse(jsonMatch[0]);
+          
+          // Validate and structure the prediction
+          const prediction: MarketPrediction = {
+            timeframe,
+            btcPrediction: {
+              price: predictionData.btcPrediction?.price || currentBtcPrice * (1 + (predictionData.btcPrediction?.change || 0) / 100),
+              change: predictionData.btcPrediction?.change || 0,
+              confidence: predictionData.btcPrediction?.confidence || 70,
+              reasoning: predictionData.btcPrediction?.reasoning || 'Grok 4 analysis based on current market conditions'
+            },
+            topPerformers: predictionData.topPerformers?.slice(0, 6) || [],
+            marketSentiment: predictionData.marketSentiment || 'neutral',
+            keyEvents: predictionData.keyEvents || [],
+            riskFactors: predictionData.riskFactors || []
+          };
+          
+          predictions.push(prediction);
+        } catch (parseError) {
+          console.error(`Failed to parse Grok 4 response for ${timeframe}:`, parseError);
+          // Fallback to basic prediction
+          predictions.push(createFallbackPrediction(timeframe, currentBtcPrice, btc24hChange));
+        }
+      } else {
+        // Fallback if no JSON found
+        predictions.push(createFallbackPrediction(timeframe, currentBtcPrice, btc24hChange));
+      }
+      
+    } catch (grok4Error) {
+      console.error(`Grok 4 API error for ${timeframe}:`, grok4Error);
+      // Fallback to basic prediction
+      predictions.push(createFallbackPrediction(timeframe, currentBtcPrice, btc24hChange));
     }
   }
-  
-  // Enhanced crypto performer analysis
-  const dailyCryptoPerformers: EnhancedCryptoData[] = cryptoData
-    .filter((coin: CryptoData) => coin.symbol !== 'BTC')
-    .map((coin: CryptoData) => {
-      const relativeStrength = coin.price_change_percentage_24h - dailyBtcChange;
-      const volumeStrength = coin.total_volume / coin.market_cap;
-      const momentumScore = relativeStrength * (1 + volumeStrength);
-      
-      return {
-        ...coin,
-        momentumScore,
-        relativeStrength,
-        volumeStrength
-      };
-    })
-    .sort((a, b) => b.momentumScore - a.momentumScore)
-    .slice(0, 5);
-  
-  // Enhanced stock performer analysis
-  const dailyStockPerformers: EnhancedStockData[] = stockData
-    .map((stock: StockData) => {
-      const relativeStrength = stock.dp - dailyBtcChange;
-      const volumeStrength = stock.v / (stock.c * 1000000); // Volume to price ratio
-      const momentumScore = relativeStrength * (1 + volumeStrength);
-      
-      return {
-        ...stock,
-        momentumScore,
-        relativeStrength,
-        volumeStrength
-      };
-    })
-    .sort((a, b) => b.momentumScore - a.momentumScore)
-    .slice(0, 3);
-  
-  predictions.push({
-    timeframe: 'day',
-    btcPrediction: {
-      price: Math.round(dailyBtcPrice),
-      change: Math.round(dailyBtcChange * 100) / 100,
-      confidence: Math.round(predictionConfidence),
-      reasoning: predictionReasoning
-    },
-    topPerformers: [
-      // Enhanced crypto performers with detailed analysis
-      ...dailyCryptoPerformers.map((coin: EnhancedCryptoData, _index: number) => {
-        const confidence = Math.min(85 + (coin.momentumScore * 2), 95);
-        const reasoning = `${coin.name} (${coin.symbol}) showing exceptional momentum with ${coin.price_change_percentage_24h.toFixed(2)}% 24h gain vs Bitcoin's ${dailyBtcChange.toFixed(2)}%. Relative strength: ${coin.relativeStrength.toFixed(2)}%, volume strength: ${(coin.volumeStrength * 100).toFixed(1)}%. Momentum score: ${coin.momentumScore.toFixed(2)}. Expected to outperform Bitcoin by ${coin.relativeStrength.toFixed(1)}% in the next 24 hours.`;
-        
-        return {
-          asset: coin.name,
-          symbol: coin.symbol.toUpperCase(),
-          predictedOutperformance: Math.round(coin.relativeStrength * 100) / 100,
-          confidence: Math.round(confidence),
-          reasoning,
-          type: 'crypto' as const
-        };
-      }),
-      // Enhanced stock performers with detailed analysis
-      ...dailyStockPerformers.map((stock: EnhancedStockData, _index: number) => {
-        const confidence = Math.min(85 + (stock.momentumScore * 2), 95);
-        const assetName = stock.symbol === 'MSTR' ? 'MicroStrategy' : 
-                         stock.symbol === 'COIN' ? 'Coinbase' :
-                         stock.symbol === 'HOOD' ? 'Robinhood' :
-                         stock.symbol === 'CRCL' ? 'Circle' :
-                         stock.symbol === 'IREN' ? 'Iris Energy' :
-                         stock.symbol === 'CORZ' ? 'Core Scientific' :
-                         stock.symbol === 'CIFR' ? 'Cipher Mining' : stock.symbol;
-        
-        const reasoning = `${assetName} (${stock.symbol}) showing strong momentum with ${stock.dp.toFixed(2)}% 24h gain vs Bitcoin's ${dailyBtcChange.toFixed(2)}%. Relative strength: ${stock.relativeStrength.toFixed(2)}%, volume strength: ${(stock.volumeStrength * 100).toFixed(1)}%. Momentum score: ${stock.momentumScore.toFixed(2)}. Expected to outperform Bitcoin by ${stock.relativeStrength.toFixed(1)}% in the next 24 hours.`;
-        
-        return {
-          asset: assetName,
-          symbol: stock.symbol,
-          predictedOutperformance: Math.round(stock.relativeStrength * 100) / 100,
-          confidence: Math.round(confidence),
-          reasoning,
-          type: 'stock' as const
-        };
-      })
-    ].slice(0, 5), // Limit to top 5 performers
-    marketSentiment: 'bullish',
-    keyEvents: [
-      `2Y MA x5 Exit Signal: ${isNearExitSignal ? '⚠️ APPROACHING EXIT SIGNAL' : '✅ Clear of exit signal'} - ${distanceToExitSignal.toFixed(1)}% from exit level`,
-      'CoinGlass Peak Signals: Monitoring bull market peak indicators for exit timing',
-      'Generational Wealth Transfer: $90T moving to Gen X/Millennials by 2044, 49% of Millennials comfortable with crypto',
-      'Exponential Age: Growth stocks trade off Metcalfe\'s Law, not mean reversion - Bitcoin to $1M+',
-      'Bitcoin halving progress: 28% mark reached, historical pattern suggests Q4 2025-Q1 2026 peak',
-      'U.S. national debt crisis: $36.4T with 122-125% debt-to-GDP ratio driving Bitcoin adoption'
-    ],
-    riskFactors: [
-      `2Y MA x5 Exit Signal Risk: ${isNearExitSignal ? 'HIGH - Exit signal approaching, consider TWAP strategy' : 'LOW - Clear of exit signal'}`,
-      'CoinGlass Peak Signal Risk: Bull market peak indicators may trigger mass selling',
-      'Generational Shift Risk: Millennials reshaping markets with different valuation models',
-      'Exponential Age Risk: Traditional mean-reversion models may not apply to Bitcoin',
-      'Macro shock: Aggressive rate hikes or credit crunch could impact crypto markets',
-      'Fiat system collapse: U.S. debt crisis and money printing could accelerate Bitcoin adoption'
-    ]
-  });
-
-  // Enhanced Weekly predictions with real technical analysis
-  const weeklyBtcChange = dailyBtcChange * 3; // Project weekly based on daily momentum
-  const weeklyBtcPrice = currentBtcPrice * (1 + weeklyBtcChange / 100);
-  const weeklyConfidence = Math.min(85 + Math.abs(dailyBtcChange) * 2, 95); // Higher confidence for stronger trends
-  
-  // Weekly technical analysis based on real data
-  const weeklyRSI = dailyBtcChange > 2 ? 75 : dailyBtcChange > 0 ? 65 : dailyBtcChange > -2 ? 35 : 25;
-  const weeklyVolume = btcVolume * (1 + (dailyBtcChange > 0 ? 0.3 : -0.2)); // Volume projection based on trend
-  const supportLevel = currentBtcPrice * (1 - (Math.abs(dailyBtcChange) * 0.1)); // Dynamic support based on volatility
-  const resistanceLevel = currentBtcPrice * (1 + (Math.abs(dailyBtcChange) * 0.1)); // Dynamic resistance based on volatility
-  
-  const weeklyReasoning = `Weekly analysis: Bitcoin showing ${weeklyBtcChange > 0 ? 'bullish' : 'bearish'} momentum with projected ${Math.abs(weeklyBtcChange).toFixed(1)}% move based on current ${dailyBtcChange.toFixed(2)}% daily trend. Technical levels: Support at $${Math.round(supportLevel).toLocaleString()}, Resistance at $${Math.round(resistanceLevel).toLocaleString()}. RSI at ${weeklyRSI.toFixed(1)} (${weeklyRSI > 70 ? 'overbought' : weeklyRSI < 30 ? 'oversold' : 'neutral'}). Volume trend: ${weeklyVolume > btcVolume ? 'increasing' : 'stable'}. Market philosophy: ${isNearExitSignal ? '⚠️ 2Y MA x5 EXIT SIGNAL APPROACHING' : '✅ Clear of exit signal'}, Millennial adoption: ${(millennialAdoptionFactor * 100 - 100).toFixed(0)}% boost, Wealth transfer: ${(wealthTransferFactor * 100 - 100).toFixed(0)}% impact, Exponential Age: ${(exponentialAgeFactor * 100 - 100).toFixed(0)}% factor. Institutional flows and ETF adoption providing underlying support.`;
-  
-  predictions.push({
-    timeframe: 'week',
-    btcPrediction: {
-      price: Math.round(weeklyBtcPrice),
-      change: Math.round(weeklyBtcChange * 100) / 100,
-      confidence: weeklyConfidence,
-      reasoning: weeklyReasoning
-    },
-          topPerformers: [
-        {
-          asset: 'Bittensor',
-          symbol: 'TAO',
-          predictedOutperformance: 12.5, // 12.5% better than Bitcoin
-          confidence: 85,
-          reasoning: 'Decentralized AI network with growing institutional adoption. AI narrative driving significant interest. Expected to outperform Bitcoin by 12.5% this week.',
-          type: 'crypto'
-        },
-        {
-          asset: 'Strategy',
-          symbol: 'STRF',
-          predictedOutperformance: 11.8, // 11.8% better than Bitcoin
-          confidence: 82,
-          reasoning: 'MicroStrategy rebranded entity with Bitcoin treasury strategy. Corporate restructuring and institutional adoption. Expected to outperform Bitcoin by 11.8% this week.',
-          type: 'stock'
-        },
-        {
-          asset: 'Bitcoin Miners ETF',
-          symbol: 'BMNR',
-          predictedOutperformance: 11.2, // 11.2% better than Bitcoin
-          confidence: 80,
-          reasoning: 'Diversified Bitcoin mining exposure. Mining sector surge and AI infrastructure pivot. Expected to outperform Bitcoin by 11.2% this week.',
-          type: 'stock'
-        },
-        {
-          asset: 'Iris Energy',
-          symbol: 'IREN',
-          predictedOutperformance: 11.2, // 11.2% better than Bitcoin
-          confidence: 82,
-          reasoning: 'Bitcoin mining with AI pivot. $550M convertible notes and data center expansion driving growth. Expected to outperform Bitcoin by 11.2% this week.',
-          type: 'stock'
-        },
-        {
-          asset: 'Core Scientific',
-          symbol: 'CORZ',
-          predictedOutperformance: 10.8, // 10.8% better than Bitcoin
-          confidence: 80,
-          reasoning: 'CoreWeave acquisition talks and AI infrastructure partnership. Expected to outperform Bitcoin by 10.8% this week.',
-          type: 'stock'
-        }
-      ],
-    marketSentiment: 'bullish',
-    keyEvents: [
-      `2Y MA x5 Exit Signal: ${isNearExitSignal ? '⚠️ WEEKLY EXIT SIGNAL WATCH' : '✅ Weekly clear of exit signal'} - ${distanceToExitSignal.toFixed(1)}% from exit level`,
-      'Generational Wealth Transfer: $90T moving to Gen X/Millennials by 2044, driving crypto adoption',
-      'Exponential Age: Metcalfe\'s Law driving growth stocks, Bitcoin to $1M+ long-term',
-      'Bitcoin mining sector surge: IREN (63% return), CORZ (56% return), CIFR (31% return)',
-      'Mining developments: IREN $550M convertible notes, CORZ CoreWeave acquisition talks',
-      'AI infrastructure pivot: Mining companies expanding into AI data centers and hosting'
-    ],
-    riskFactors: [
-      `2Y MA x5 Exit Signal Risk: ${isNearExitSignal ? 'HIGH - Weekly exit signal approaching' : 'LOW - Weekly clear of exit signal'}`,
-      'Generational Shift Risk: Millennials reshaping markets with different valuation models',
-      'Exponential Age Risk: Traditional mean-reversion models may not apply to Bitcoin',
-      'Mining difficulty increases: Post-halving challenges for mining profitability',
-      'Energy costs: Rising electricity prices could impact mining margins',
-      'Regulatory uncertainty: Mining regulations could affect sector performance',
-      'BTC.D reclaiming 55%: Would signal cut degen positions and consolidate back into core BTC/ETH'
-    ]
-  });
-
-  // Monthly predictions based on real data
-  const monthlyBtcChange = dailyBtcChange * 8; // Project monthly based on daily momentum (8x multiplier)
-  const monthlyBtcPrice = currentBtcPrice * (1 + monthlyBtcChange / 100);
-  const monthlyConfidence = Math.min(80 + Math.abs(dailyBtcChange) * 3, 90); // Higher confidence for stronger trends
-  
-  predictions.push({
-    timeframe: 'month',
-    btcPrediction: {
-      price: Math.round(monthlyBtcPrice),
-      change: Math.round(monthlyBtcChange * 100) / 100,
-      confidence: monthlyConfidence,
-      reasoning: `Monthly analysis based on current ${dailyBtcChange.toFixed(2)}% daily trend projects ${monthlyBtcChange > 0 ? 'continued growth' : 'potential consolidation'}. Institutional adoption and ETF inflows creating sustained demand. Support at $${Math.round(currentBtcPrice * 0.9).toLocaleString()}.`
-    },
-          topPerformers: [
-        {
-          asset: 'Bittensor',
-          symbol: 'TAO',
-          predictedOutperformance: 35.5, // 35.5% better than Bitcoin
-          confidence: 78,
-          reasoning: 'Decentralized AI network with massive growth potential. AI narrative driving institutional adoption. Expected to outperform Bitcoin by 35.5% this month.',
-          type: 'crypto'
-        },
-        {
-          asset: 'Strategy',
-          symbol: 'STRF',
-          predictedOutperformance: 33.8, // 33.8% better than Bitcoin
-          confidence: 75,
-          reasoning: 'MicroStrategy rebranded entity with Bitcoin treasury strategy. Corporate restructuring and institutional adoption. Expected to outperform Bitcoin by 33.8% this month.',
-          type: 'stock'
-        },
-        {
-          asset: 'Bitcoin Miners ETF',
-          symbol: 'BMNR',
-          predictedOutperformance: 32.5, // 32.5% better than Bitcoin
-          confidence: 72,
-          reasoning: 'Diversified Bitcoin mining exposure. Mining sector surge and AI infrastructure pivot. Expected to outperform Bitcoin by 32.5% this month.',
-          type: 'stock'
-        },
-        {
-          asset: 'Iris Energy',
-          symbol: 'IREN',
-          predictedOutperformance: 32.8, // 32.8% better than Bitcoin
-          confidence: 75,
-          reasoning: 'Bitcoin mining with AI pivot. $550M convertible notes and data center expansion. Expected to outperform Bitcoin by 32.8% this month.',
-          type: 'stock'
-        }
-      ],
-    marketSentiment: 'bullish',
-    keyEvents: [
-      'Bitcoin ETF approval and trading',
-      'Major financial institutions entering crypto',
-      'Global regulatory framework developments'
-    ],
-    riskFactors: [
-      'Economic recession concerns',
-      'Central bank policy changes',
-      'Cybersecurity threats to exchanges'
-    ]
-  });
-
-  // Yearly predictions based on real data
-  const yearlyBtcChange = dailyBtcChange * 25; // Project yearly based on daily momentum (25x multiplier)
-  const yearlyBtcPrice = currentBtcPrice * (1 + yearlyBtcChange / 100);
-  const yearlyConfidence = Math.min(70 + Math.abs(dailyBtcChange) * 2, 85); // Lower confidence for longer timeframe
-  
-  predictions.push({
-    timeframe: 'year',
-    btcPrediction: {
-      price: Math.round(yearlyBtcPrice),
-      change: Math.round(yearlyBtcChange * 100) / 100,
-      confidence: yearlyConfidence,
-      reasoning: `Yearly analysis based on current ${dailyBtcChange.toFixed(2)}% daily trend projects ${yearlyBtcChange > 0 ? 'long-term growth potential' : 'potential consolidation phase'}. Long-term adoption cycle suggests continued growth potential. Institutional infrastructure development and regulatory clarity could drive significant moves.`
-    },
-          topPerformers: [
-        {
-          asset: 'Bittensor',
-          symbol: 'TAO',
-          predictedOutperformance: 125.5, // 125.5% better than Bitcoin
-          confidence: 68,
-          reasoning: 'Decentralized AI network with massive long-term potential. AI integration driving institutional adoption. Expected to outperform Bitcoin by 125.5% this year.',
-          type: 'crypto'
-        },
-        {
-          asset: 'Strategy',
-          symbol: 'STRF',
-          predictedOutperformance: 118.8, // 118.8% better than Bitcoin
-          confidence: 65,
-          reasoning: 'MicroStrategy rebranded entity with Bitcoin treasury strategy. Long-term institutional adoption and corporate restructuring. Expected to outperform Bitcoin by 118.8% this year.',
-          type: 'stock'
-        },
-        {
-          asset: 'Bitcoin Miners ETF',
-          symbol: 'BMNR',
-          predictedOutperformance: 115.5, // 115.5% better than Bitcoin
-          confidence: 62,
-          reasoning: 'Diversified Bitcoin mining exposure. Mining sector growth and AI infrastructure expansion. Expected to outperform Bitcoin by 115.5% this year.',
-          type: 'stock'
-        },
-        {
-          asset: 'Iris Energy',
-          symbol: 'IREN',
-          predictedOutperformance: 115.8, // 115.8% better than Bitcoin
-          confidence: 65,
-          reasoning: 'Bitcoin mining with AI pivot. Data center expansion and institutional adoption. Expected to outperform Bitcoin by 115.8% this year.',
-          type: 'stock'
-        }
-      ],
-    marketSentiment: 'bullish',
-    keyEvents: [
-      'Bitcoin halving event',
-      'Mass adoption of DeFi applications',
-      'Integration with traditional finance systems'
-    ],
-    riskFactors: [
-      'Geopolitical instability',
-      'Technological disruption',
-      'Regulatory uncertainty in major markets'
-    ]
-  });
 
   return predictions;
 };
 
+// Fallback prediction function when Grok 4 is unavailable
+const createFallbackPrediction = (timeframe: string, currentBtcPrice: number, btc24hChange: number): MarketPrediction => {
+  const timeframeMultipliers = {
+    day: 1,
+    week: 7,
+    month: 30,
+    year: 365
+  };
+  
+  const multiplier = timeframeMultipliers[timeframe as keyof typeof timeframeMultipliers] || 1;
+  const baseChange = btc24hChange * multiplier * 0.1; // Conservative multiplier
+  
+  return {
+    timeframe,
+    btcPrediction: {
+      price: currentBtcPrice * (1 + baseChange / 100),
+      change: baseChange,
+      confidence: 60,
+      reasoning: `Fallback prediction based on current ${timeframe} trend. Grok 4 analysis unavailable.`
+    },
+    topPerformers: [
+      {
+        asset: 'Ethereum',
+        symbol: 'ETH',
+        predictedOutperformance: Math.max(baseChange * 1.2, 2),
+        confidence: 65,
+        reasoning: 'Strong fundamentals and DeFi growth',
+        type: 'crypto'
+      },
+      {
+        asset: 'Solana',
+        symbol: 'SOL',
+        predictedOutperformance: Math.max(baseChange * 1.5, 3),
+        confidence: 70,
+        reasoning: 'High performance and developer activity',
+        type: 'crypto'
+      }
+    ],
+    marketSentiment: baseChange > 0 ? 'bullish' : baseChange < 0 ? 'bearish' : 'neutral',
+    keyEvents: ['Bitcoin halving progress', 'Institutional adoption continues', 'Market volatility expected'],
+    riskFactors: ['Macroeconomic uncertainty', 'Regulatory developments', 'Technical corrections possible']
+  };
+};
+
 export async function GET(_request: NextRequest) {
   try {
-    // Generate predictions using simulated Grok 4 AI
     const predictions = await generatePredictions();
-
+    
     return NextResponse.json({
       success: true,
       data: predictions,
       timestamp: new Date().toISOString(),
-      note: 'AI predictions generated using simulated Grok 4 analysis'
+      source: 'Grok 4 AI Market Analysis'
     });
-
-  } catch {
-    // Error handling for predictions generation
+  } catch (error) {
+    console.error('Failed to generate predictions:', error);
     
-    // Return mock predictions if analysis fails
-    const mockPredictions: MarketPrediction[] = [
-      {
-        timeframe: 'day',
-        btcPrediction: {
-          price: 121500,
-          change: 1.25,
-          confidence: 75,
-          reasoning: 'Technical analysis indicates short-term bullish momentum with support at $118,000.'
-        },
-        topPerformers: [
-          {
-            asset: 'Ethereum',
-            symbol: 'ETH',
-            predictedOutperformance: 1.8, // 1.8% better than Bitcoin
-            confidence: 75,
-            reasoning: 'Strong fundamentals and growing adoption. Expected to outperform Bitcoin by 1.8%.',
-            type: 'crypto'
-          }
-        ],
-        marketSentiment: 'neutral',
-        keyEvents: ['Market volatility expected'],
-        riskFactors: ['Uncertain market conditions']
-      }
-    ];
-
     return NextResponse.json({
-      success: true,
-      data: mockPredictions,
-      timestamp: new Date().toISOString(),
-      note: 'Using mock predictions due to analysis error'
-    });
+      success: false,
+      error: 'Failed to generate market predictions',
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 } 
