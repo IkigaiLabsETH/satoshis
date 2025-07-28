@@ -1,22 +1,6 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Image from 'next/image';
-
-interface CryptoData {
-  id: string;
-  symbol: string;
-  current_price: number;
-  market_cap: number;
-  total_volume: number;
-  price_change_percentage_24h: number;
-  image?: string;
-}
-
-
-
 interface MarketPrediction {
   timeframe: string;
   btcPrediction: {
@@ -39,152 +23,66 @@ interface MarketPrediction {
 }
 
 interface MarketState {
-  totalMarketCap: number;
-  totalVolume24h: number;
   fearGreedIndex: number;
-  dominance: {
-    bitcoin: number;
-    ethereum: number;
-    others: number;
-  };
-  volatility: number;
   trend: 'up' | 'down' | 'sideways';
+  volatility: number;
+  bullMarketPeakSignals: {
+    peakRisk: 'low' | 'medium' | 'high' | 'extreme';
+  };
 }
 
-
-
-export default function MarketDashboardPage() {
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [selectedTimeframe, setSelectedTimeframe] = useState('day');
-  const [cryptoData, setCryptoData] = useState<CryptoData[]>([]);
+export default function WatchlistPage() {
   const [predictions, setPredictions] = useState<MarketPrediction[]>([]);
   const [marketState, setMarketState] = useState<MarketState | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  // Fetch data from APIs
-  const fetchData = async (isRefresh = false) => {
-    if (isRefresh) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-    setError(null);
-    
-    try {
-      // Fetch crypto data
-      const cryptoResponse = await fetch('/api/watchlist/crypto?period=daily');
-      const cryptoResult = await cryptoResponse.json();
-      
-      if (cryptoResult.success) {
-        setCryptoData(cryptoResult.data);
-      } else {
-        throw new Error('Failed to fetch crypto data');
+    useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const predictionsRes = await fetch('/api/watchlist/predictions');
+        const marketStateRes = await fetch('/api/watchlist/market-state');
+
+        if (predictionsRes.ok && marketStateRes.ok) {
+          const [predictionsData, marketStateData] = await Promise.all([
+            predictionsRes.json(),
+            marketStateRes.json()
+          ]);
+
+          if (predictionsData.success) {
+            setPredictions(predictionsData.data);
+          } else {
+            setError(`Predictions failed: ${predictionsData.error}`);
+          }
+          
+          if (marketStateData.success) {
+            setMarketState(marketStateData.data);
+          } else {
+            setError(`Market state failed: ${marketStateData.error}`);
+          }
+        } else {
+          const errorMsg = `API Error: Predictions ${predictionsRes.status}, Market State ${marketStateRes.status}`;
+          setError(errorMsg);
+        }
+      } catch {
+        setError('Error loading market data');
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // Fetch market predictions
-      const predictionsResponse = await fetch('/api/watchlist/predictions');
-      const predictionsResult = await predictionsResponse.json();
-      
-      if (predictionsResult.success) {
-        setPredictions(predictionsResult.data);
-      } else {
-        throw new Error('Failed to fetch predictions');
-      }
-
-      // Fetch market state
-      const marketStateResponse = await fetch('/api/watchlist/market-state');
-      const marketStateResult = await marketStateResponse.json();
-      
-      if (marketStateResult.success) {
-        setMarketState(marketStateResult.data);
-      } else {
-        throw new Error('Failed to fetch market state');
-      }
-
-      setLastUpdated(new Date());
-
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      // Error handling for data fetching
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
     fetchData();
   }, []);
 
-  const formatPrice = (price: number) => {
-    if (price >= 1) {
-      return `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    } else {
-      return `$${price.toFixed(6)}`;
-    }
-  };
-
-  const formatMarketCap = (marketCap: number) => {
-    if (marketCap >= 1e12) {
-      return `$${(marketCap / 1e12).toFixed(2)}T`;
-    } else if (marketCap >= 1e9) {
-      return `$${(marketCap / 1e9).toFixed(2)}B`;
-    } else if (marketCap >= 1e6) {
-      return `$${(marketCap / 1e6).toFixed(2)}M`;
-    } else {
-      return `$${marketCap.toLocaleString()}`;
-    }
-  };
-
-  const getChangeColor = (change: number) => {
-    return change >= 0 ? 'text-green-400' : 'text-red-400';
-  };
-
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 80) return 'text-green-400';
-    if (confidence >= 60) return 'text-yellow-400';
-    return 'text-red-400';
-  };
-
-  const getSentimentColor = (sentiment: string) => {
-    switch (sentiment) {
-      case 'bullish': return 'text-green-400';
-      case 'bearish': return 'text-red-400';
-      default: return 'text-yellow-400';
-    }
-  };
-
-  const getSentimentIcon = (sentiment: string) => {
-    switch (sentiment) {
-      case 'bullish': return '📈';
-      case 'bearish': return '📉';
-      default: return '➡️';
-    }
-  };
-
-  const getFearGreedColor = (index: number) => {
-    if (index >= 75) return 'text-green-400';
-    if (index >= 50) return 'text-yellow-400';
-    if (index >= 25) return 'text-orange-400';
-    return 'text-red-400';
-  };
-
-  const getFearGreedLabel = (index: number) => {
-    if (index >= 75) return 'Extreme Greed';
-    if (index >= 60) return 'Greed';
-    if (index >= 40) return 'Neutral';
-    if (index >= 25) return 'Fear';
-    return 'Extreme Fear';
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white font-satoshi flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-yellow-500 mx-auto mb-4"></div>
-          <p className="text-xl text-yellow-500">Analyzing market data with Grok 4 AI...</p>
+      <div className="min-h-screen bg-black text-white p-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-yellow-500 mb-4">GROK420 AI Market Analysis</div>
+            <div className="text-white/60">Loading AI-powered predictions...</div>
+          </div>
         </div>
       </div>
     );
@@ -192,512 +90,174 @@ export default function MarketDashboardPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-black text-white font-satoshi flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-xl text-red-400 mb-4">Error: {error}</p>
-          <Button 
-            onClick={() => window.location.reload()} 
-            className="bg-yellow-500 text-black font-bold px-6 py-3 rounded-none hover:bg-yellow-400 transition-all duration-300"
-          >
-            Retry
-          </Button>
+      <div className="min-h-screen bg-black text-white p-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-yellow-500 mb-2">GROK420 AI Market Analysis</h1>
+            <p className="text-white/60">AI-powered predictions for assets that can outperform Bitcoin</p>
+          </div>
+          <div className="bg-red-500/10 border border-red-500/20 p-6 rounded">
+            <h2 className="text-xl font-bold text-red-400 mb-4">Error Loading Data</h2>
+            <p className="text-red-300 mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="bg-yellow-500 text-black px-4 py-2 rounded font-bold hover:bg-yellow-400"
+            >
+              Retry
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  const currentPrediction = predictions.find(p => p.timeframe === selectedTimeframe) || predictions[0];
-
   return (
-    <div className="min-h-screen bg-black text-white font-satoshi">
-      {/* Premium header accent */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500 to-transparent"></div>
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
-        <div className="space-y-16">
-          {/* Hero Section */}
-          <div className="text-center space-y-8">
-            <p className="uppercase tracking-[0.4em] text-yellow-500/90 text-sm mb-4 font-light font-satoshi">Real-Time Data → Grok 4 AI → Live Predictions</p>
-            <h1 className="text-center">
-              <span className="text-6xl md:text-8xl font-bold text-yellow-500 tracking-tight [text-shadow:_0_1px_20px_rgba(234,179,8,0.3)] font-satoshi">
-                North Star
-              </span>
-            </h1>
-            <div className="flex items-center justify-center mt-6">
-              <div className="h-px w-24 bg-yellow-500/30"></div>
-              <p className="mx-6 text-lg text-white/70 font-light italic font-satoshi">Live Data Feeds Grok 4 • Real-Time AI Analysis • X Sentiment Integration</p>
-              <div className="h-px w-24 bg-yellow-500/30"></div>
-            </div>
-            
-            {/* Data Pipeline Summary */}
-            <div className="bg-black/20 p-6 rounded-none border border-yellow-500/30 mt-8">
-              <h4 className="text-yellow-500 font-bold text-lg mb-4 text-center">🔄 Real-Time Data Pipeline</h4>
-              <div className="grid md:grid-cols-4 gap-4 text-center">
-                <div>
-                  <p className="text-yellow-500 font-bold text-lg">📊 Market Data</p>
-                  <p className="text-white/70 text-sm">CoinGecko APIs</p>
-                </div>
-                <div>
-                  <p className="text-yellow-500 font-bold text-lg">📈 Stock Data</p>
-                  <p className="text-white/70 text-sm">Finnhub APIs</p>
-                </div>
-                <div>
-                  <p className="text-yellow-500 font-bold text-lg">🤖 Grok 4 AI</p>
-                  <p className="text-white/70 text-sm">Live Analysis</p>
-                </div>
-                <div>
-                  <p className="text-yellow-500 font-bold text-lg">📱 X Sentiment</p>
-                  <p className="text-white/70 text-sm">Social Analysis</p>
-                </div>
-              </div>
-            </div>
+    <div className="min-h-screen bg-black text-white p-6">
+      <div className="max-w-5xl mx-auto">
+        {/* Hero Section */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-yellow-500 mb-2">GROK420 AI Market Analysis</h1>
+          <p className="text-white/60">AI-powered predictions for assets that can outperform Bitcoin</p>
+        </div>
 
-            {/* Refresh Controls */}
-            <div className="flex items-center justify-center gap-4 mt-8">
-              <Button
-                onClick={() => fetchData(true)}
-                disabled={refreshing}
-                className="bg-yellow-500 text-black font-bold px-6 py-3 rounded-none hover:bg-yellow-400 transition-all duration-300 disabled:opacity-50"
-              >
-                {refreshing ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
-                    Refreshing...
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    Refresh Data
-                  </div>
-                )}
-              </Button>
-              {lastUpdated && (
-                <p className="text-white/60 text-sm">
-                  Last updated: {lastUpdated.toLocaleTimeString()}
+        {/* Market State Summary */}
+        {marketState && (
+          <div className="bg-black border border-yellow-500/20 p-6 mb-8">
+            <h2 className="text-2xl font-bold text-yellow-500 mb-4">Current Market State</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <p className="text-white/60 text-sm">Fear & Greed</p>
+                <p className={`text-2xl font-bold ${marketState.fearGreedIndex > 70 ? 'text-green-400' : marketState.fearGreedIndex < 30 ? 'text-red-400' : 'text-yellow-500'}`}>
+                  {marketState.fearGreedIndex}
                 </p>
-              )}
-            </div>
-          </div>
-
-          {/* Today's Market Overview */}
-          {marketState && (
-            <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-              <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
-                📊 Today&apos;s Market Overview
-              </h3>
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <p className="text-white/60 text-sm mb-2">Total Market Cap</p>
-                  <p className="text-3xl font-bold text-yellow-500">{formatMarketCap(marketState.totalMarketCap)}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-white/60 text-sm mb-2">24h Volume</p>
-                  <p className="text-3xl font-bold text-yellow-500">{formatMarketCap(marketState.totalVolume24h)}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-white/60 text-sm mb-2">Fear & Greed Index</p>
-                  <p className={`text-3xl font-bold ${getFearGreedColor(marketState.fearGreedIndex)}`}>
-                    {marketState.fearGreedIndex}
-                  </p>
-                  <p className={`text-sm ${getFearGreedColor(marketState.fearGreedIndex)}`}>
-                    {getFearGreedLabel(marketState.fearGreedIndex)}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-white/60 text-sm mb-2">Market Trend</p>
-                  <p className={`text-3xl font-bold ${marketState.trend === 'up' ? 'text-green-400' : marketState.trend === 'down' ? 'text-red-400' : 'text-yellow-400'}`}>
-                    {marketState.trend === 'up' ? '📈' : marketState.trend === 'down' ? '📉' : '➡️'}
-                  </p>
-                  <p className="text-sm text-white/60 capitalize">{marketState.trend}</p>
-                </div>
               </div>
-              
-              {/* Market Dominance */}
-              <div className="mt-8">
-                <h4 className="text-xl font-bold text-yellow-500 mb-4">Market Dominance</h4>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                    <p className="text-white/60 text-sm">Bitcoin</p>
-                    <p className="text-2xl font-bold text-yellow-500">{marketState.dominance.bitcoin.toFixed(1)}%</p>
-                  </div>
-                  <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                    <p className="text-white/60 text-sm">Ethereum</p>
-                    <p className="text-2xl font-bold text-yellow-500">{marketState.dominance.ethereum.toFixed(1)}%</p>
-                  </div>
-                  <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                    <p className="text-white/60 text-sm">Others (XRP, USDT, BNB, SOL, etc.)</p>
-                    <p className="text-2xl font-bold text-yellow-500">{marketState.dominance.others.toFixed(1)}%</p>
-                  </div>
-                </div>
+              <div className="text-center">
+                <p className="text-white/60 text-sm">Trend</p>
+                <p className={`text-2xl font-bold ${marketState.trend === 'up' ? 'text-green-400' : marketState.trend === 'down' ? 'text-red-400' : 'text-yellow-500'}`}>
+                  {marketState.trend.toUpperCase()}
+                </p>
               </div>
-            </div>
-          )}
-
-          {/* Performance Summary */}
-          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
-              Performance Summary
-            </h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-black p-6 rounded-none border border-yellow-500/20">
-                <p className="text-white/60 text-sm mb-2">Top Performer (24h)</p>
-                {cryptoData.length > 0 && (() => {
-                  const topPerformer = cryptoData.reduce((prev, current) => 
-                    prev.price_change_percentage_24h > current.price_change_percentage_24h ? prev : current
-                  );
-                  return (
-                    <div>
-                      <p className="text-xl font-bold text-green-400">{topPerformer.symbol.toUpperCase()}</p>
-                      <p className="text-lg text-green-400">+{topPerformer.price_change_percentage_24h.toFixed(2)}%</p>
-                    </div>
-                  );
-                })()}
+              <div className="text-center">
+                <p className="text-white/60 text-sm">Volatility</p>
+                <p className="text-2xl font-bold text-yellow-500">{marketState.volatility}%</p>
               </div>
-              <div className="bg-black p-6 rounded-none border border-yellow-500/20">
-                <p className="text-white/60 text-sm mb-2">Worst Performer (24h)</p>
-                {cryptoData.length > 0 && (() => {
-                  const worstPerformer = cryptoData.reduce((prev, current) => 
-                    prev.price_change_percentage_24h < current.price_change_percentage_24h ? prev : current
-                  );
-                  return (
-                    <div>
-                      <p className="text-xl font-bold text-red-400">{worstPerformer.symbol.toUpperCase()}</p>
-                      <p className="text-lg text-red-400">{worstPerformer.price_change_percentage_24h.toFixed(2)}%</p>
-                    </div>
-                  );
-                })()}
-              </div>
-              <div className="bg-black p-6 rounded-none border border-yellow-500/20">
-                <p className="text-white/60 text-sm mb-2">Average Change (24h)</p>
-                {cryptoData.length > 0 && (() => {
-                  const avgChange = cryptoData.reduce((sum, crypto) => sum + crypto.price_change_percentage_24h, 0) / cryptoData.length;
-                  return (
-                    <div>
-                      <p className={`text-xl font-bold ${getChangeColor(avgChange)}`}>
-                        {avgChange > 0 ? '+' : ''}{avgChange.toFixed(2)}%
-                      </p>
-                      <p className="text-sm text-white/60">Across {cryptoData.length} assets</p>
-                    </div>
-                  );
-                })()}
-              </div>
-              <div className="bg-black p-6 rounded-none border border-yellow-500/20">
-                <p className="text-white/60 text-sm mb-2">Market Momentum</p>
-                {cryptoData.length > 0 && (() => {
-                  const positiveCount = cryptoData.filter(crypto => crypto.price_change_percentage_24h > 0).length;
-                  const negativeCount = cryptoData.filter(crypto => crypto.price_change_percentage_24h < 0).length;
-                  const momentum = positiveCount > negativeCount ? 'Bullish' : negativeCount > positiveCount ? 'Bearish' : 'Neutral';
-                  const color = momentum === 'Bullish' ? 'text-green-400' : momentum === 'Bearish' ? 'text-red-400' : 'text-yellow-400';
-                  return (
-                    <div>
-                      <p className={`text-xl font-bold ${color}`}>{momentum}</p>
-                      <p className="text-sm text-white/60">{positiveCount} up, {negativeCount} down</p>
-                    </div>
-                  );
-                })()}
+              <div className="text-center">
+                <p className="text-white/60 text-sm">Peak Risk</p>
+                <p className={`text-2xl font-bold ${marketState.bullMarketPeakSignals.peakRisk === 'high' || marketState.bullMarketPeakSignals.peakRisk === 'extreme' ? 'text-red-400' : 'text-yellow-500'}`}>
+                  {marketState.bullMarketPeakSignals.peakRisk.toUpperCase()}
+                </p>
               </div>
             </div>
           </div>
+        )}
 
-          {/* AI Predictions */}
-          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
-              🤖 Grok 4 AI Predictions: Live Data Analysis
-            </h3>
-            
-            {/* Timeframe Selector */}
-            <div className="flex justify-center space-x-4 mb-8">
-              {['day', 'week', 'month', 'year'].map((timeframe) => (
-                <Button
-                  key={timeframe}
-                  onClick={() => setSelectedTimeframe(timeframe)}
-                  className={`px-6 py-3 rounded-none font-bold transition-all duration-300 ${
-                    selectedTimeframe === timeframe
-                      ? 'bg-yellow-500 text-black shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]'
-                      : 'bg-transparent text-white border-2 border-yellow-500 hover:bg-yellow-500 hover:text-black'
-                  }`}
-                >
-                  {timeframe === 'day' ? '📅 Next Day' : 
-                   timeframe === 'week' ? '📊 Next Week' : 
-                   timeframe === 'month' ? '📈 Next Month' : 
-                   '🎯 Next Year'}
-                </Button>
-              ))}
-            </div>
+        {/* AI Predictions */}
+        <div className="space-y-6">
+          {predictions.map((prediction) => (
+            <div key={prediction.timeframe} className="bg-black border border-yellow-500/20 p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold text-yellow-500 capitalize">{prediction.timeframe} Predictions</h3>
+                <span className={`px-3 py-1 rounded text-sm font-bold ${
+                  prediction.marketSentiment === 'bullish' ? 'bg-green-500/20 text-green-400' :
+                  prediction.marketSentiment === 'bearish' ? 'bg-red-500/20 text-red-400' :
+                  'bg-yellow-500/20 text-yellow-400'
+                }`}>
+                  {prediction.marketSentiment.toUpperCase()}
+                </span>
+              </div>
 
-            {currentPrediction && (
-              <div className="space-y-8">
-                {/* Bitcoin Prediction */}
-                <div className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-                  <h4 className="text-xl font-bold text-yellow-500 mb-4">₿ Bitcoin Prediction (Live Data Analysis)</h4>
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <div className="text-center">
-                      <p className="text-white/60 text-sm mb-2">Predicted Price</p>
-                      <p className="text-3xl font-bold text-yellow-500">
-                        {formatPrice(currentPrediction.btcPrediction.price)}
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-white/60 text-sm mb-2">Expected Change</p>
-                      <p className={`text-3xl font-bold ${getChangeColor(currentPrediction.btcPrediction.change)}`}>
-                        {currentPrediction.btcPrediction.change > 0 ? '+' : ''}{currentPrediction.btcPrediction.change.toFixed(2)}%
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-white/60 text-sm mb-2">Confidence</p>
-                      <p className={`text-3xl font-bold ${getConfidenceColor(currentPrediction.btcPrediction.confidence)}`}>
-                        {currentPrediction.btcPrediction.confidence}%
-                      </p>
-                    </div>
+              {/* Bitcoin Prediction */}
+              <div className="mb-6">
+                <h4 className="text-lg font-bold text-white mb-2">Bitcoin (BTC)</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <p className="text-white/60 text-sm">Predicted Price</p>
+                    <p className="text-xl font-bold text-yellow-500">${prediction.btcPrediction.price.toLocaleString()}</p>
                   </div>
-                  <p className="text-white/80 mt-4 text-center">{currentPrediction.btcPrediction.reasoning}</p>
+                  <div>
+                    <p className="text-white/60 text-sm">Expected Change</p>
+                    <p className={`text-xl font-bold ${prediction.btcPrediction.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {prediction.btcPrediction.change >= 0 ? '+' : ''}{prediction.btcPrediction.change.toFixed(2)}%
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-white/60 text-sm">Confidence</p>
+                    <p className="text-xl font-bold text-yellow-500">{prediction.btcPrediction.confidence}%</p>
+                  </div>
+                  <div>
+                    <p className="text-white/60 text-sm">AI Reasoning</p>
+                    <p className="text-sm text-white/80 line-clamp-2">{prediction.btcPrediction.reasoning}</p>
+                  </div>
                 </div>
+              </div>
 
-                {/* Top Performers Prediction */}
-                <div>
-                  <h4 className="text-xl font-bold text-yellow-500 mb-4">🚀 Assets Predicted to Outperform Bitcoin (Grok 4 Analysis)</h4>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {currentPrediction.topPerformers.map((performer, index) => (
-                      <Card key={index} className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="font-epilogue text-xl text-yellow-400">{performer.asset}</CardTitle>
-                            <span className={`text-sm font-bold ${getConfidenceColor(performer.confidence)}`}>
-                              {performer.confidence}%
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <p className="text-white/60 font-satoshi text-sm">{performer.symbol}</p>
-                            <span className={`text-xs px-2 py-1 rounded ${
-                              performer.type === 'stock' 
-                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
-                                : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+              {/* Top Performers */}
+              <div>
+                <h4 className="text-lg font-bold text-white mb-3">Assets Predicted to Outperform Bitcoin</h4>
+                <div className="space-y-3">
+                  {prediction.topPerformers.map((performer, index) => (
+                    <div key={index} className="bg-black/50 border border-yellow-500/10 p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-bold text-white">{performer.asset}</span>
+                            <span className="text-white/60">({performer.symbol})</span>
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              performer.type === 'crypto' ? 'bg-blue-500/20 text-blue-400' : 'bg-green-500/20 text-green-400'
                             }`}>
-                              {performer.type === 'stock' ? 'STOCK' : 'CRYPTO'}
+                              {performer.type.toUpperCase()}
                             </span>
                           </div>
-                        </CardHeader>
-                        <CardContent>
-                          <p className={`text-2xl font-bold mb-2 ${getChangeColor(performer.predictedOutperformance)}`}>
-                            {performer.predictedOutperformance > 0 ? '+' : ''}{performer.predictedOutperformance.toFixed(2)}% vs BTC
+                          <p className="text-sm text-white/80 mb-2">{performer.reasoning}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-white/60 text-sm">Outperformance</p>
+                          <p className="text-lg font-bold text-green-400">
+                            +{performer.predictedOutperformance.toFixed(2)}%
                           </p>
-                          <p className="text-white/80 font-satoshi text-sm">{performer.reasoning}</p>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Market Sentiment & Events */}
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-                    <h4 className="text-xl font-bold text-yellow-500 mb-4">📊 Market Sentiment (Grok 4 + X Analysis)</h4>
-                    <div className="flex items-center gap-4 mb-4">
-                      <span className="text-4xl">{getSentimentIcon(currentPrediction.marketSentiment)}</span>
-                      <span className={`text-2xl font-bold ${getSentimentColor(currentPrediction.marketSentiment)}`}>
-                        {currentPrediction.marketSentiment.charAt(0).toUpperCase() + currentPrediction.marketSentiment.slice(1)}
-                      </span>
+                          <p className="text-sm text-white/60">{performer.confidence}% confidence</p>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-white/80">AI analysis indicates {currentPrediction.marketSentiment} market conditions for the next {selectedTimeframe}.</p>
-                  </div>
-
-                  <div className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-                    <h4 className="text-xl font-bold text-yellow-500 mb-4">📅 Key Events to Watch</h4>
-                    <ul className="space-y-2">
-                      {currentPrediction.keyEvents.map((event, index) => (
-                        <li key={index} className="text-white/80 text-sm flex items-start gap-2">
-                          <span className="text-yellow-500 mt-1">•</span>
-                          {event}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  ))}
                 </div>
+              </div>
 
-                {/* Risk Factors */}
-                <div className="bg-black p-6 rounded-none border-2 border-red-500 shadow-[5px_5px_0px_0px_rgba(239,68,68,1)]">
-                  <h4 className="text-xl font-bold text-red-400 mb-4">⚠️ Risk Factors</h4>
-                  <ul className="space-y-2">
-                    {currentPrediction.riskFactors.map((risk, index) => (
-                      <li key={index} className="text-white/80 text-sm flex items-start gap-2">
-                        <span className="text-red-400 mt-1">⚠️</span>
-                        {risk}
+              {/* Key Events & Risk Factors */}
+              <div className="grid md:grid-cols-2 gap-6 mt-6">
+                <div>
+                  <h5 className="text-white font-bold mb-2">Key Events</h5>
+                  <ul className="space-y-1">
+                    {prediction.keyEvents.map((event, index) => (
+                      <li key={index} className="text-sm text-white/80 flex items-start gap-2">
+                        <span className="text-yellow-500 mt-1">•</span>
+                        <span>{event}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h5 className="text-white font-bold mb-2">Risk Factors</h5>
+                  <ul className="space-y-1">
+                    {prediction.riskFactors.map((risk, index) => (
+                      <li key={index} className="text-sm text-white/80 flex items-start gap-2">
+                        <span className="text-red-400 mt-1">⚠</span>
+                        <span>{risk}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
               </div>
-            )}
-          </div>
-
-
-
-          {/* Outperform Bitcoin Watchlist */}
-          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
-              🚀 Outperform Bitcoin Watchlist
-            </h3>
-            
-            {/* Watchlist Summary */}
-            <div className="mb-8">
-              <h4 className="text-xl font-bold text-yellow-500 mb-4">🎯 Grok 4 AI Watchlist Picks</h4>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                  <p className="text-yellow-500 font-bold text-sm">Bitcoin Status</p>
-                  <p className="text-white font-bold text-lg">{marketState ? `${marketState.dominance.bitcoin.toFixed(1)}%` : 'Calculating...'} Dominance</p>
-                  <p className="text-white/60 text-xs">Market benchmark</p>
-                </div>
-                <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                  <p className="text-yellow-500 font-bold text-sm">Market Sentiment</p>
-                  <p className="text-white font-bold text-lg">{marketState ? getFearGreedLabel(marketState.fearGreedIndex) : 'Calculating...'}</p>
-                  <p className="text-white/60 text-xs">Grok 4 sentiment analysis</p>
-                </div>
-                <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                  <p className="text-yellow-500 font-bold text-sm">Watchlist Assets</p>
-                  <p className="text-white font-bold text-lg">{cryptoData.length + (currentPrediction?.topPerformers.length || 0)} Total</p>
-                  <p className="text-white/60 text-xs">Crypto + Stock picks</p>
-                </div>
-              </div>
             </div>
+          ))}
+        </div>
 
-            {/* Top Outperformers */}
-            <div className="mb-8">
-              <h4 className="text-xl font-bold text-yellow-500 mb-4">🔥 Top Outperformers vs Bitcoin</h4>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {currentPrediction?.topPerformers.slice(0, 6).map((performer, index) => (
-                  <div key={index} className="bg-black p-4 rounded-none border-2 border-yellow-500 shadow-[3px_3px_0px_0px_rgba(234,179,8,1)]">
-                    <div className="flex items-center justify-between mb-2">
-                      <h5 className="text-yellow-400 font-bold">{performer.asset}</h5>
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        performer.type === 'stock' 
-                          ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
-                          : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                      }`}>
-                        {performer.type === 'stock' ? 'STOCK' : 'CRYPTO'}
-                      </span>
-                    </div>
-                    <p className={`text-xl font-bold mb-1 ${getChangeColor(performer.predictedOutperformance)}`}>
-                      +{performer.predictedOutperformance.toFixed(2)}% vs BTC
-                    </p>
-                    <p className="text-white/60 text-xs mb-2">{performer.symbol}</p>
-                    <p className="text-white/80 text-xs">{performer.reasoning}</p>
-                    <div className="mt-2">
-                      <span className={`text-xs px-2 py-1 rounded ${getConfidenceColor(performer.confidence)}`}>
-                        {performer.confidence}% Confidence
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Momentum Watchlist */}
-            <div className="mb-8">
-              <h4 className="text-xl font-bold text-yellow-500 mb-4">📈 Momentum Watchlist</h4>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="border-b border-yellow-500/30">
-                      <th className="py-4 px-4 text-yellow-400 font-bold">Asset</th>
-                      <th className="py-4 px-4 text-yellow-400 font-bold">Current Price</th>
-                      <th className="py-4 px-4 text-yellow-400 font-bold">24h Change</th>
-                      <th className="py-4 px-4 text-yellow-400 font-bold">Watchlist Status</th>
-                      <th className="py-4 px-4 text-yellow-400 font-bold">Grok 4 Rating</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cryptoData.slice(0, 10).map((crypto, index) => {
-                      const isOutperformer = crypto.price_change_percentage_24h > 0;
-                      const isStrongOutperformer = crypto.price_change_percentage_24h > 5;
-                      const grokRating = isStrongOutperformer ? 'Strong Buy' : 
-                                       isOutperformer ? 'Buy' : 
-                                       crypto.price_change_percentage_24h > -2 ? 'Hold' : 'Avoid';
-                      
-                      return (
-                        <tr key={index} className="border-b border-white/10 hover:bg-white/5 transition-colors">
-                          <td className="py-4 px-4">
-                            <div className="flex items-center space-x-3">
-                              {crypto.image && (
-                                <Image 
-                                  src={crypto.image} 
-                                  alt={crypto.id} 
-                                  width={32}
-                                  height={32}
-                                  className="rounded-full"
-                                />
-                              )}
-                              <div>
-                                <p className="font-bold text-white">{crypto.id.charAt(0).toUpperCase() + crypto.id.slice(1)}</p>
-                                <p className="text-white/60 text-sm">{crypto.symbol.toUpperCase()}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-4 px-4 font-bold text-white">
-                            {formatPrice(crypto.current_price)}
-                          </td>
-                          <td className={`py-4 px-4 font-bold ${getChangeColor(crypto.price_change_percentage_24h)}`}>
-                            {crypto.price_change_percentage_24h > 0 ? '+' : ''}{crypto.price_change_percentage_24h.toFixed(2)}%
-                          </td>
-                          <td className="py-4 px-4 text-white/80">
-                            <span className={`text-xs px-2 py-1 rounded ${
-                              isStrongOutperformer ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
-                              isOutperformer ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
-                              'bg-red-500/20 text-red-400 border border-red-500/30'
-                            }`}>
-                              {isStrongOutperformer ? '🔥 Hot Pick' :
-                               isOutperformer ? '📈 Outperforming' : '📉 Underperforming'}
-                            </span>
-                          </td>
-                          <td className="py-4 px-4 text-white/80">
-                            <span className={`text-xs px-2 py-1 rounded ${
-                              grokRating === 'Strong Buy' ? 'bg-green-500/20 text-green-400' :
-                              grokRating === 'Buy' ? 'bg-yellow-500/20 text-yellow-400' :
-                              grokRating === 'Hold' ? 'bg-blue-500/20 text-blue-400' :
-                              'bg-red-500/20 text-red-400'
-                            }`}>
-                              {grokRating}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-white/60 text-sm mt-4 text-center">
-                Grok 4 AI analyzes real-time data to identify assets likely to outperform Bitcoin
-              </p>
-            </div>
-          </div>
-
-
-
-          {/* Disclaimer */}
-          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
-              🤖 AI-Powered Analysis Notice
-            </h3>
-            <div className="space-y-4 text-gray-300">
-              <p className="text-lg">
-                This dashboard features <strong>real-time AI-generated market predictions</strong> powered by Grok 4 analysis. All predictions are based on <strong>live market data</strong> from CoinGecko APIs, <strong>real-time stock data</strong> from Finnhub, and <strong>social sentiment analysis</strong> from X AI API.
-              </p>
-                              <div className="mt-6">
-                  <h4 className="text-xl font-bold text-yellow-500 mb-4">Data Pipeline & Risk Disclosure:</h4>
-                  <ul className="list-disc list-inside space-y-2">
-                    <li><strong>Real-time data feeds</strong> from CoinGecko, Finnhub, and X AI APIs</li>
-                    <li><strong>Grok 4 AI analysis</strong> processes live market data for predictions</li>
-                    <li>AI predictions are for informational purposes only</li>
-                    <li>Past performance does not guarantee future results</li>
-                    <li>Cryptocurrency markets are highly volatile and unpredictable</li>
-                    <li>Always conduct your own research before making investment decisions</li>
-                    <li>Consider consulting with a financial advisor</li>
-                    <li>Never invest more than you can afford to lose</li>
-                  </ul>
-                </div>
-            </div>
-          </div>
+        {/* Disclaimer */}
+        <div className="mt-8 p-4 bg-black/50 border border-yellow-500/10">
+          <p className="text-xs text-white/60 text-center">
+            AI predictions are based on real-time market data and Grok 4 analysis. Past performance does not guarantee future results. 
+            Always conduct your own research and consider your risk tolerance before making investment decisions.
+          </p>
         </div>
       </div>
     </div>
