@@ -534,138 +534,142 @@ export default function MarketDashboardPage() {
 
 
 
-          {/* Data Sources & Live Market Data */}
+          {/* Outperform Bitcoin Watchlist */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
             <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
-              🔄 Data Sources & Live Market Data
+              🚀 Outperform Bitcoin Watchlist
             </h3>
             
-            {/* Data Sources */}
+            {/* Watchlist Summary */}
             <div className="mb-8">
-              <h4 className="text-xl font-bold text-yellow-500 mb-4">📡 Real-Time Data Feeds</h4>
+              <h4 className="text-xl font-bold text-yellow-500 mb-4">🎯 Grok 4 AI Watchlist Picks</h4>
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                  <p className="text-yellow-500 font-bold">📊 CoinGecko APIs</p>
-                  <p className="text-white/70 text-sm">Crypto prices, market cap, volume, dominance</p>
+                  <p className="text-yellow-500 font-bold text-sm">Bitcoin Status</p>
+                  <p className="text-white font-bold text-lg">{marketState ? `${marketState.dominance.bitcoin.toFixed(1)}%` : 'Calculating...'} Dominance</p>
+                  <p className="text-white/60 text-xs">Market benchmark</p>
                 </div>
                 <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                  <p className="text-yellow-500 font-bold">📈 Finnhub APIs</p>
-                  <p className="text-white/70 text-sm">Stock prices, volume, technical indicators</p>
+                  <p className="text-yellow-500 font-bold text-sm">Market Sentiment</p>
+                  <p className="text-white font-bold text-lg">{marketState ? getFearGreedLabel(marketState.fearGreedIndex) : 'Calculating...'}</p>
+                  <p className="text-white/60 text-xs">Grok 4 sentiment analysis</p>
                 </div>
                 <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                  <p className="text-yellow-500 font-bold">📱 X AI API</p>
-                  <p className="text-white/70 text-sm">Social sentiment analysis & market mood</p>
+                  <p className="text-yellow-500 font-bold text-sm">Watchlist Assets</p>
+                  <p className="text-white font-bold text-lg">{cryptoData.length + (currentPrediction?.topPerformers.length || 0)} Total</p>
+                  <p className="text-white/60 text-xs">Crypto + Stock picks</p>
                 </div>
               </div>
             </div>
-                                        {/* Data Analysis Process */}
-              <div className="mb-8">
-                <h4 className="text-xl font-bold text-yellow-500 mb-4">🔍 How Live Data Feeds Grok 4 Predictions</h4>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-black p-6 rounded-none border border-yellow-500/20">
-                    <h5 className="text-yellow-400 font-bold mb-3">📊 Market Data Analysis</h5>
-                    <ul className="space-y-2 text-sm text-white/80">
-                      <li>• <strong>Volume Analysis:</strong> {cryptoData.length > 0 ? `${cryptoData.filter(c => c.total_volume > 1000000000).length} assets with >$1B volume` : 'Analyzing volume patterns'}</li>
-                      <li>• <strong>Market Cap Distribution:</strong> {cryptoData.length > 0 ? `${cryptoData.filter(c => c.market_cap > 10000000000).length} assets >$10B market cap` : 'Evaluating market dominance'}</li>
-                      <li>• <strong>Price Momentum:</strong> {cryptoData.length > 0 ? `${cryptoData.filter(c => c.price_change_percentage_24h > 0).length} assets in positive territory` : 'Tracking price movements'}</li>
-                      <li>• <strong>Volatility Assessment:</strong> Analyzing price swings and market stability</li>
-                    </ul>
-                  </div>
-                  <div className="bg-black p-6 rounded-none border border-yellow-500/20">
-                    <h5 className="text-yellow-400 font-bold mb-3">🤖 Grok 4 Processing</h5>
-                    <ul className="space-y-2 text-sm text-white/80">
-                      <li>• <strong>Technical Indicators:</strong> RSI, MACD, Bollinger Bands analysis</li>
-                      <li>• <strong>Sentiment Integration:</strong> X social sentiment + market data</li>
-                      <li>• <strong>Correlation Analysis:</strong> Bitcoin vs altcoin relationships</li>
-                      <li>• <strong>Pattern Recognition:</strong> Historical data pattern matching</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
 
-              {/* Key Data Points for Predictions */}
-              <div className="mb-8">
-                <h4 className="text-xl font-bold text-yellow-500 mb-4">🎯 Key Data Points Driving Predictions</h4>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                    <p className="text-yellow-500 font-bold text-sm">Bitcoin Dominance</p>
-                    <p className="text-white font-bold text-lg">{marketState ? `${marketState.dominance.bitcoin.toFixed(1)}%` : 'Calculating...'}</p>
-                    <p className="text-white/60 text-xs">Market leadership indicator</p>
+            {/* Top Outperformers */}
+            <div className="mb-8">
+              <h4 className="text-xl font-bold text-yellow-500 mb-4">🔥 Top Outperformers vs Bitcoin</h4>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {currentPrediction?.topPerformers.slice(0, 6).map((performer, index) => (
+                  <div key={index} className="bg-black p-4 rounded-none border-2 border-yellow-500 shadow-[3px_3px_0px_0px_rgba(234,179,8,1)]">
+                    <div className="flex items-center justify-between mb-2">
+                      <h5 className="text-yellow-400 font-bold">{performer.asset}</h5>
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        performer.type === 'stock' 
+                          ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
+                          : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                      }`}>
+                        {performer.type === 'stock' ? 'STOCK' : 'CRYPTO'}
+                      </span>
+                    </div>
+                    <p className={`text-xl font-bold mb-1 ${getChangeColor(performer.predictedOutperformance)}`}>
+                      +{performer.predictedOutperformance.toFixed(2)}% vs BTC
+                    </p>
+                    <p className="text-white/60 text-xs mb-2">{performer.symbol}</p>
+                    <p className="text-white/80 text-xs">{performer.reasoning}</p>
+                    <div className="mt-2">
+                      <span className={`text-xs px-2 py-1 rounded ${getConfidenceColor(performer.confidence)}`}>
+                        {performer.confidence}% Confidence
+                      </span>
+                    </div>
                   </div>
-                  <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                    <p className="text-yellow-500 font-bold text-sm">Fear & Greed Index</p>
-                    <p className="text-white font-bold text-lg">{marketState ? marketState.fearGreedIndex : 'Calculating...'}</p>
-                    <p className="text-white/60 text-xs">Market sentiment gauge</p>
-                  </div>
-                  <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                    <p className="text-yellow-500 font-bold text-sm">Total Market Cap</p>
-                    <p className="text-white font-bold text-lg">{marketState ? formatMarketCap(marketState.totalMarketCap) : 'Calculating...'}</p>
-                    <p className="text-white/60 text-xs">Overall market size</p>
-                  </div>
-                </div>
+                ))}
               </div>
+            </div>
 
-              {/* Live Data Table */}
+            {/* Momentum Watchlist */}
+            <div className="mb-8">
+              <h4 className="text-xl font-bold text-yellow-500 mb-4">📈 Momentum Watchlist</h4>
               <div className="overflow-x-auto">
-                <h4 className="text-xl font-bold text-yellow-500 mb-4">📊 Live Data Feeding Predictions</h4>
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-yellow-500/30">
                       <th className="py-4 px-4 text-yellow-400 font-bold">Asset</th>
                       <th className="py-4 px-4 text-yellow-400 font-bold">Current Price</th>
                       <th className="py-4 px-4 text-yellow-400 font-bold">24h Change</th>
-                      <th className="py-4 px-4 text-yellow-400 font-bold">Volume</th>
-                      <th className="py-4 px-4 text-yellow-400 font-bold">Prediction Impact</th>
+                      <th className="py-4 px-4 text-yellow-400 font-bold">Watchlist Status</th>
+                      <th className="py-4 px-4 text-yellow-400 font-bold">Grok 4 Rating</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {cryptoData.slice(0, 8).map((crypto, index) => (
-                      <tr key={index} className="border-b border-white/10 hover:bg-white/5 transition-colors">
-                        <td className="py-4 px-4">
-                          <div className="flex items-center space-x-3">
-                            {crypto.image && (
-                              <Image 
-                                src={crypto.image} 
-                                alt={crypto.id} 
-                                width={32}
-                                height={32}
-                                className="rounded-full"
-                              />
-                            )}
-                            <div>
-                              <p className="font-bold text-white">{crypto.id.charAt(0).toUpperCase() + crypto.id.slice(1)}</p>
-                              <p className="text-white/60 text-sm">{crypto.symbol.toUpperCase()}</p>
+                    {cryptoData.slice(0, 10).map((crypto, index) => {
+                      const isOutperformer = crypto.price_change_percentage_24h > 0;
+                      const isStrongOutperformer = crypto.price_change_percentage_24h > 5;
+                      const grokRating = isStrongOutperformer ? 'Strong Buy' : 
+                                       isOutperformer ? 'Buy' : 
+                                       crypto.price_change_percentage_24h > -2 ? 'Hold' : 'Avoid';
+                      
+                      return (
+                        <tr key={index} className="border-b border-white/10 hover:bg-white/5 transition-colors">
+                          <td className="py-4 px-4">
+                            <div className="flex items-center space-x-3">
+                              {crypto.image && (
+                                <Image 
+                                  src={crypto.image} 
+                                  alt={crypto.id} 
+                                  width={32}
+                                  height={32}
+                                  className="rounded-full"
+                                />
+                              )}
+                              <div>
+                                <p className="font-bold text-white">{crypto.id.charAt(0).toUpperCase() + crypto.id.slice(1)}</p>
+                                <p className="text-white/60 text-sm">{crypto.symbol.toUpperCase()}</p>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4 font-bold text-white">
-                          {formatPrice(crypto.current_price)}
-                        </td>
-                        <td className={`py-4 px-4 font-bold ${getChangeColor(crypto.price_change_percentage_24h)}`}>
-                          {crypto.price_change_percentage_24h > 0 ? '+' : ''}{crypto.price_change_percentage_24h.toFixed(2)}%
-                        </td>
-                        <td className="py-4 px-4 text-white/80">
-                          {formatMarketCap(crypto.total_volume)}
-                        </td>
-                        <td className="py-4 px-4 text-white/80">
-                          <span className={`text-xs px-2 py-1 rounded ${
-                            crypto.price_change_percentage_24h > 5 ? 'bg-green-500/20 text-green-400' :
-                            crypto.price_change_percentage_24h > 0 ? 'bg-yellow-500/20 text-yellow-400' :
-                            'bg-red-500/20 text-red-400'
-                          }`}>
-                            {crypto.price_change_percentage_24h > 5 ? 'Strong Bullish' :
-                             crypto.price_change_percentage_24h > 0 ? 'Moderate Bullish' :
-                             crypto.price_change_percentage_24h > -5 ? 'Neutral' : 'Bearish'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="py-4 px-4 font-bold text-white">
+                            {formatPrice(crypto.current_price)}
+                          </td>
+                          <td className={`py-4 px-4 font-bold ${getChangeColor(crypto.price_change_percentage_24h)}`}>
+                            {crypto.price_change_percentage_24h > 0 ? '+' : ''}{crypto.price_change_percentage_24h.toFixed(2)}%
+                          </td>
+                          <td className="py-4 px-4 text-white/80">
+                            <span className={`text-xs px-2 py-1 rounded ${
+                              isStrongOutperformer ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                              isOutperformer ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                              'bg-red-500/20 text-red-400 border border-red-500/30'
+                            }`}>
+                              {isStrongOutperformer ? '🔥 Hot Pick' :
+                               isOutperformer ? '📈 Outperforming' : '📉 Underperforming'}
+                            </span>
+                          </td>
+                          <td className="py-4 px-4 text-white/80">
+                            <span className={`text-xs px-2 py-1 rounded ${
+                              grokRating === 'Strong Buy' ? 'bg-green-500/20 text-green-400' :
+                              grokRating === 'Buy' ? 'bg-yellow-500/20 text-yellow-400' :
+                              grokRating === 'Hold' ? 'bg-blue-500/20 text-blue-400' :
+                              'bg-red-500/20 text-red-400'
+                            }`}>
+                              {grokRating}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
-                <p className="text-white/60 text-sm mt-4 text-center">
-                  Showing top 8 assets by market cap • Data feeds Grok 4 AI for real-time prediction analysis
-                </p>
               </div>
+              <p className="text-white/60 text-sm mt-4 text-center">
+                Grok 4 AI analyzes real-time data to identify assets likely to outperform Bitcoin
+              </p>
+            </div>
           </div>
 
 
