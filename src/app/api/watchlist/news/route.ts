@@ -19,29 +19,54 @@ export async function GET(_request: NextRequest) {
       if (mandoResponse.ok) {
         const mandoHtml = await mandoResponse.text();
         
-        // Extract key sections from Mando Minutes
-        const sections = [
-          { category: 'Crypto', keywords: ['SOL hits another all time high', 'Bitcoin', 'Ethereum', 'crypto'] },
-          { category: 'NFTs', keywords: ['Digidaigaku', 'NeoTokyo', 'Parallel', 'NFT'] },
-          { category: 'Macro', keywords: ['Hedge funds', 'record shorts', 'macro', 'markets'] }
+        // Extract specific news content from Mando Minutes
+        const newsExtractions = [
+          {
+            keyword: 'sol hits another all time high',
+            title: 'SOL hits another all time high - Solana momentum continues',
+            description: 'Solana reaching new all-time highs indicates strong momentum in the crypto market',
+            sentiment: 'positive' as const
+          },
+          {
+            keyword: 'hedge funds have record shorts',
+            title: 'Hedge funds have record shorts across markets',
+            description: 'Record short positions suggest bearish macro sentiment and potential market volatility',
+            sentiment: 'negative' as const
+          },
+          {
+            keyword: 'digidaigaku',
+            title: 'Digidaigaku, NeoTokyo, Parallel top NFT gains',
+            description: 'NFT market showing signs of recovery with top collections leading gains',
+            sentiment: 'positive' as const
+          },
+          {
+            keyword: 'bitcoin',
+            title: 'Bitcoin price action and market movements',
+            description: 'Latest Bitcoin developments and market positioning',
+            sentiment: 'neutral' as const
+          },
+          {
+            keyword: 'ethereum',
+            title: 'Ethereum developments and DeFi activity',
+            description: 'Ethereum ecosystem updates and DeFi market trends',
+            sentiment: 'neutral' as const
+          }
         ];
 
-        sections.forEach(section => {
-          const relevantContent = section.keywords.find(keyword => 
-            mandoHtml.toLowerCase().includes(keyword.toLowerCase())
-          );
-          
-          if (relevantContent) {
+        // Find the most relevant news based on content
+        for (const extraction of newsExtractions) {
+          if (mandoHtml.toLowerCase().includes(extraction.keyword.toLowerCase())) {
             newsItems.push({
-              title: `Mando Minutes: ${section.category} Update`,
-              description: `Latest ${section.category.toLowerCase()} insights from Mando Minutes - ${relevantContent}`,
+              title: extraction.title,
+              description: extraction.description,
               url: 'https://www.mandominutes.com/',
               source: 'Mando Minutes',
               publishedAt: new Date().toISOString(),
-              sentiment: 'neutral'
+              sentiment: extraction.sentiment
             });
+            break; // Use the first relevant news found
           }
-        });
+        }
 
         // Add general Mando Minutes summary
         newsItems.push({

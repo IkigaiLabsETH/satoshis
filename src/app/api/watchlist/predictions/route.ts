@@ -1,6 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// StockData interface removed as it's no longer used
+interface CryptoData {
+  id: string;
+  symbol: string;
+  name: string;
+  current_price: number;
+  market_cap: number;
+  total_volume: number;
+  price_change_percentage_24h: number;
+  image?: string;
+}
+
+interface StockData {
+  symbol: string;
+  c: number; // current price
+  d: number; // change
+  dp: number; // change percent
+  h: number; // high
+  l: number; // low
+  o: number; // open
+  pc: number; // previous close
+  v: number; // volume
+}
+
+interface NewsData {
+  title: string;
+  description: string;
+  url: string;
+  source: string;
+  publishedAt: string;
+  sentiment?: 'positive' | 'negative' | 'neutral';
+}
 
 interface MarketPrediction {
   timeframe: string;
@@ -30,9 +60,9 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
   // Fetch current Bitcoin price and market data
   let currentBtcPrice = 120000; // Default fallback
   let btc24hChange = 0;
-  let cryptoData: any[] = [];
-  let stockData: any[] = [];
-  let newsData: any[] = [];
+  let cryptoData: CryptoData[] = [];
+  let stockData: StockData[] = [];
+  let newsData: NewsData[] = [];
   
   try {
     // Fetch Bitcoin price
@@ -69,7 +99,7 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
       
       const stockResults = await Promise.allSettled(stockPromises);
       stockData = stockResults
-        .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled' && result.value !== null)
+        .filter((result): result is PromiseFulfilledResult<StockData> => result.status === 'fulfilled' && result.value !== null)
         .map(result => result.value);
     }
 
@@ -80,17 +110,74 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
       if (mandoResponse.ok) {
         const mandoHtml = await mandoResponse.text();
         
-        // Check for key Mando Minutes content
-        if (mandoHtml.toLowerCase().includes('sol hits another all time high') || 
-            mandoHtml.toLowerCase().includes('bitcoin') || 
-            mandoHtml.toLowerCase().includes('crypto')) {
+        // Extract specific news content from Mando Minutes
+        const newsExtractions: Array<{keyword: string, title: string, sentiment: 'positive' | 'negative' | 'neutral'}> = [
+          {
+            keyword: 'sol hits another all time high',
+            title: 'SOL hits another all time high - Solana momentum continues',
+            sentiment: 'positive'
+          },
+          {
+            keyword: 'hedge funds have record shorts',
+            title: 'Hedge funds have record shorts across markets - bearish macro sentiment',
+            sentiment: 'negative'
+          },
+          {
+            keyword: 'digidaigaku',
+            title: 'Digidaigaku, NeoTokyo, Parallel top NFT gains - NFT market recovery',
+            sentiment: 'positive'
+          },
+          {
+            keyword: 'bitcoin etf',
+            title: 'Bitcoin ETF flows and institutional adoption',
+            sentiment: 'positive'
+          },
+          {
+            keyword: 'fed rate',
+            title: 'Federal Reserve rate decisions and monetary policy',
+            sentiment: 'neutral'
+          },
+          {
+            keyword: 'inflation',
+            title: 'Inflation data and economic indicators',
+            sentiment: 'neutral'
+          },
+          {
+            keyword: 'bitcoin',
+            title: 'Bitcoin price action and market movements',
+            sentiment: 'neutral'
+          },
+          {
+            keyword: 'ethereum',
+            title: 'Ethereum developments and DeFi activity',
+            sentiment: 'neutral'
+          }
+        ];
+
+        // Find the most relevant news based on content
+        for (const extraction of newsExtractions) {
+          if (mandoHtml.toLowerCase().includes(extraction.keyword.toLowerCase())) {
+            newsData.push({
+              title: extraction.title,
+              description: `Latest from Mando Minutes: ${extraction.title}`,
+              url: 'https://www.mandominutes.com/',
+              source: 'Mando Minutes',
+              publishedAt: new Date().toISOString(),
+              sentiment: extraction.sentiment
+            });
+            break; // Use the first relevant news found
+          }
+        }
+
+        // If no specific news found, add general summary
+        if (newsData.length === 0 && (mandoHtml.toLowerCase().includes('crypto') || mandoHtml.toLowerCase().includes('defi'))) {
           newsData.push({
-            title: 'Mando Minutes Daily Summary',
-            description: 'Latest crypto, DeFi, and macro insights from Mando Minutes',
+            title: 'Mando Minutes: Crypto Market Update',
+            description: 'Daily crypto, DeFi, and macro market insights from Mando Minutes',
             url: 'https://www.mandominutes.com/',
             source: 'Mando Minutes',
             publishedAt: new Date().toISOString(),
-            sentiment: 'positive'
+            sentiment: 'neutral'
           });
         }
       }
@@ -156,14 +243,14 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
   
   // Get real crypto performers for daily predictions
   const dailyCryptoPerformers = cryptoData
-    .filter((coin: any) => coin.symbol !== 'BTC' && coin.price_change_percentage_24h > dailyBtcChange)
-    .sort((a: any, b: any) => b.price_change_percentage_24h - a.price_change_percentage_24h)
+    .filter((coin: CryptoData) => coin.symbol !== 'BTC' && coin.price_change_percentage_24h > dailyBtcChange)
+    .sort((a: CryptoData, b: CryptoData) => b.price_change_percentage_24h - a.price_change_percentage_24h)
     .slice(0, 3);
   
   // Get real stock performers for daily predictions
   const dailyStockPerformers = stockData
-    .filter((stock: any) => stock.dp > dailyBtcChange)
-    .sort((a: any, b: any) => b.dp - a.dp)
+    .filter((stock: StockData) => stock.dp > dailyBtcChange)
+    .sort((a: StockData, b: StockData) => b.dp - a.dp)
     .slice(0, 2);
   
   predictions.push({
@@ -172,11 +259,11 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
       price: Math.round(dailyBtcPrice),
       change: Math.round(dailyBtcChange * 100) / 100,
       confidence: Math.floor(Math.random() * 20) + 70, // 70-90%
-      reasoning: `Based on current Bitcoin price of $${currentBtcPrice.toLocaleString()} and 24h change of ${dailyBtcChange.toFixed(2)}%, market sentiment analysis suggests ${dailyBtcChange > 0 ? 'positive' : 'negative'} momentum in the next 24 hours. ${newsData.length > 0 ? `Latest insights: ${newsData.find(n => n.source === 'Mando Minutes')?.title || newsData[0]?.title || 'Market developments'}` : 'Technical indicators and institutional flows support this prediction.'}`
+      reasoning: `Based on current Bitcoin price of $${currentBtcPrice.toLocaleString()} and 24h change of ${dailyBtcChange.toFixed(2)}%, market sentiment analysis suggests ${dailyBtcChange > 0 ? 'positive' : 'negative'} momentum in the next 24 hours. ${newsData.length > 0 ? `Market context: ${newsData.find(n => n.source === 'Mando Minutes')?.title || newsData[0]?.title || 'Market developments'} - this news may ${newsData.find(n => n.source === 'Mando Minutes')?.sentiment === 'positive' ? 'support' : newsData.find(n => n.source === 'Mando Minutes')?.sentiment === 'negative' ? 'pressure' : 'influence'} Bitcoin's price movement.` : 'Technical indicators and institutional flows support this prediction.'}`
     },
     topPerformers: [
       // Real crypto performers
-      ...dailyCryptoPerformers.map((coin: any, _index: number) => ({
+      ...dailyCryptoPerformers.map((coin: CryptoData, _index: number) => ({
         asset: coin.name,
         symbol: coin.symbol.toUpperCase(),
         predictedOutperformance: Math.round((coin.price_change_percentage_24h - dailyBtcChange) * 100) / 100,
@@ -185,7 +272,7 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
         type: 'crypto' as const
       })),
       // Real stock performers
-      ...dailyStockPerformers.map((stock: any, _index: number) => ({
+      ...dailyStockPerformers.map((stock: StockData, _index: number) => ({
         asset: stock.symbol === 'MSTR' ? 'MicroStrategy' : 
                stock.symbol === 'COIN' ? 'Coinbase' :
                stock.symbol === 'HOOD' ? 'Robinhood' :
