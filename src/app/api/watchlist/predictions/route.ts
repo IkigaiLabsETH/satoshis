@@ -75,8 +75,8 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
       btc24hChange = btcData.bitcoin?.usd_24h_change || 0;
     }
 
-    // Fetch real crypto data for Grok 4 analysis
-    const cryptoResponse = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,solana,bittensor,arweave,kaspa,hyperliquid,render-token,sui&order=market_cap_desc&per_page=20&page=1&sparkline=false');
+    // Fetch real crypto data for Grok 4 analysis - including potential outperformers
+    const cryptoResponse = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,solana,bittensor,arweave,kaspa,hyperliquid,render-token,sui,penguin-karts,rekt,ena,pepe,shiba-inu,dogecoin,cardano,polkadot,chainlink,avalanche-2,polygon,cosmos,uniswap,aptos,optimism,arbitrum,stacks,ordi,sei-network,celestia,immutable&order=market_cap_desc&per_page=50&page=1&sparkline=false');
     if (cryptoResponse.ok) {
       cryptoData = await cryptoResponse.json();
     }
@@ -84,7 +84,7 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     // Fetch real stock data for Grok 4 analysis
     const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
     if (FINNHUB_API_KEY) {
-      const stockSymbols = ['MSTR', 'COIN', 'HOOD', 'CRCL', 'IREN', 'CORZ', 'CIFR'];
+      const stockSymbols = ['MSTR', 'COIN', 'HOOD', 'CRCL', 'IREN', 'CORZ', 'CIFR', 'RIOT', 'CLSK', 'WULF', 'HUT', 'MARA', 'GLXY', 'SQ', 'TSLA', 'NVDA', 'AMD'];
       const stockPromises = stockSymbols.map(async (symbol) => {
         try {
           const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`);
@@ -232,12 +232,16 @@ Provide a structured prediction for the next ${timeframe} in this exact JSON for
 }
 
 Focus on:
-1. Technical analysis of current price action
+1. Technical analysis of current price action and momentum
 2. Market sentiment from news and social data
 3. Institutional flows and ETF data
 4. Market philosophy factors (2Y MA x5, generational shift, exponential age)
-5. Assets most likely to outperform Bitcoin
-6. Key events and risk factors to watch
+5. **SPECIFICALLY identify assets that could outperform Bitcoin like recent examples: PENGU, REKT, ENA, PEPE, SHIB, DOGE**
+6. Look for coins with strong fundamentals, high volume, and momentum
+7. Consider meme coins, DeFi tokens, and Layer 1/2 solutions
+8. Analyze which crypto-related stocks (MSTR, COIN, RIOT, etc.) could benefit from crypto rallies
+
+**IMPORTANT:** Look for the next potential 10x-100x performers that could follow the pattern of recent outperformers. Focus on coins with strong community, high volume, and momentum indicators.
 
 Be realistic with predictions and provide detailed reasoning based on the data provided.`;
 
@@ -258,7 +262,7 @@ Be realistic with predictions and provide detailed reasoning based on the data p
           max_tokens: 2000
         }),
         new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('Prediction timeout')), 2000) // 2 second timeout
+          setTimeout(() => reject(new Error('Prediction timeout')), 10000) // 10 second timeout to allow real analysis
         )
       ]);
 
