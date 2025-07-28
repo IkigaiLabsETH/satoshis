@@ -66,10 +66,16 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     ];
   }
 
-  // Note: In a real Grok 4 implementation, stockData would be used to generate
-  // more sophisticated predictions based on actual stock performance data
-  // For now, we're using predefined predictions for crypto-related stocks (MSTR, COIN, HOOD, etc.)
-  // stockData would be analyzed to adjust predictions based on current market conditions
+      // Note: In a real Grok 4 implementation, stockData would be used to generate
+    // more sophisticated predictions based on actual stock performance data
+    // For now, we're using predefined predictions for crypto-related stocks (MSTR, COIN, HOOD, etc.)
+    // stockData would be analyzed to adjust predictions based on current market conditions
+    
+    // Integration with altcoins page knowledge:
+    // - Promising altcoins: Qubetics, Arweave, Kaspa, Bittensor, PEAQ, Radix, Nervos, Ocean Protocol, Fetch.ai
+    // - Rotation playbook: 60-70% BTC core, 15-20% ETH large-cap, 10-15% mid-cap, 3-5% degen
+    // - Market sentiment: Bitcoin dominance analysis, $1M Bitcoin thesis, supply mechanics
+    // - Cycle analysis: Halving progress math, historical patterns, institutional influence
 
   // Daily predictions
   predictions.push({
@@ -90,19 +96,19 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
         type: 'crypto'
       },
       {
-        asset: 'Render Token',
-        symbol: 'RNDR',
-        predictedOutperformance: 3.2, // 3.2% better than Bitcoin
-        confidence: 78,
-        reasoning: 'AI infrastructure demand surge and GPU rendering network expansion. Expected to outperform Bitcoin by 3.2% in the next 24 hours.',
+        asset: 'Bittensor',
+        symbol: 'TAO',
+        predictedOutperformance: 5.2, // 5.2% better than Bitcoin
+        confidence: 82,
+        reasoning: 'Decentralized AI network gaining traction. AI integration with blockchain driving institutional interest. Expected to outperform Bitcoin by 5.2% in the next 24 hours.',
         type: 'crypto'
       },
       {
-        asset: 'Sui',
-        symbol: 'SUI',
+        asset: 'Arweave',
+        symbol: 'AR',
         predictedOutperformance: 3.8, // 3.8% better than Bitcoin
-        confidence: 76,
-        reasoning: 'Move language ecosystem growth and DeFi protocol adoption. Expected to outperform Bitcoin by 3.8% in the next 24 hours.',
+        confidence: 78,
+        reasoning: 'Permanent data storage solution with growing adoption. Web3 infrastructure demand driving growth. Expected to outperform Bitcoin by 3.8% in the next 24 hours.',
         type: 'crypto'
       },
       {
@@ -124,14 +130,16 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     ],
     marketSentiment: 'bullish',
     keyEvents: [
-      'Federal Reserve interest rate decision',
-      'Bitcoin ETF inflows data release',
-      'Ethereum network upgrade completion'
+      'Bitcoin halving progress: 28% mark reached, historical pattern suggests Q4 2025-Q1 2026 peak',
+      'ETH/BTC cup-and-handle pattern: Weekly close above 0.02596 BTC unlocks 30-55% move',
+      'Bitcoin dominance at 58.8%: Watch for sustained drop below 60% signaling altcoin rotation',
+      'Institutional Bitcoin accumulation: ETFs holding $122B, limiting capital flow to altcoins'
     ],
     riskFactors: [
-      'Potential regulatory announcements',
-      'Market volatility due to geopolitical tensions',
-      'Technical resistance at $70,000 level'
+      'Macro shock: Aggressive rate hikes or credit crunch could impact crypto markets',
+      'ETF outflow reversal: If institutions exit, GBTC-type selling could return',
+      'Regulatory risk: U.S. spot-market crackdown could chill liquidity',
+      'Weekly close below 200-day SMA (~$88K) would be first technical red flag'
     ]
   });
 
@@ -146,27 +154,27 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     },
           topPerformers: [
         {
-          asset: 'Hyperliquid',
-          symbol: 'HYPE',
-          predictedOutperformance: 8.5, // 8.5% better than Bitcoin
-          confidence: 82,
-          reasoning: 'Perpetual DEX dominance and institutional adoption. Expected to outperform Bitcoin by 8.5% this week.',
+          asset: 'Bittensor',
+          symbol: 'TAO',
+          predictedOutperformance: 12.5, // 12.5% better than Bitcoin
+          confidence: 85,
+          reasoning: 'Decentralized AI network with growing institutional adoption. AI narrative driving significant interest. Expected to outperform Bitcoin by 12.5% this week.',
           type: 'crypto'
         },
         {
-          asset: 'Render Token',
-          symbol: 'RNDR',
-          predictedOutperformance: 7.2, // 7.2% better than Bitcoin
+          asset: 'Kaspa',
+          symbol: 'KAS',
+          predictedOutperformance: 9.8, // 9.8% better than Bitcoin
           confidence: 78,
-          reasoning: 'AI infrastructure demand and GPU rendering network growth. Expected to outperform Bitcoin by 7.2% this week.',
+          reasoning: 'Scalable blockchain protocol gaining attention for technical advancements. Expected to outperform Bitcoin by 9.8% this week.',
           type: 'crypto'
         },
         {
-          asset: 'Sui',
-          symbol: 'SUI',
-          predictedOutperformance: 6.8, // 6.8% better than Bitcoin
-          confidence: 75,
-          reasoning: 'Move ecosystem expansion and DeFi protocol adoption. Expected to outperform Bitcoin by 6.8% this week.',
+          asset: 'Arweave',
+          symbol: 'AR',
+          predictedOutperformance: 8.2, // 8.2% better than Bitcoin
+          confidence: 76,
+          reasoning: 'Permanent data storage with growing real-world applications. Expected to outperform Bitcoin by 8.2% this week.',
           type: 'crypto'
         },
         {
@@ -188,14 +196,16 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
       ],
     marketSentiment: 'bullish',
     keyEvents: [
-      'Bitcoin halving countdown begins',
-      'Major DeFi protocol launches',
-      'Institutional adoption announcements'
+      'Rotation playbook: 60-70% BTC core, 15-20% ETH large-cap, 10-15% mid-cap, 3-5% degen',
+      'ETH/BTC breakout trigger: Once above 0.026 for 2+ weeks, expect SOL and large-caps to follow',
+      'BTC.D breakdown: If Bitcoin Dominance loses 50% level, signals peak capital rotation into alts',
+      'Profit taking: Take 25% profit off any alt that does 3-5x, rotate back into BTC'
     ],
     riskFactors: [
-      'Macroeconomic uncertainty',
-      'Regulatory crackdown risks',
-      'Technical correction after strong rally'
+      'BTC.D reclaiming 55%: Would signal cut degen positions and consolidate back into core BTC/ETH',
+      'Institutional concentration: ETFs and corporates accumulating BTC, limiting altcoin capital flow',
+      'Market dilution: New altcoin launches increasing supply, reducing individual token performance',
+      'Cycle differences: 2021-style altcoin season may not repeat due to unique market conditions'
     ]
   });
 
@@ -210,27 +220,27 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     },
           topPerformers: [
         {
-          asset: 'Hyperliquid',
-          symbol: 'HYPE',
-          predictedOutperformance: 25.5, // 25.5% better than Bitcoin
-          confidence: 75,
-          reasoning: 'Perpetual DEX market leader with institutional adoption. Expected to outperform Bitcoin by 25.5% this month.',
+          asset: 'Bittensor',
+          symbol: 'TAO',
+          predictedOutperformance: 35.5, // 35.5% better than Bitcoin
+          confidence: 78,
+          reasoning: 'Decentralized AI network with massive growth potential. AI narrative driving institutional adoption. Expected to outperform Bitcoin by 35.5% this month.',
           type: 'crypto'
         },
         {
-          asset: 'Render Token',
-          symbol: 'RNDR',
-          predictedOutperformance: 22.8, // 22.8% better than Bitcoin
+          asset: 'Qubetics',
+          symbol: 'TICS',
+          predictedOutperformance: 28.8, // 28.8% better than Bitcoin
           confidence: 72,
-          reasoning: 'AI infrastructure boom and GPU rendering network expansion. Expected to outperform Bitcoin by 22.8% this month.',
+          reasoning: 'Decentralized VPN with privacy focus. Real-world adoption and institutional interest. Expected to outperform Bitcoin by 28.8% this month.',
           type: 'crypto'
         },
         {
-          asset: 'Sui',
-          symbol: 'SUI',
-          predictedOutperformance: 20.3, // 20.3% better than Bitcoin
-          confidence: 68,
-          reasoning: 'Move ecosystem growth and DeFi protocol adoption. Expected to outperform Bitcoin by 20.3% this month.',
+          asset: 'Kaspa',
+          symbol: 'KAS',
+          predictedOutperformance: 25.2, // 25.2% better than Bitcoin
+          confidence: 70,
+          reasoning: 'Scalable blockchain protocol with technical advancements. Expected to outperform Bitcoin by 25.2% this month.',
           type: 'crypto'
         },
         {
@@ -266,27 +276,27 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     },
           topPerformers: [
         {
-          asset: 'Hyperliquid',
-          symbol: 'HYPE',
-          predictedOutperformance: 95.5, // 95.5% better than Bitcoin
+          asset: 'Bittensor',
+          symbol: 'TAO',
+          predictedOutperformance: 125.5, // 125.5% better than Bitcoin
+          confidence: 68,
+          reasoning: 'Decentralized AI network with massive long-term potential. AI integration driving institutional adoption. Expected to outperform Bitcoin by 125.5% this year.',
+          type: 'crypto'
+        },
+        {
+          asset: 'Qubetics',
+          symbol: 'TICS',
+          predictedOutperformance: 95.8, // 95.8% better than Bitcoin
           confidence: 65,
-          reasoning: 'Perpetual DEX market dominance and institutional adoption. Expected to outperform Bitcoin by 95.5% this year.',
+          reasoning: 'Decentralized VPN with privacy focus. Real-world adoption and institutional interest. Expected to outperform Bitcoin by 95.8% this year.',
           type: 'crypto'
         },
         {
-          asset: 'Render Token',
-          symbol: 'RNDR',
-          predictedOutperformance: 88.2, // 88.2% better than Bitcoin
+          asset: 'Arweave',
+          symbol: 'AR',
+          predictedOutperformance: 85.3, // 85.3% better than Bitcoin
           confidence: 62,
-          reasoning: 'AI infrastructure revolution and GPU rendering network growth. Expected to outperform Bitcoin by 88.2% this year.',
-          type: 'crypto'
-        },
-        {
-          asset: 'Sui',
-          symbol: 'SUI',
-          predictedOutperformance: 75.3, // 75.3% better than Bitcoin
-          confidence: 58,
-          reasoning: 'Move ecosystem expansion and DeFi protocol adoption. Expected to outperform Bitcoin by 75.3% this year.',
+          reasoning: 'Permanent data storage with growing real-world applications. Expected to outperform Bitcoin by 85.3% this year.',
           type: 'crypto'
         },
         {
