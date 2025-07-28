@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'daily';
     
-    // Define crypto-related stocks to track
-    const symbols = ['COIN', 'MSTR', 'SQ', 'TSLA', 'NVDA', 'AMD'];
+    // Define crypto-related stocks to track - including mining sector
+    const symbols = ['COIN', 'MSTR', 'HOOD', 'CRCL', 'IREN', 'CORZ', 'CIFR', 'RIOT', 'CLSK', 'WULF', 'HUT', 'MARA', 'GLXY', 'SQ', 'TSLA', 'NVDA', 'AMD'];
     
     // Get Finnhub API key from environment
     const finnhubApiKey = process.env.FINNHUB_API_KEY;

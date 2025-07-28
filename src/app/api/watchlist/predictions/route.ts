@@ -76,6 +76,23 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     // - Rotation playbook: 60-70% BTC core, 15-20% ETH large-cap, 10-15% mid-cap, 3-5% degen
     // - Market sentiment: Bitcoin dominance analysis, $1M Bitcoin thesis, supply mechanics
     // - Cycle analysis: Halving progress math, historical patterns, institutional influence
+    
+    // Integration with stocks page knowledge:
+    // - Crypto-related stocks: HOOD, CRCL, COIN, MSTR, MARA, IREN, CORZ, CIFR, RIOT, CLSK, WULF, HUT, GLXY
+    // - Bitcoin mining sector: IREN (63% return), CORZ (56% return), CIFR (31% return), RIOT (29% return)
+    // - Mining developments: IREN $550M convertible notes, CORZ CoreWeave acquisition talks, CIFR Black Pearl mining
+    
+    // Integration with downbad page knowledge:
+    // - U.S. national debt: $36.4T with 122-125% debt-to-GDP ratio
+    // - Inflation risks: U.S. CPI at ~3.0%, housing costs high, food prices up 25% since 2020
+    // - Bitcoin hedge: Best performing asset in history, outperformed traditional hedges during high inflation
+    // - AI impact: Could add $15.7T to global GDP by 2030, but may increase inequality
+    
+    // Integration with bitcoin page knowledge:
+    // - Bitcoin manifesto: "The Final Protest Vote" against fiat system
+    // - Market stats: $1.6T+ market cap, 60%+ dominance, 19.5M BTC circulating
+    // - Key events: 2024 halving, 2025 sovereign adoption, 2026 quantum resistance
+    // - Cultural significance: Bitcoin as monetary rebellion, not just crypto
 
   // Daily predictions
   predictions.push({
@@ -88,14 +105,6 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     },
     topPerformers: [
       {
-        asset: 'Hyperliquid',
-        symbol: 'HYPE',
-        predictedOutperformance: 4.5, // 4.5% better than Bitcoin
-        confidence: 85,
-        reasoning: 'Perpetual DEX leader with innovative orderbook design. High trading volumes and institutional adoption driving growth. Expected to outperform Bitcoin by 4.5% in the next 24 hours.',
-        type: 'crypto'
-      },
-      {
         asset: 'Bittensor',
         symbol: 'TAO',
         predictedOutperformance: 5.2, // 5.2% better than Bitcoin
@@ -104,12 +113,20 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
         type: 'crypto'
       },
       {
-        asset: 'Arweave',
-        symbol: 'AR',
-        predictedOutperformance: 3.8, // 3.8% better than Bitcoin
+        asset: 'Iris Energy',
+        symbol: 'IREN',
+        predictedOutperformance: 4.8, // 4.8% better than Bitcoin
+        confidence: 80,
+        reasoning: 'Bitcoin mining with AI pivot. $550M convertible notes offering and data center expansion driving growth. Expected to outperform Bitcoin by 4.8% in the next 24 hours.',
+        type: 'stock'
+      },
+      {
+        asset: 'Core Scientific',
+        symbol: 'CORZ',
+        predictedOutperformance: 4.5, // 4.5% better than Bitcoin
         confidence: 78,
-        reasoning: 'Permanent data storage solution with growing adoption. Web3 infrastructure demand driving growth. Expected to outperform Bitcoin by 3.8% in the next 24 hours.',
-        type: 'crypto'
+        reasoning: 'CoreWeave acquisition talks driving 33% surge. AI infrastructure partnership and 12-year hosting contracts. Expected to outperform Bitcoin by 4.5% in the next 24 hours.',
+        type: 'stock'
       },
       {
         asset: 'MicroStrategy',
@@ -120,24 +137,24 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
         type: 'stock'
       },
       {
-        asset: 'Coinbase',
-        symbol: 'COIN',
-        predictedOutperformance: 3.1, // 3.1% better than Bitcoin
+        asset: 'Circle',
+        symbol: 'CRCL',
+        predictedOutperformance: 3.8, // 3.8% better than Bitcoin
         confidence: 76,
-        reasoning: 'Exchange volume surge and institutional adoption driving revenue growth. Expected to outperform Bitcoin by 3.1% in the next 24 hours.',
+        reasoning: 'USDC stablecoin issuer with explosive IPO. Regulatory clarity and rising interest rates driving revenue. Expected to outperform Bitcoin by 3.8% in the next 24 hours.',
         type: 'stock'
       }
     ],
     marketSentiment: 'bullish',
     keyEvents: [
       'Bitcoin halving progress: 28% mark reached, historical pattern suggests Q4 2025-Q1 2026 peak',
-      'ETH/BTC cup-and-handle pattern: Weekly close above 0.02596 BTC unlocks 30-55% move',
-      'Bitcoin dominance at 58.8%: Watch for sustained drop below 60% signaling altcoin rotation',
-      'Institutional Bitcoin accumulation: ETFs holding $122B, limiting capital flow to altcoins'
+      'U.S. national debt crisis: $36.4T with 122-125% debt-to-GDP ratio driving Bitcoin adoption',
+      'Inflation hedge demand: U.S. CPI at ~3.0%, food prices up 25% since 2020, housing costs high',
+      'Bitcoin as "Final Protest Vote": $1.6T+ market cap, 60%+ dominance, 19.5M BTC circulating'
     ],
     riskFactors: [
       'Macro shock: Aggressive rate hikes or credit crunch could impact crypto markets',
-      'ETF outflow reversal: If institutions exit, GBTC-type selling could return',
+      'Fiat system collapse: U.S. debt crisis and money printing could accelerate Bitcoin adoption',
       'Regulatory risk: U.S. spot-market crackdown could chill liquidity',
       'Weekly close below 200-day SMA (~$88K) would be first technical red flag'
     ]
@@ -162,20 +179,28 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
           type: 'crypto'
         },
         {
-          asset: 'Kaspa',
-          symbol: 'KAS',
-          predictedOutperformance: 9.8, // 9.8% better than Bitcoin
-          confidence: 78,
-          reasoning: 'Scalable blockchain protocol gaining attention for technical advancements. Expected to outperform Bitcoin by 9.8% this week.',
-          type: 'crypto'
+          asset: 'Iris Energy',
+          symbol: 'IREN',
+          predictedOutperformance: 11.2, // 11.2% better than Bitcoin
+          confidence: 82,
+          reasoning: 'Bitcoin mining with AI pivot. $550M convertible notes and data center expansion driving growth. Expected to outperform Bitcoin by 11.2% this week.',
+          type: 'stock'
         },
         {
-          asset: 'Arweave',
-          symbol: 'AR',
-          predictedOutperformance: 8.2, // 8.2% better than Bitcoin
-          confidence: 76,
-          reasoning: 'Permanent data storage with growing real-world applications. Expected to outperform Bitcoin by 8.2% this week.',
-          type: 'crypto'
+          asset: 'Core Scientific',
+          symbol: 'CORZ',
+          predictedOutperformance: 10.8, // 10.8% better than Bitcoin
+          confidence: 80,
+          reasoning: 'CoreWeave acquisition talks and AI infrastructure partnership. Expected to outperform Bitcoin by 10.8% this week.',
+          type: 'stock'
+        },
+        {
+          asset: 'Cipher Mining',
+          symbol: 'CIFR',
+          predictedOutperformance: 9.5, // 9.5% better than Bitcoin
+          confidence: 78,
+          reasoning: 'Black Pearl mining commencement and Cantor Fitzgerald price target raise. Expected to outperform Bitcoin by 9.5% this week.',
+          type: 'stock'
         },
         {
           asset: 'MicroStrategy',
@@ -184,28 +209,20 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
           confidence: 72,
           reasoning: 'Bitcoin treasury strategy and institutional adoption driving growth. Expected to outperform Bitcoin by 9.1% this week.',
           type: 'stock'
-        },
-        {
-          asset: 'Coinbase',
-          symbol: 'COIN',
-          predictedOutperformance: 7.8, // 7.8% better than Bitcoin
-          confidence: 75,
-          reasoning: 'Exchange volume growth and institutional adoption driving revenue. Expected to outperform Bitcoin by 7.8% this week.',
-          type: 'stock'
         }
       ],
     marketSentiment: 'bullish',
     keyEvents: [
-      'Rotation playbook: 60-70% BTC core, 15-20% ETH large-cap, 10-15% mid-cap, 3-5% degen',
-      'ETH/BTC breakout trigger: Once above 0.026 for 2+ weeks, expect SOL and large-caps to follow',
-      'BTC.D breakdown: If Bitcoin Dominance loses 50% level, signals peak capital rotation into alts',
-      'Profit taking: Take 25% profit off any alt that does 3-5x, rotate back into BTC'
+      'Bitcoin mining sector surge: IREN (63% return), CORZ (56% return), CIFR (31% return)',
+      'Mining developments: IREN $550M convertible notes, CORZ CoreWeave acquisition talks',
+      'AI infrastructure pivot: Mining companies expanding into AI data centers and hosting',
+      'Rotation playbook: 60-70% BTC core, 15-20% ETH large-cap, 10-15% mid-cap, 3-5% degen'
     ],
     riskFactors: [
-      'BTC.D reclaiming 55%: Would signal cut degen positions and consolidate back into core BTC/ETH',
-      'Institutional concentration: ETFs and corporates accumulating BTC, limiting altcoin capital flow',
-      'Market dilution: New altcoin launches increasing supply, reducing individual token performance',
-      'Cycle differences: 2021-style altcoin season may not repeat due to unique market conditions'
+      'Mining difficulty increases: Post-halving challenges for mining profitability',
+      'Energy costs: Rising electricity prices could impact mining margins',
+      'Regulatory uncertainty: Mining regulations could affect sector performance',
+      'BTC.D reclaiming 55%: Would signal cut degen positions and consolidate back into core BTC/ETH'
     ]
   });
 
@@ -228,20 +245,20 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
           type: 'crypto'
         },
         {
-          asset: 'Qubetics',
-          symbol: 'TICS',
-          predictedOutperformance: 28.8, // 28.8% better than Bitcoin
-          confidence: 72,
-          reasoning: 'Decentralized VPN with privacy focus. Real-world adoption and institutional interest. Expected to outperform Bitcoin by 28.8% this month.',
-          type: 'crypto'
+          asset: 'Iris Energy',
+          symbol: 'IREN',
+          predictedOutperformance: 32.8, // 32.8% better than Bitcoin
+          confidence: 75,
+          reasoning: 'Bitcoin mining with AI pivot. $550M convertible notes and data center expansion. Expected to outperform Bitcoin by 32.8% this month.',
+          type: 'stock'
         },
         {
-          asset: 'Kaspa',
-          symbol: 'KAS',
-          predictedOutperformance: 25.2, // 25.2% better than Bitcoin
-          confidence: 70,
-          reasoning: 'Scalable blockchain protocol with technical advancements. Expected to outperform Bitcoin by 25.2% this month.',
-          type: 'crypto'
+          asset: 'Core Scientific',
+          symbol: 'CORZ',
+          predictedOutperformance: 30.5, // 30.5% better than Bitcoin
+          confidence: 72,
+          reasoning: 'CoreWeave acquisition talks and AI infrastructure partnership driving growth. Expected to outperform Bitcoin by 30.5% this month.',
+          type: 'stock'
         },
         {
           asset: 'MicroStrategy',
@@ -284,20 +301,20 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
           type: 'crypto'
         },
         {
-          asset: 'Qubetics',
-          symbol: 'TICS',
-          predictedOutperformance: 95.8, // 95.8% better than Bitcoin
+          asset: 'Iris Energy',
+          symbol: 'IREN',
+          predictedOutperformance: 115.8, // 115.8% better than Bitcoin
           confidence: 65,
-          reasoning: 'Decentralized VPN with privacy focus. Real-world adoption and institutional interest. Expected to outperform Bitcoin by 95.8% this year.',
-          type: 'crypto'
+          reasoning: 'Bitcoin mining with AI pivot. Data center expansion and institutional adoption. Expected to outperform Bitcoin by 115.8% this year.',
+          type: 'stock'
         },
         {
-          asset: 'Arweave',
-          symbol: 'AR',
-          predictedOutperformance: 85.3, // 85.3% better than Bitcoin
+          asset: 'Core Scientific',
+          symbol: 'CORZ',
+          predictedOutperformance: 105.3, // 105.3% better than Bitcoin
           confidence: 62,
-          reasoning: 'Permanent data storage with growing real-world applications. Expected to outperform Bitcoin by 85.3% this year.',
-          type: 'crypto'
+          reasoning: 'CoreWeave acquisition and AI infrastructure partnership. Expected to outperform Bitcoin by 105.3% this year.',
+          type: 'stock'
         },
         {
           asset: 'MicroStrategy',
