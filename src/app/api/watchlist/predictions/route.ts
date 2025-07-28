@@ -245,21 +245,26 @@ Focus on:
 
 Be realistic with predictions and provide detailed reasoning based on the data provided.`;
 
-      // Call Grok 4 API with comprehensive market data
-      const grok4Response = await Grok4Service.chatCompletion({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are GROK420, an expert AI market analyst. Provide market predictions in the exact JSON format requested. Be realistic and data-driven.'
-          },
-          {
-            role: 'user',
-            content: grok4Prompt
-          }
-        ],
-        temperature: 0.3, // Lower temperature for more consistent predictions
-        max_tokens: 2000
-      });
+      // Call Grok 4 API with comprehensive market data and timeout
+      const grok4Response = await Promise.race([
+        Grok4Service.chatCompletion({
+          messages: [
+            {
+              role: 'system',
+              content: 'You are GROK420, an expert AI market analyst. Provide market predictions in the exact JSON format requested. Be realistic and data-driven.'
+            },
+            {
+              role: 'user',
+              content: grok4Prompt
+            }
+          ],
+          temperature: 0.3, // Lower temperature for more consistent predictions
+          max_tokens: 2000
+        }),
+        new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('Prediction timeout')), 8000) // 8 second timeout
+        )
+      ]);
 
       // Parse Grok 4 response
       const responseContent = grok4Response.choices?.[0]?.message?.content || '';

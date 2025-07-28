@@ -76,8 +76,8 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutM
 export class Grok4Service {
   static async chatCompletion(request: Grok4Request): Promise<ChatCompletion> {
     try {
-      // Add timeout to prevent hanging API calls
-      const grok4Timeout = 45000; // 45 second timeout
+      // Reduced timeout to prevent long delays
+      const grok4Timeout = 15000; // 15 second timeout for faster fallback
       
       const completion = await Promise.race([
         client.chat.completions.create({
