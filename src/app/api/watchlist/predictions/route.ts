@@ -82,19 +82,27 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     },
     topPerformers: [
       {
-        asset: 'Ethereum',
-        symbol: 'ETH',
-        predictedOutperformance: 2.1, // 2.1% better than Bitcoin
-        confidence: 82,
-        reasoning: 'DeFi activity surge and upcoming protocol upgrades driving institutional interest. Expected to outperform Bitcoin by 2.1% in the next 24 hours.',
+        asset: 'Hyperliquid',
+        symbol: 'HYPE',
+        predictedOutperformance: 4.5, // 4.5% better than Bitcoin
+        confidence: 85,
+        reasoning: 'Perpetual DEX leader with innovative orderbook design. High trading volumes and institutional adoption driving growth. Expected to outperform Bitcoin by 4.5% in the next 24 hours.',
         type: 'crypto'
       },
       {
-        asset: 'Solana',
-        symbol: 'SOL',
+        asset: 'Render Token',
+        symbol: 'RNDR',
+        predictedOutperformance: 3.2, // 3.2% better than Bitcoin
+        confidence: 78,
+        reasoning: 'AI infrastructure demand surge and GPU rendering network expansion. Expected to outperform Bitcoin by 3.2% in the next 24 hours.',
+        type: 'crypto'
+      },
+      {
+        asset: 'Sui',
+        symbol: 'SUI',
         predictedOutperformance: 3.8, // 3.8% better than Bitcoin
-        confidence: 75,
-        reasoning: 'High throughput and low fees attracting developers. NFT marketplace growth showing strong momentum. Expected to outperform Bitcoin by 3.8% in the next 24 hours.',
+        confidence: 76,
+        reasoning: 'Move language ecosystem growth and DeFi protocol adoption. Expected to outperform Bitcoin by 3.8% in the next 24 hours.',
         type: 'crypto'
       },
       {
@@ -102,7 +110,7 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
         symbol: 'MSTR',
         predictedOutperformance: 4.2, // 4.2% better than Bitcoin
         confidence: 78,
-        reasoning: 'Bitcoin treasury strategy and institutional adoption driving strong correlation with BTC performance. Expected to outperform Bitcoin by 4.2% in the next 24 hours.',
+        reasoning: 'Bitcoin treasury strategy and institutional adoption driving growth. Expected to outperform Bitcoin by 4.2% in the next 24 hours.',
         type: 'stock'
       },
       {
@@ -111,14 +119,6 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
         predictedOutperformance: 3.1, // 3.1% better than Bitcoin
         confidence: 76,
         reasoning: 'Exchange volume surge and institutional adoption driving revenue growth. Expected to outperform Bitcoin by 3.1% in the next 24 hours.',
-        type: 'stock'
-      },
-      {
-        asset: 'Robinhood',
-        symbol: 'HOOD',
-        predictedOutperformance: 2.8, // 2.8% better than Bitcoin
-        confidence: 72,
-        reasoning: 'Crypto trading platform expansion and retail investor engagement. Expected to outperform Bitcoin by 2.8% in the next 24 hours.',
         type: 'stock'
       }
     ],
@@ -146,11 +146,27 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     },
           topPerformers: [
         {
-          asset: 'Ethereum',
-          symbol: 'ETH',
-          predictedOutperformance: 6.2, // 6.2% better than Bitcoin
+          asset: 'Hyperliquid',
+          symbol: 'HYPE',
+          predictedOutperformance: 8.5, // 8.5% better than Bitcoin
+          confidence: 82,
+          reasoning: 'Perpetual DEX dominance and institutional adoption. Expected to outperform Bitcoin by 8.5% this week.',
+          type: 'crypto'
+        },
+        {
+          asset: 'Render Token',
+          symbol: 'RNDR',
+          predictedOutperformance: 7.2, // 7.2% better than Bitcoin
           confidence: 78,
-          reasoning: 'Layer 2 scaling solutions gaining traction. DeFi TVL reaching new highs. Expected to outperform Bitcoin by 6.2% this week.',
+          reasoning: 'AI infrastructure demand and GPU rendering network growth. Expected to outperform Bitcoin by 7.2% this week.',
+          type: 'crypto'
+        },
+        {
+          asset: 'Sui',
+          symbol: 'SUI',
+          predictedOutperformance: 6.8, // 6.8% better than Bitcoin
+          confidence: 75,
+          reasoning: 'Move ecosystem expansion and DeFi protocol adoption. Expected to outperform Bitcoin by 6.8% this week.',
           type: 'crypto'
         },
         {
@@ -168,14 +184,6 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
           confidence: 75,
           reasoning: 'Exchange volume growth and institutional adoption driving revenue. Expected to outperform Bitcoin by 7.8% this week.',
           type: 'stock'
-        },
-        {
-          asset: 'Avalanche',
-          symbol: 'AVAX',
-          predictedOutperformance: 8.7, // 8.7% better than Bitcoin
-          confidence: 70,
-          reasoning: 'Subnet technology adoption and institutional partnerships driving growth. Expected to outperform Bitcoin by 8.7% this week.',
-          type: 'crypto'
         }
       ],
     marketSentiment: 'bullish',
@@ -202,28 +210,36 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     },
           topPerformers: [
         {
-          asset: 'Ethereum',
-          symbol: 'ETH',
-          predictedOutperformance: 22.5, // 22.5% better than Bitcoin
+          asset: 'Hyperliquid',
+          symbol: 'HYPE',
+          predictedOutperformance: 25.5, // 25.5% better than Bitcoin
+          confidence: 75,
+          reasoning: 'Perpetual DEX market leader with institutional adoption. Expected to outperform Bitcoin by 25.5% this month.',
+          type: 'crypto'
+        },
+        {
+          asset: 'Render Token',
+          symbol: 'RNDR',
+          predictedOutperformance: 22.8, // 22.8% better than Bitcoin
+          confidence: 72,
+          reasoning: 'AI infrastructure boom and GPU rendering network expansion. Expected to outperform Bitcoin by 22.8% this month.',
+          type: 'crypto'
+        },
+        {
+          asset: 'Sui',
+          symbol: 'SUI',
+          predictedOutperformance: 20.3, // 20.3% better than Bitcoin
+          confidence: 68,
+          reasoning: 'Move ecosystem growth and DeFi protocol adoption. Expected to outperform Bitcoin by 20.3% this month.',
+          type: 'crypto'
+        },
+        {
+          asset: 'MicroStrategy',
+          symbol: 'MSTR',
+          predictedOutperformance: 28.2, // 28.2% better than Bitcoin
           confidence: 70,
-          reasoning: 'Transition to proof-of-stake complete. DeFi and NFT ecosystems expanding rapidly. Expected to outperform Bitcoin by 22.5% this month.',
-          type: 'crypto'
-        },
-        {
-          asset: 'Tesla',
-          symbol: 'TSLA',
-          predictedOutperformance: 25.8, // 25.8% better than Bitcoin
-          confidence: 65,
-          reasoning: 'Electric vehicle adoption and Bitcoin treasury strategy driving growth. Expected to outperform Bitcoin by 25.8% this month.',
+          reasoning: 'Bitcoin treasury strategy and institutional adoption. Expected to outperform Bitcoin by 28.2% this month.',
           type: 'stock'
-        },
-        {
-          asset: 'Solana',
-          symbol: 'SOL',
-          predictedOutperformance: 28.3, // 28.3% better than Bitcoin
-          confidence: 62,
-          reasoning: 'High-performance blockchain attracting major applications and developers. Expected to outperform Bitcoin by 28.3% this month.',
-          type: 'crypto'
         }
       ],
     marketSentiment: 'bullish',
@@ -250,28 +266,36 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     },
           topPerformers: [
         {
-          asset: 'Ethereum',
-          symbol: 'ETH',
-          predictedOutperformance: 85.2, // 85.2% better than Bitcoin
+          asset: 'Hyperliquid',
+          symbol: 'HYPE',
+          predictedOutperformance: 95.5, // 95.5% better than Bitcoin
+          confidence: 65,
+          reasoning: 'Perpetual DEX market dominance and institutional adoption. Expected to outperform Bitcoin by 95.5% this year.',
+          type: 'crypto'
+        },
+        {
+          asset: 'Render Token',
+          symbol: 'RNDR',
+          predictedOutperformance: 88.2, // 88.2% better than Bitcoin
+          confidence: 62,
+          reasoning: 'AI infrastructure revolution and GPU rendering network growth. Expected to outperform Bitcoin by 88.2% this year.',
+          type: 'crypto'
+        },
+        {
+          asset: 'Sui',
+          symbol: 'SUI',
+          predictedOutperformance: 75.3, // 75.3% better than Bitcoin
+          confidence: 58,
+          reasoning: 'Move ecosystem expansion and DeFi protocol adoption. Expected to outperform Bitcoin by 75.3% this year.',
+          type: 'crypto'
+        },
+        {
+          asset: 'MicroStrategy',
+          symbol: 'MSTR',
+          predictedOutperformance: 105.2, // 105.2% better than Bitcoin
           confidence: 60,
-          reasoning: 'Smart contract platform becoming the foundation for Web3 applications. Expected to outperform Bitcoin by 85.2% this year.',
-          type: 'crypto'
-        },
-        {
-          asset: 'Coinbase',
-          symbol: 'COIN',
-          predictedOutperformance: 95.3, // 95.3% better than Bitcoin
-          confidence: 55,
-          reasoning: 'Leading crypto exchange benefiting from institutional adoption and regulatory clarity. Expected to outperform Bitcoin by 95.3% this year.',
+          reasoning: 'Bitcoin treasury strategy and institutional adoption. Expected to outperform Bitcoin by 105.2% this year.',
           type: 'stock'
-        },
-        {
-          asset: 'Solana',
-          symbol: 'SOL',
-          predictedOutperformance: 120.7, // 120.7% better than Bitcoin
-          confidence: 45,
-          reasoning: 'Scalability solutions critical for mass adoption of blockchain applications. Expected to outperform Bitcoin by 120.7% this year.',
-          type: 'crypto'
         }
       ],
     marketSentiment: 'bullish',

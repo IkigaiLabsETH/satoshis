@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'daily';
     
-    // Define coins to track
-    const coins = ['bitcoin', 'ethereum', 'solana', 'ripple', 'cardano', 'avalanche', 'polygon', 'chainlink'];
+    // Define coins to track - focusing on crypto page assets
+    const coins = ['bitcoin', 'hyperliquid', 'render-token', 'sui', 'ethereum', 'solana', 'ripple', 'cardano', 'avalanche', 'polygon', 'chainlink', 'aave', 'injective-protocol', 'sei-network'];
     
     // Fetch data from CoinGecko
     const response = await fetch(
