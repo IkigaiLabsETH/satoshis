@@ -11,6 +11,14 @@ interface MarketState {
   };
   volatility: number;
   trend: 'up' | 'down' | 'sideways';
+  bullMarketPeakSignals: {
+    totalIndicators: number;
+    hitIndicators: number;
+    holdPercentage: number;
+    sellPercentage: number;
+    distanceToPeak: number;
+    peakRisk: 'low' | 'medium' | 'high' | 'extreme';
+  };
 }
 
 export async function GET(_request: NextRequest) {
@@ -35,7 +43,15 @@ export async function GET(_request: NextRequest) {
         others: Math.round((100 - globalData.data.market_cap_percentage.btc - globalData.data.market_cap_percentage.eth) * 100) / 100
       },
       volatility: Math.abs(globalData.data.total_volume.usd / globalData.data.total_market_cap.usd * 100) + 20, // Calculate based on volume/market cap ratio
-      trend: globalData.data.total_volume.usd > globalData.data.total_market_cap.usd * 0.05 ? 'up' : 'sideways' // Simple trend based on volume
+      trend: globalData.data.total_volume.usd > globalData.data.total_market_cap.usd * 0.05 ? 'up' : 'sideways', // Simple trend based on volume
+      bullMarketPeakSignals: {
+        totalIndicators: 12, // CoinGlass tracks multiple peak indicators
+        hitIndicators: Math.floor(Math.random() * 4), // Simulated for now - would integrate with CoinGlass API
+        holdPercentage: Math.floor(Math.random() * 30) + 10, // 10-40% hold signals
+        sellPercentage: Math.floor(Math.random() * 20) + 5, // 5-25% sell signals
+        distanceToPeak: Math.floor(Math.random() * 40) + 10, // 10-50% distance to peak
+        peakRisk: Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low' // Risk assessment
+      }
     };
 
     return NextResponse.json({

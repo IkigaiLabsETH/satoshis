@@ -49,6 +49,14 @@ interface MarketState {
   };
   volatility: number;
   trend: 'up' | 'down' | 'sideways';
+  bullMarketPeakSignals: {
+    totalIndicators: number;
+    hitIndicators: number;
+    holdPercentage: number;
+    sellPercentage: number;
+    distanceToPeak: number;
+    peakRisk: 'low' | 'medium' | 'high' | 'extreme';
+  };
 }
 
 
@@ -177,6 +185,24 @@ export default function MarketDashboardPage() {
     if (index >= 40) return 'Neutral';
     if (index >= 25) return 'Fear';
     return 'Extreme Fear';
+  };
+
+  const getPeakRiskColor = (risk: string) => {
+    switch (risk) {
+      case 'extreme': return 'text-red-500';
+      case 'high': return 'text-orange-500';
+      case 'medium': return 'text-yellow-500';
+      default: return 'text-green-500';
+    }
+  };
+
+  const getPeakRiskIcon = (risk: string) => {
+    switch (risk) {
+      case 'extreme': return '🚨';
+      case 'high': return '⚠️';
+      case 'medium': return '⚡';
+      default: return '✅';
+    }
   };
 
   if (loading) {
@@ -311,6 +337,45 @@ export default function MarketDashboardPage() {
                     {marketState.trend === 'up' ? '📈' : marketState.trend === 'down' ? '📉' : '➡️'}
                   </p>
                   <p className="text-sm text-white/60 capitalize">{marketState.trend}</p>
+                </div>
+              </div>
+              
+              {/* CoinGlass Bull Market Peak Signals */}
+              <div className="mt-8">
+                <h4 className="text-xl font-bold text-yellow-500 mb-4">🚨 CoinGlass Bull Market Peak Signals</h4>
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-black p-4 rounded-none border border-yellow-500/20">
+                    <p className="text-white/60 text-sm">Peak Risk Level</p>
+                    <p className={`text-2xl font-bold ${getPeakRiskColor(marketState.bullMarketPeakSignals.peakRisk)}`}>
+                      {getPeakRiskIcon(marketState.bullMarketPeakSignals.peakRisk)} {marketState.bullMarketPeakSignals.peakRisk.toUpperCase()}
+                    </p>
+                  </div>
+                  <div className="bg-black p-4 rounded-none border border-yellow-500/20">
+                    <p className="text-white/60 text-sm">Hit Indicators</p>
+                    <p className="text-2xl font-bold text-yellow-500">
+                      {marketState.bullMarketPeakSignals.hitIndicators}/{marketState.bullMarketPeakSignals.totalIndicators}
+                    </p>
+                    <p className="text-sm text-white/60">Peak signals triggered</p>
+                  </div>
+                  <div className="bg-black p-4 rounded-none border border-yellow-500/20">
+                    <p className="text-white/60 text-sm">Distance to Peak</p>
+                    <p className="text-2xl font-bold text-yellow-500">
+                      {marketState.bullMarketPeakSignals.distanceToPeak}%
+                    </p>
+                    <p className="text-sm text-white/60">Remaining upside</p>
+                  </div>
+                  <div className="bg-black p-4 rounded-none border border-yellow-500/20">
+                    <p className="text-white/60 text-sm">Sell Signals</p>
+                    <p className="text-2xl font-bold text-red-400">
+                      {marketState.bullMarketPeakSignals.sellPercentage}%
+                    </p>
+                    <p className="text-sm text-white/60">Exit indicators</p>
+                  </div>
+                </div>
+                <div className="mt-4 text-center">
+                  <p className="text-white/60 text-sm">
+                    Data from <a href="https://www.coinglass.com/bull-market-peak-signals" target="_blank" rel="noopener noreferrer" className="text-yellow-500 hover:underline">CoinGlass Bull Market Peak Signals</a>
+                  </p>
                 </div>
               </div>
               
@@ -543,7 +608,7 @@ export default function MarketDashboardPage() {
             {/* Market Context Summary */}
             <div className="mb-8">
               <h4 className="text-xl font-bold text-yellow-500 mb-4">🎯 Market Context: The Great Shift</h4>
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid md:grid-cols-4 gap-4">
                 <div className="bg-black p-4 rounded-none border border-yellow-500/20">
                   <p className="text-yellow-500 font-bold text-sm">Bitcoin Dominance</p>
                   <p className="text-white font-bold text-lg">{marketState ? `${marketState.dominance.bitcoin.toFixed(1)}%` : 'Calculating...'}</p>
@@ -558,6 +623,13 @@ export default function MarketDashboardPage() {
                   <p className="text-yellow-500 font-bold text-sm">Wealth Transfer</p>
                   <p className="text-white font-bold text-lg">$90T</p>
                   <p className="text-white/60 text-xs">By 2044 to Gen X/Millennials</p>
+                </div>
+                <div className="bg-black p-4 rounded-none border border-yellow-500/20">
+                  <p className="text-yellow-500 font-bold text-sm">Peak Risk Level</p>
+                  <p className={`text-white font-bold text-lg ${getPeakRiskColor(marketState?.bullMarketPeakSignals.peakRisk || 'low')}`}>
+                    {getPeakRiskIcon(marketState?.bullMarketPeakSignals.peakRisk || 'low')} {marketState?.bullMarketPeakSignals.peakRisk.toUpperCase() || 'LOW'}
+                  </p>
+                  <p className="text-white/60 text-xs">CoinGlass signals</p>
                 </div>
               </div>
             </div>

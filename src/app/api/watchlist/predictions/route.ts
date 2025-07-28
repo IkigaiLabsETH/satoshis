@@ -436,6 +436,7 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     marketSentiment: 'bullish',
     keyEvents: [
       `2Y MA x5 Exit Signal: ${isNearExitSignal ? '⚠️ APPROACHING EXIT SIGNAL' : '✅ Clear of exit signal'} - ${distanceToExitSignal.toFixed(1)}% from exit level`,
+      'CoinGlass Peak Signals: Monitoring bull market peak indicators for exit timing',
       'Generational Wealth Transfer: $90T moving to Gen X/Millennials by 2044, 49% of Millennials comfortable with crypto',
       'Exponential Age: Growth stocks trade off Metcalfe\'s Law, not mean reversion - Bitcoin to $1M+',
       'Bitcoin halving progress: 28% mark reached, historical pattern suggests Q4 2025-Q1 2026 peak',
@@ -443,6 +444,7 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     ],
     riskFactors: [
       `2Y MA x5 Exit Signal Risk: ${isNearExitSignal ? 'HIGH - Exit signal approaching, consider TWAP strategy' : 'LOW - Clear of exit signal'}`,
+      'CoinGlass Peak Signal Risk: Bull market peak indicators may trigger mass selling',
       'Generational Shift Risk: Millennials reshaping markets with different valuation models',
       'Exponential Age Risk: Traditional mean-reversion models may not apply to Bitcoin',
       'Macro shock: Aggressive rate hikes or credit crunch could impact crypto markets',
