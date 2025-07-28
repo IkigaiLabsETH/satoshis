@@ -37,14 +37,12 @@ export default function WatchlistPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+    useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [predictionsRes, marketStateRes] = await Promise.all([
-          fetch('/api/watchlist/predictions'),
-          fetch('/api/watchlist/market-state')
-        ]);
+        const predictionsRes = await fetch('/api/watchlist/predictions');
+        const marketStateRes = await fetch('/api/watchlist/market-state');
 
         if (predictionsRes.ok && marketStateRes.ok) {
           const [predictionsData, marketStateData] = await Promise.all([
@@ -54,16 +52,22 @@ export default function WatchlistPage() {
 
           if (predictionsData.success) {
             setPredictions(predictionsData.data);
+          } else {
+            setError(`Predictions failed: ${predictionsData.error}`);
           }
+          
           if (marketStateData.success) {
             setMarketState(marketStateData.data);
+          } else {
+            setError(`Market state failed: ${marketStateData.error}`);
           }
         } else {
-          setError('Failed to fetch market data');
+          const errorMsg = `API Error: Predictions ${predictionsRes.status}, Market State ${marketStateRes.status}`;
+          setError(errorMsg);
         }
-              } catch {
-          setError('Error loading market data');
-        } finally {
+      } catch {
+        setError('Error loading market data');
+      } finally {
         setLoading(false);
       }
     };
@@ -88,7 +92,20 @@ export default function WatchlistPage() {
     return (
       <div className="min-h-screen bg-black text-white p-8">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center text-red-400">{error}</div>
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-yellow-500 mb-2">GROK420 AI Market Analysis</h1>
+            <p className="text-white/60">AI-powered predictions for assets that can outperform Bitcoin</p>
+          </div>
+          <div className="bg-red-500/10 border border-red-500/20 p-6 rounded">
+            <h2 className="text-xl font-bold text-red-400 mb-4">Error Loading Data</h2>
+            <p className="text-red-300 mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="bg-yellow-500 text-black px-4 py-2 rounded font-bold hover:bg-yellow-400"
+            >
+              Retry
+            </button>
+          </div>
         </div>
       </div>
     );

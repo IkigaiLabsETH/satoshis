@@ -348,6 +348,8 @@ const createFallbackPrediction = (timeframe: string, currentBtcPrice: number, bt
   };
 };
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(_request: NextRequest) {
   try {
     const predictions = await generatePredictions();

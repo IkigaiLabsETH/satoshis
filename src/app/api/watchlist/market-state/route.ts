@@ -185,6 +185,8 @@ const createFallbackMarketState = (globalData: GlobalMarketData): MarketState =>
   };
 };
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(_request: NextRequest) {
   try {
     // Fetch global market data from CoinGecko

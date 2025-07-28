@@ -277,6 +277,8 @@ Make the insights relevant, timely, and impactful for crypto market participants
   }
 };
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(_request: NextRequest) {
   try {
     const newsItems: RawNewsItem[] = [];
