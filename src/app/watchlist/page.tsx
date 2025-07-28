@@ -220,15 +220,37 @@ export default function MarketDashboardPage() {
             <p className="uppercase tracking-[0.4em] text-yellow-500/90 text-sm mb-4 font-light font-satoshi">AI-Powered Market Analysis • Grok 4 Predictions • Real-Time Insights</p>
             <h1 className="text-center">
               <span className="text-6xl md:text-8xl font-bold text-yellow-500 tracking-tight [text-shadow:_0_1px_20px_rgba(234,179,8,0.3)] font-satoshi">
-                Market Dashboard
+                North Star
               </span>
             </h1>
             <div className="flex items-center justify-center mt-6">
               <div className="h-px w-24 bg-yellow-500/30"></div>
-              <p className="mx-6 text-lg text-white/70 font-light italic font-satoshi">Grok 4 AI Market Predictions & Analysis</p>
+              <p className="mx-6 text-lg text-white/70 font-light italic font-satoshi">Your Daily Market Compass • AI-Powered Predictions</p>
               <div className="h-px w-24 bg-yellow-500/30"></div>
             </div>
             
+            {/* Quick Summary */}
+            <div className="bg-black/20 p-6 rounded-none border border-yellow-500/30 mt-8">
+              <div className="grid md:grid-cols-4 gap-4 text-center">
+                <div>
+                  <p className="text-yellow-500 font-bold text-lg">📊 Market State</p>
+                  <p className="text-white/70 text-sm">Current overview</p>
+                </div>
+                <div>
+                  <p className="text-yellow-500 font-bold text-lg">₿ Bitcoin</p>
+                  <p className="text-white/70 text-sm">Price predictions</p>
+                </div>
+                <div>
+                  <p className="text-yellow-500 font-bold text-lg">🚀 Altcoins</p>
+                  <p className="text-white/70 text-sm">Outperformance picks</p>
+                </div>
+                <div>
+                  <p className="text-yellow-500 font-bold text-lg">📈 Stocks</p>
+                  <p className="text-white/70 text-sm">Crypto-related picks</p>
+                </div>
+              </div>
+            </div>
+
             {/* Refresh Controls */}
             <div className="flex items-center justify-center gap-4 mt-8">
               <Button
@@ -258,11 +280,11 @@ export default function MarketDashboardPage() {
             </div>
           </div>
 
-          {/* Current Market State */}
+          {/* Today's Market Overview */}
           {marketState && (
             <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
               <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
-                Current Market State
+                📊 Today&apos;s Market Overview
               </h3>
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="text-center">
@@ -381,7 +403,7 @@ export default function MarketDashboardPage() {
           {/* AI Predictions */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
             <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
-              Grok 4 AI Predictions
+              🎯 AI Predictions: Bitcoin, Altcoins & Stocks
             </h3>
             
             {/* Timeframe Selector */}
@@ -396,7 +418,10 @@ export default function MarketDashboardPage() {
                       : 'bg-transparent text-white border-2 border-yellow-500 hover:bg-yellow-500 hover:text-black'
                   }`}
                 >
-                  Next {timeframe.charAt(0).toUpperCase() + timeframe.slice(1)}
+                  {timeframe === 'day' ? '📅 Next Day' : 
+                   timeframe === 'week' ? '📊 Next Week' : 
+                   timeframe === 'month' ? '📈 Next Month' : 
+                   '🎯 Next Year'}
                 </Button>
               ))}
             </div>
@@ -405,7 +430,7 @@ export default function MarketDashboardPage() {
               <div className="space-y-8">
                 {/* Bitcoin Prediction */}
                 <div className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-                  <h4 className="text-xl font-bold text-yellow-500 mb-4">Bitcoin Prediction</h4>
+                  <h4 className="text-xl font-bold text-yellow-500 mb-4">₿ Bitcoin Prediction</h4>
                   <div className="grid md:grid-cols-3 gap-6">
                     <div className="text-center">
                       <p className="text-white/60 text-sm mb-2">Predicted Price</p>
@@ -431,7 +456,7 @@ export default function MarketDashboardPage() {
 
                 {/* Top Performers Prediction */}
                 <div>
-                  <h4 className="text-xl font-bold text-yellow-500 mb-4">Assets Predicted to Outperform Bitcoin</h4>
+                  <h4 className="text-xl font-bold text-yellow-500 mb-4">🚀 Assets Predicted to Outperform Bitcoin</h4>
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {currentPrediction.topPerformers.map((performer, index) => (
                       <Card key={index} className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
@@ -467,7 +492,7 @@ export default function MarketDashboardPage() {
                 {/* Market Sentiment & Events */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-                    <h4 className="text-xl font-bold text-yellow-500 mb-4">Market Sentiment</h4>
+                    <h4 className="text-xl font-bold text-yellow-500 mb-4">📊 Market Sentiment</h4>
                     <div className="flex items-center gap-4 mb-4">
                       <span className="text-4xl">{getSentimentIcon(currentPrediction.marketSentiment)}</span>
                       <span className={`text-2xl font-bold ${getSentimentColor(currentPrediction.marketSentiment)}`}>
@@ -478,7 +503,7 @@ export default function MarketDashboardPage() {
                   </div>
 
                   <div className="bg-black p-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-                    <h4 className="text-xl font-bold text-yellow-500 mb-4">Key Events to Watch</h4>
+                    <h4 className="text-xl font-bold text-yellow-500 mb-4">📅 Key Events to Watch</h4>
                     <ul className="space-y-2">
                       {currentPrediction.keyEvents.map((event, index) => (
                         <li key={index} className="text-white/80 text-sm flex items-start gap-2">
@@ -492,7 +517,7 @@ export default function MarketDashboardPage() {
 
                 {/* Risk Factors */}
                 <div className="bg-black p-6 rounded-none border-2 border-red-500 shadow-[5px_5px_0px_0px_rgba(239,68,68,1)]">
-                  <h4 className="text-xl font-bold text-red-400 mb-4">Risk Factors</h4>
+                  <h4 className="text-xl font-bold text-red-400 mb-4">⚠️ Risk Factors</h4>
                   <ul className="space-y-2">
                     {currentPrediction.riskFactors.map((risk, index) => (
                       <li key={index} className="text-white/80 text-sm flex items-start gap-2">
@@ -511,7 +536,7 @@ export default function MarketDashboardPage() {
           {/* Live Market Data */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
             <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
-              Live Market Data
+              📈 Live Market Data
             </h3>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
