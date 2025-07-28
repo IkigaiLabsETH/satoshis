@@ -9,6 +9,26 @@ interface NewsItem {
   sentiment?: 'positive' | 'negative' | 'neutral';
 }
 
+interface CoinGeckoNewsItem {
+  title: string;
+  description: string;
+  url: string;
+  published_at: number;
+}
+
+interface CryptoPanicNewsItem {
+  title: string;
+  metadata?: {
+    description: string;
+  };
+  url: string;
+  published_at?: string;
+  votes?: {
+    positive: number;
+    negative: number;
+  };
+}
+
 export async function GET(_request: NextRequest) {
   try {
     const newsItems: NewsItem[] = [];
@@ -88,7 +108,7 @@ export async function GET(_request: NextRequest) {
       if (coingeckoResponse.ok) {
         const coingeckoData = await coingeckoResponse.json();
         if (coingeckoData.data && Array.isArray(coingeckoData.data)) {
-          coingeckoData.data.slice(0, 3).forEach((item: any) => {
+          coingeckoData.data.slice(0, 3).forEach((item: CoinGeckoNewsItem) => {
             newsItems.push({
               title: item.title || '',
               description: item.description || '',
@@ -112,15 +132,15 @@ export async function GET(_request: NextRequest) {
         if (cryptoPanicResponse.ok) {
           const cryptoPanicData = await cryptoPanicResponse.json();
           if (cryptoPanicData.results && Array.isArray(cryptoPanicData.results)) {
-            cryptoPanicData.results.slice(0, 3).forEach((item: any) => {
+            cryptoPanicData.results.slice(0, 3).forEach((item: CryptoPanicNewsItem) => {
               newsItems.push({
                 title: item.title || '',
                 description: item.metadata?.description || '',
                 url: item.url || '',
                 source: 'CryptoPanic',
                 publishedAt: item.published_at || new Date().toISOString(),
-                sentiment: item.votes?.positive > item.votes?.negative ? 'positive' : 
-                          item.votes?.negative > item.votes?.positive ? 'negative' : 'neutral'
+                sentiment: (item.votes?.positive || 0) > (item.votes?.negative || 0) ? 'positive' : 
+                          (item.votes?.negative || 0) > (item.votes?.positive || 0) ? 'negative' : 'neutral'
               });
             });
           }
