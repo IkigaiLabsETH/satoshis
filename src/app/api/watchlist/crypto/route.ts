@@ -22,6 +22,28 @@ interface CryptoData {
   image?: string;
 }
 
+interface CoinGeckoCoin {
+  id: string;
+  symbol: string;
+  name: string;
+  current_price: number;
+  market_cap: number;
+  total_volume: number;
+  price_change_percentage_24h: number | null;
+  price_change_percentage_7d: number | null;
+  price_change_percentage_30d: number | null;
+  high_24h: number | null;
+  low_24h: number | null;
+  circulating_supply: number | null;
+  total_supply: number | null;
+  max_supply: number | null;
+  ath: number | null;
+  ath_change_percentage: number | null;
+  atl: number | null;
+  atl_change_percentage: number | null;
+  image: string | null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -42,7 +64,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     
     // Transform data to match our interface
-    const cryptoData: CryptoData[] = data.map((coin: any) => ({
+    const cryptoData: CryptoData[] = data.map((coin: CoinGeckoCoin) => ({
       id: coin.id,
       symbol: coin.symbol,
       name: coin.name,
