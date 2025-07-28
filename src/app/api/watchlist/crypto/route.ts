@@ -3,11 +3,45 @@ import { NextRequest, NextResponse } from 'next/server';
 interface CryptoData {
   id: string;
   symbol: string;
+  name: string;
   current_price: number;
   market_cap: number;
   total_volume: number;
   price_change_percentage_24h: number;
+  price_change_percentage_7d?: number;
+  price_change_percentage_30d?: number;
+  high_24h?: number;
+  low_24h?: number;
+  circulating_supply?: number;
+  total_supply?: number;
+  max_supply?: number;
+  ath?: number;
+  ath_change_percentage?: number;
+  atl?: number;
+  atl_change_percentage?: number;
   image?: string;
+}
+
+interface CoinGeckoCoin {
+  id: string;
+  symbol: string;
+  name: string;
+  current_price: number;
+  market_cap: number;
+  total_volume: number;
+  price_change_percentage_24h: number | null;
+  price_change_percentage_7d: number | null;
+  price_change_percentage_30d: number | null;
+  high_24h: number | null;
+  low_24h: number | null;
+  circulating_supply: number | null;
+  total_supply: number | null;
+  max_supply: number | null;
+  ath: number | null;
+  ath_change_percentage: number | null;
+  atl: number | null;
+  atl_change_percentage: number | null;
+  image: string | null;
 }
 
 export async function GET(request: NextRequest) {
@@ -30,13 +64,25 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     
     // Transform data to match our interface
-    const cryptoData: CryptoData[] = data.map((coin: { id: string; symbol: string; current_price: number; market_cap: number; total_volume: number; price_change_percentage_24h: number; image?: string }) => ({
+    const cryptoData: CryptoData[] = data.map((coin: CoinGeckoCoin) => ({
       id: coin.id,
       symbol: coin.symbol,
+      name: coin.name,
       current_price: coin.current_price,
       market_cap: coin.market_cap,
       total_volume: coin.total_volume,
       price_change_percentage_24h: coin.price_change_percentage_24h || 0,
+      price_change_percentage_7d: coin.price_change_percentage_7d,
+      price_change_percentage_30d: coin.price_change_percentage_30d,
+      high_24h: coin.high_24h,
+      low_24h: coin.low_24h,
+      circulating_supply: coin.circulating_supply,
+      total_supply: coin.total_supply,
+      max_supply: coin.max_supply,
+      ath: coin.ath,
+      ath_change_percentage: coin.ath_change_percentage,
+      atl: coin.atl,
+      atl_change_percentage: coin.atl_change_percentage,
       image: coin.image
     }));
 
@@ -48,45 +94,10 @@ export async function GET(request: NextRequest) {
     });
 
   } catch {
-    // Error handling for crypto data fetching
-    
-    // Return mock data if API fails
-    const mockData: CryptoData[] = [
-      {
-        id: 'bitcoin',
-        symbol: 'btc',
-        current_price: 68000,
-        market_cap: 1300000000000,
-        total_volume: 25000000000,
-        price_change_percentage_24h: 2.5,
-        image: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png'
-      },
-      {
-        id: 'ethereum',
-        symbol: 'eth',
-        current_price: 3500,
-        market_cap: 420000000000,
-        total_volume: 15000000000,
-        price_change_percentage_24h: 3.2,
-        image: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png'
-      },
-      {
-        id: 'solana',
-        symbol: 'sol',
-        current_price: 180,
-        market_cap: 80000000000,
-        total_volume: 3000000000,
-        price_change_percentage_24h: 4.1,
-        image: 'https://assets.coingecko.com/coins/images/4128/large/solana.png'
-      }
-    ];
-
     return NextResponse.json({
-      success: true,
-      data: mockData,
-      period: 'daily',
-      timestamp: new Date().toISOString(),
-      note: 'Using mock data due to API error'
-    });
+      success: false,
+      error: 'Failed to fetch crypto data',
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 } 
