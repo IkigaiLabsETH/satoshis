@@ -28,14 +28,14 @@ export async function GET(_request: NextRequest) {
     const marketState: MarketState = {
       totalMarketCap: globalData.data.total_market_cap.usd,
       totalVolume24h: globalData.data.total_volume.usd,
-      fearGreedIndex: Math.floor(Math.random() * 40) + 30, // Simulated fear/greed index (30-70)
+      fearGreedIndex: Math.floor(Math.random() * 40) + 30, // Simulated fear/greed index (30-70) - would use real API if available
       dominance: {
         bitcoin: globalData.data.market_cap_percentage.btc,
         ethereum: globalData.data.market_cap_percentage.eth,
         others: Math.round((100 - globalData.data.market_cap_percentage.btc - globalData.data.market_cap_percentage.eth) * 100) / 100
       },
-      volatility: Math.random() * 50 + 20, // Simulated volatility (20-70)
-      trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'sideways'
+      volatility: Math.random() * 50 + 20, // Simulated volatility (20-70) - would use real API if available
+      trend: globalData.data.total_volume.usd > globalData.data.total_market_cap.usd * 0.05 ? 'up' : 'sideways' // Simple trend based on volume
     };
 
     return NextResponse.json({
@@ -45,27 +45,10 @@ export async function GET(_request: NextRequest) {
     });
 
   } catch {
-    // Error handling for market state fetching
-    
-    // Return mock market state if API fails
-    const mockMarketState: MarketState = {
-      totalMarketCap: 2800000000000, // $2.8T (more current)
-      totalVolume24h: 95000000000, // $95B
-      fearGreedIndex: 72, // Greed (current market sentiment)
-      dominance: {
-        bitcoin: 58.8,
-        ethereum: 11.7,
-        others: 29.5
-      },
-      volatility: 28.5,
-      trend: 'up'
-    };
-
     return NextResponse.json({
-      success: true,
-      data: mockMarketState,
-      timestamp: new Date().toISOString(),
-      note: 'Using mock market state due to API error'
-    });
+      success: false,
+      error: 'Failed to fetch market state data',
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 } 
