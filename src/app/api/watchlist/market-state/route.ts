@@ -1,37 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Grok4Service } from '../../grok4/grok4';
-
-interface MarketState {
-  totalMarketCap: number;
-  totalVolume24h: number;
-  fearGreedIndex: number;
-  dominance: {
-    bitcoin: number;
-    ethereum: number;
-    others: number;
-  };
-  volatility: number;
-  trend: 'up' | 'down' | 'sideways';
-  bullMarketPeakSignals: {
-    totalIndicators: number;
-    hitIndicators: number;
-    holdPercentage: number;
-    sellPercentage: number;
-    distanceToPeak: number;
-    peakRisk: 'low' | 'medium' | 'high' | 'extreme';
-  };
-}
-
-interface GlobalMarketData {
-  data: {
-    total_market_cap: { usd: number };
-    total_volume: { usd: number };
-    market_cap_percentage: { btc: number; eth: number };
-    market_cap_change_percentage_24h_usd?: number;
-    active_cryptocurrencies: number;
-    market_cap_rank: number;
-  };
-}
+import { MarketDataService } from '@/services/market-data';
+import { MarketState, GlobalMarketData } from '@/types/watchlist';
+import { marketDataCache } from '@/utils/cache';
+import { measureApiResponse } from '@/utils/performance';
 
 // Real Grok 4 AI market state analysis
 const analyzeMarketState = async (globalData: GlobalMarketData): Promise<MarketState> => {
@@ -130,30 +102,18 @@ Be realistic and data-driven in your assessment.`;
         
         // Validate and structure the market state
         const marketState: MarketState = {
-          totalMarketCap: marketContext.totalMarketCap,
-          totalVolume24h: marketContext.totalVolume,
           fearGreedIndex: analysisData.fearGreedIndex || Math.floor(Math.abs(marketContext.volumeChange24h * 1000) % 40) + 30,
-          dominance: {
-            bitcoin: marketContext.btcDominance,
-            ethereum: marketContext.ethDominance,
-            others: Math.round((100 - marketContext.btcDominance - marketContext.ethDominance) * 100) / 100
-          },
-          volatility: analysisData.volatility || Math.abs(marketContext.volumeChange24h * 100) + 20,
           trend: analysisData.trend || (marketContext.volumeChange24h > 0.05 ? 'up' : 'sideways'),
+          volatility: analysisData.volatility || Math.abs(marketContext.volumeChange24h * 100) + 20,
           bullMarketPeakSignals: {
-            totalIndicators: analysisData.bullMarketPeakSignals?.totalIndicators || 12,
-            hitIndicators: analysisData.bullMarketPeakSignals?.hitIndicators || Math.floor(Math.random() * 4),
-            holdPercentage: analysisData.bullMarketPeakSignals?.holdPercentage || Math.floor(Math.random() * 30) + 10,
-            sellPercentage: analysisData.bullMarketPeakSignals?.sellPercentage || Math.floor(Math.random() * 20) + 5,
-            distanceToPeak: analysisData.bullMarketPeakSignals?.distanceToPeak || Math.floor(Math.random() * 40) + 10,
             peakRisk: analysisData.bullMarketPeakSignals?.peakRisk || (Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low')
           }
         };
         
         return marketState;
-              } catch {
-          return createFallbackMarketState(globalData);
-        }
+      } catch {
+        return createFallbackMarketState(globalData);
+      }
     } else {
       // Fallback if no JSON found
       return createFallbackMarketState(globalData);
@@ -169,42 +129,42 @@ const createFallbackMarketState = (globalData: GlobalMarketData): MarketState =>
   const volumeRatio = globalData.data.total_volume.usd / globalData.data.total_market_cap.usd;
   
   return {
-    totalMarketCap: globalData.data.total_market_cap.usd,
-    totalVolume24h: globalData.data.total_volume.usd,
     fearGreedIndex: Math.floor(Math.abs(volumeRatio * 1000) % 40) + 30,
-    dominance: {
-      bitcoin: globalData.data.market_cap_percentage.btc,
-      ethereum: globalData.data.market_cap_percentage.eth,
-      others: Math.round((100 - globalData.data.market_cap_percentage.btc - globalData.data.market_cap_percentage.eth) * 100) / 100
-    },
-    volatility: Math.abs(volumeRatio * 100) + 20,
     trend: volumeRatio > 0.05 ? 'up' : 'sideways',
+    volatility: Math.abs(volumeRatio * 100) + 20,
     bullMarketPeakSignals: {
-      totalIndicators: 12,
-      hitIndicators: Math.floor(Math.random() * 4),
-      holdPercentage: Math.floor(Math.random() * 30) + 10,
-      sellPercentage: Math.floor(Math.random() * 20) + 5,
-      distanceToPeak: Math.floor(Math.random() * 40) + 10,
       peakRisk: Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low'
     }
   };
+};
+
+const getMarketState = async (): Promise<MarketState> => {
+  const cacheKey = 'market_state';
+  const cached = marketDataCache.get(cacheKey);
+  if (cached) {
+    return cached as unknown as MarketState;
+  }
+
+  const marketState = await measureApiResponse(
+    'market_state_analysis',
+    async () => {
+      const globalData = await MarketDataService.getGlobalMarketData();
+      if (!globalData) {
+        throw new Error('Failed to fetch global market data');
+      }
+      return await analyzeMarketState(globalData);
+    }
+  );
+
+  marketDataCache.set(cacheKey, marketState as unknown as Record<string, unknown>);
+  return marketState;
 };
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(_request: NextRequest) {
   try {
-    // Fetch global market data from CoinGecko
-    const response = await fetch('https://api.coingecko.com/api/v3/global');
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch global market data');
-    }
-    
-    const globalData = await response.json();
-    
-    // Use Grok 4 for sophisticated market analysis
-    const marketState = await analyzeMarketState(globalData);
+    const marketState = await getMarketState();
     
     return NextResponse.json({
       success: true,

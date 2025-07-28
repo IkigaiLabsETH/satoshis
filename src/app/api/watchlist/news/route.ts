@@ -1,36 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Grok4Service } from '../../grok4/grok4';
-
-interface CoinGeckoNewsItem {
-  title: string;
-  description: string;
-  url: string;
-  published_at: string;
-  source: string;
-}
-
-interface CryptoPanicNewsItem {
-  title: string;
-  published_at: string;
-  url: string;
-  source: string;
-  votes: {
-    positive: number;
-    negative: number;
-  };
-}
-
-interface NewsItem {
-  title: string;
-  description: string;
-  url: string;
-  source: string;
-  publishedAt: string;
-  sentiment: 'positive' | 'negative' | 'neutral';
-  impact_score: number;
-  category: string;
-  keywords: string[];
-}
+import { MarketDataService } from '@/services/market-data';
+import { NewsData } from '@/types/watchlist';
+import { newsCache } from '@/utils/cache';
+import { measureApiResponse } from '@/utils/performance';
 
 interface RawNewsItem {
   title: string;
@@ -42,8 +15,8 @@ interface RawNewsItem {
 }
 
 // Real Grok 4 AI sentiment analysis and news categorization
-const analyzeNewsWithGrok4 = async (newsItems: RawNewsItem[]): Promise<NewsItem[]> => {
-  const enhancedNewsItems: NewsItem[] = [];
+const analyzeNewsWithGrok4 = async (newsItems: RawNewsItem[]): Promise<NewsData[]> => {
+  const enhancedNewsItems: NewsData[] = [];
 
   for (const item of newsItems.slice(0, 8)) { // Limit to 8 items for API efficiency
     try {
@@ -118,7 +91,7 @@ Be realistic and data-driven in your assessment.`;
           max_tokens: 800
         }),
         new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('News analysis timeout')), 2500) // 2.5 second timeout // 5 second timeout
+          setTimeout(() => reject(new Error('News analysis timeout')), 2500) // 2.5 second timeout
         )
       ]);
 
@@ -132,7 +105,7 @@ Be realistic and data-driven in your assessment.`;
           const analysisData = JSON.parse(jsonMatch[0]);
           
           // Validate and structure the news item
-          const enhancedItem: NewsItem = {
+          const enhancedItem: NewsData = {
             title: item.title,
             description: item.description || '',
             url: item.url,
@@ -164,7 +137,7 @@ Be realistic and data-driven in your assessment.`;
 };
 
 // Fallback news analysis when Grok 4 is unavailable
-const createFallbackNewsItem = (item: RawNewsItem): NewsItem => {
+const createFallbackNewsItem = (item: RawNewsItem): NewsData => {
   const title = item.title.toLowerCase();
   const description = (item.description || '').toLowerCase();
   
@@ -203,7 +176,7 @@ const createFallbackNewsItem = (item: RawNewsItem): NewsItem => {
 };
 
 // Generate market insights using Grok 4
-const generateMarketInsights = async (): Promise<NewsItem[]> => {
+const generateMarketInsights = async (): Promise<NewsData[]> => {
   try {
     const grok4Prompt = `You are GROK420, an expert AI market analyst. Generate 3 high-impact market insights based on current Bitcoin and cryptocurrency market conditions.
 
@@ -255,7 +228,7 @@ Make the insights relevant, timely, and impactful for crypto market participants
         max_tokens: 1000
       }),
       new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('Market insights timeout')), 2000) // 2 second timeout // 4 second timeout
+        setTimeout(() => reject(new Error('Market insights timeout')), 2000) // 2 second timeout
       )
     ]);
 
@@ -287,72 +260,69 @@ Make the insights relevant, timely, and impactful for crypto market participants
   }
 };
 
+const getNewsData = async (): Promise<NewsData[]> => {
+  const cacheKey = 'news_data';
+  const cached = newsCache.get(cacheKey);
+  if (cached) {
+    return cached as unknown as NewsData[];
+  }
+
+  const newsData = await measureApiResponse(
+    'news_data_fetch',
+    async () => {
+      const rawNews = await MarketDataService.getNewsData();
+      
+      // Convert to RawNewsItem format for Grok4 analysis
+      const rawNewsItems: RawNewsItem[] = rawNews.map(item => ({
+        title: item.title,
+        description: item.description,
+        url: item.url,
+        source: item.source,
+        publishedAt: item.publishedAt,
+        sentiment: item.sentiment
+      }));
+
+      // Generate market insights using Grok 4
+      const marketInsights = await generateMarketInsights();
+      rawNewsItems.push(...marketInsights.map(insight => ({
+        title: insight.title,
+        description: insight.description,
+        url: insight.url,
+        source: insight.source,
+        publishedAt: insight.publishedAt,
+        sentiment: insight.sentiment
+      })));
+
+      // Analyze all news items with Grok 4
+      const enhancedNewsItems = await analyzeNewsWithGrok4(rawNewsItems);
+
+      // Sort by impact score (highest first), then by publication date (newest first)
+      enhancedNewsItems.sort((a, b) => {
+        const aScore = a.impact_score || 5;
+        const bScore = b.impact_score || 5;
+        if (bScore !== aScore) {
+          return bScore - aScore;
+        }
+        return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+      });
+
+      return enhancedNewsItems.slice(0, 10); // Return top 10 items
+    }
+  );
+
+  newsCache.set(cacheKey, newsData as unknown as Record<string, unknown>);
+  return newsData;
+};
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(_request: NextRequest) {
   try {
-    const newsItems: RawNewsItem[] = [];
-
-    // Fetch CoinGecko news (limited to 3 for API efficiency)
-    try {
-      const coinGeckoResponse = await fetch('https://api.coingecko.com/api/v3/news?per_page=3');
-      if (coinGeckoResponse.ok) {
-        const coinGeckoData = await coinGeckoResponse.json();
-        coinGeckoData.data?.forEach((item: CoinGeckoNewsItem) => {
-          newsItems.push({
-            title: item.title,
-            description: item.description,
-            url: item.url,
-            source: item.source,
-            publishedAt: item.published_at
-          });
-        });
-      }
-    } catch {
-      // Ignore CoinGecko failures
-    }
-
-    // Fetch CryptoPanic news (limited to 2 for API efficiency)
-    try {
-      const cryptoPanicResponse = await fetch('https://cryptopanic.com/api/v1/posts/?auth_token=free&currencies=BTC&filter=hot');
-      if (cryptoPanicResponse.ok) {
-        const cryptoPanicData = await cryptoPanicResponse.json();
-        cryptoPanicData.results?.slice(0, 2).forEach((item: CryptoPanicNewsItem) => {
-          const sentiment = (item.votes?.positive || 0) > (item.votes?.negative || 0) ? 'positive' : 
-                           (item.votes?.negative || 0) > (item.votes?.positive || 0) ? 'negative' : 'neutral';
-          
-          newsItems.push({
-            title: item.title,
-            description: '',
-            url: item.url,
-            source: item.source,
-            publishedAt: item.published_at,
-            sentiment
-          });
-        });
-      }
-    } catch {
-      // Ignore CryptoPanic failures
-    }
-
-    // Generate market insights using Grok 4
-    const marketInsights = await generateMarketInsights();
-    newsItems.push(...marketInsights);
-
-    // Analyze all news items with Grok 4
-    const enhancedNewsItems = await analyzeNewsWithGrok4(newsItems);
-
-    // Sort by impact score (highest first), then by publication date (newest first)
-    enhancedNewsItems.sort((a, b) => {
-      if (b.impact_score !== a.impact_score) {
-        return b.impact_score - a.impact_score;
-      }
-      return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
-    });
+    const newsData = await getNewsData();
 
     return NextResponse.json({
       success: true,
-      data: enhancedNewsItems.slice(0, 10), // Return top 10 items
+      data: newsData,
       timestamp: new Date().toISOString(),
       source: 'Grok 4 AI News Analysis'
     });
