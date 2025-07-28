@@ -6,7 +6,7 @@ export const watchlistConfig: WatchlistConfig = {
     'hyperliquid', 'render-token', 'sui', 'penguin-karts', 'rekt', 'ena', 
     'pepe', 'shiba-inu', 'dogecoin', 'cardano', 'polkadot', 'chainlink', 
     'avalanche-2', 'polygon', 'cosmos', 'uniswap', 'aptos', 'optimism', 
-    'arbitrum', 'stacks', 'ordi', 'sei-network', 'celestia', 'immutable'
+    'arbitrum', 'stacks', 'ordi', 'sei-network', 'celestia', 'immutable-x'
   ],
   stockSymbols: [
     'MSTR', 'COIN', 'HOOD', 'CRCL', 'IREN', 'CORZ', 'CIFR', 'RIOT', 
