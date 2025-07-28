@@ -32,7 +32,7 @@ export async function GET(_request: NextRequest) {
       dominance: {
         bitcoin: globalData.data.market_cap_percentage.btc,
         ethereum: globalData.data.market_cap_percentage.eth,
-        others: 100 - globalData.data.market_cap_percentage.btc - globalData.data.market_cap_percentage.eth
+        others: Math.round((100 - globalData.data.market_cap_percentage.btc - globalData.data.market_cap_percentage.eth) * 100) / 100
       },
       volatility: Math.random() * 50 + 20, // Simulated volatility (20-70)
       trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'sideways'
@@ -53,9 +53,9 @@ export async function GET(_request: NextRequest) {
       totalVolume24h: 95000000000, // $95B
       fearGreedIndex: 72, // Greed (current market sentiment)
       dominance: {
-        bitcoin: 54.2,
-        ethereum: 17.8,
-        others: 28.0
+        bitcoin: 58.8,
+        ethereum: 11.7,
+        others: 29.5
       },
       volatility: 28.5,
       trend: 'up'

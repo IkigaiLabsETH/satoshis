@@ -266,7 +266,7 @@ export default function MarketDashboardPage() {
                     <p className="text-2xl font-bold text-yellow-500">{marketState.dominance.ethereum.toFixed(1)}%</p>
                   </div>
                   <div className="bg-black p-4 rounded-none border border-yellow-500/20">
-                    <p className="text-white/60 text-sm">Others</p>
+                    <p className="text-white/60 text-sm">Others (XRP, USDT, BNB, SOL, etc.)</p>
                     <p className="text-2xl font-bold text-yellow-500">{marketState.dominance.others.toFixed(1)}%</p>
                   </div>
                 </div>
