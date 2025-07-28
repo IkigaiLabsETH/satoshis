@@ -31,6 +31,7 @@ interface MarketPrediction {
     predictedOutperformance: number;
     confidence: number;
     reasoning: string;
+    type: 'crypto' | 'stock';
   }[];
   marketSentiment: 'bullish' | 'bearish' | 'neutral';
   keyEvents: string[];
@@ -338,7 +339,16 @@ export default function MarketDashboardPage() {
                               {performer.confidence}%
                             </span>
                           </div>
-                          <p className="text-white/60 font-satoshi text-sm">{performer.symbol}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-white/60 font-satoshi text-sm">{performer.symbol}</p>
+                            <span className={`text-xs px-2 py-1 rounded ${
+                              performer.type === 'stock' 
+                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
+                                : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                            }`}>
+                              {performer.type === 'stock' ? 'STOCK' : 'CRYPTO'}
+                            </span>
+                          </div>
                         </CardHeader>
                         <CardContent>
                           <p className={`text-2xl font-bold mb-2 ${getChangeColor(performer.predictedOutperformance)}`}>
