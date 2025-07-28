@@ -18,8 +18,6 @@ interface MarketPrediction {
     type: 'crypto' | 'stock';
   }[];
   marketSentiment: 'bullish' | 'bearish' | 'neutral';
-  keyEvents: string[];
-  riskFactors: string[];
 }
 
 interface MarketState {
@@ -246,37 +244,7 @@ export default function WatchlistPage() {
                 </div>
               </div>
 
-              {/* Key Events & Risk Factors */}
-              <div className="grid md:grid-cols-2 gap-8 mt-8">
-                <div className="bg-black/30 p-6 rounded-xl border border-yellow-500/20">
-                  <h5 className="text-white font-bold mb-4 text-lg flex items-center gap-2">
-                    <span className="text-yellow-500">📅</span>
-                    Key Events
-                  </h5>
-                  <ul className="space-y-3">
-                    {prediction.keyEvents.map((event, index) => (
-                      <li key={index} className="text-sm text-white/80 flex items-start gap-3">
-                        <span className="text-yellow-500 mt-1 text-lg">•</span>
-                        <span className="leading-relaxed">{event}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="bg-black/30 p-6 rounded-xl border border-red-500/20">
-                  <h5 className="text-white font-bold mb-4 text-lg flex items-center gap-2">
-                    <span className="text-red-400">⚠️</span>
-                    Risk Factors
-                  </h5>
-                  <ul className="space-y-3">
-                    {prediction.riskFactors.map((risk, index) => (
-                      <li key={index} className="text-sm text-white/80 flex items-start gap-3">
-                        <span className="text-red-400 mt-1 text-lg">⚠</span>
-                        <span className="leading-relaxed">{risk}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+
             </div>
           ))}
         </div>
