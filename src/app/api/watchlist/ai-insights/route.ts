@@ -1,23 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-interface CryptoData {
-  id: string;
-  symbol: string;
-  current_price: number;
-  market_cap: number;
-  total_volume: number;
-  price_change_percentage_24h: number;
-  image?: string;
-}
-
-interface StockData {
-  symbol: string;
-  current_price: number;
-  change_percent: number;
-  high: number;
-  low: number;
-  volume: number;
-}
+import { MarketDataService } from '@/services/market-data';
+import { CryptoData, StockData } from '@/types/watchlist';
+import { predictionCache } from '@/utils/cache';
+import { measureApiResponse } from '@/utils/performance';
 
 interface AIInsight {
   asset: string;
@@ -67,20 +52,20 @@ const generateAIInsights = (period: string, cryptoData: CryptoData[], stockData:
 
     // Add stock insights based on real performance
     const topStocks = stockData
-      .filter(stock => stock.change_percent > btcPriceChange)
-      .sort((a, b) => b.change_percent - a.change_percent)
+      .filter(stock => stock.dp > btcPriceChange)
+      .sort((a, b) => b.dp - a.dp)
       .slice(0, 2);
 
     topStocks.forEach(stock => {
-      const volumeRatio = stock.volume / (stock.current_price * 1000000);
-      const confidence = Math.min(80 + (stock.change_percent - btcPriceChange) * 3 + (volumeRatio * 10), 95);
+      const volumeRatio = stock.v / (stock.c * 1000000);
+      const confidence = Math.min(80 + (stock.dp - btcPriceChange) * 3 + (volumeRatio * 10), 95);
       
       insights.push({
         asset: stock.symbol,
         symbol: stock.symbol,
         confidence: Math.round(confidence),
-        reasoning: `Crypto-related stock outperforming Bitcoin with ${stock.change_percent.toFixed(2)}% gain vs ${btcPriceChange.toFixed(2)}%. Volume ratio: ${volumeRatio.toFixed(2)}, indicating ${volumeRatio > 1 ? 'strong' : 'moderate'} institutional interest. Market correlation with crypto sector showing positive momentum.`,
-        price_target: stock.current_price * (1 + ((stock.change_percent - btcPriceChange) / 100)),
+        reasoning: `Crypto-related stock outperforming Bitcoin with ${stock.dp.toFixed(2)}% gain vs ${btcPriceChange.toFixed(2)}%. Volume ratio: ${volumeRatio.toFixed(2)}, indicating ${volumeRatio > 1 ? 'strong' : 'moderate'} institutional interest. Market correlation with crypto sector showing positive momentum.`,
+        price_target: stock.c * (1 + ((stock.dp - btcPriceChange) / 100)),
         timeframe: '1-2 weeks'
       });
     });
@@ -131,31 +116,42 @@ const generateAIInsights = (period: string, cryptoData: CryptoData[], stockData:
   return insights;
 };
 
+const getAIInsights = async (period: string): Promise<AIInsight[]> => {
+  const cacheKey = `ai_insights_${period}`;
+  const cached = predictionCache.get(cacheKey);
+  if (cached) {
+    return cached as unknown as AIInsight[];
+  }
+
+  const insights = await measureApiResponse(
+    'ai_insights_generation',
+    async () => {
+      const [cryptoData, stockData] = await Promise.all([
+        MarketDataService.getCryptoData(),
+        MarketDataService.getStockData()
+      ]);
+      return generateAIInsights(period, cryptoData, stockData);
+    },
+    { period }
+  );
+
+  predictionCache.set(cacheKey, insights as unknown as Record<string, unknown>);
+  return insights;
+};
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'daily';
 
-    // Fetch crypto and stock data to generate insights
-    const cryptoResponse = await fetch(`${request.nextUrl.origin}/api/watchlist/crypto?period=${period}`);
-    const stockResponse = await fetch(`${request.nextUrl.origin}/api/watchlist/stocks?period=${period}`);
-
-    const cryptoData = await cryptoResponse.json();
-    const stockData = await stockResponse.json();
-
-    if (!cryptoData.success || !stockData.success) {
-      throw new Error('Failed to fetch market data for AI analysis');
-    }
-
-    // Generate AI insights based on real data
-    const insights = generateAIInsights(period, cryptoData.data, stockData.data);
+    const insights = await getAIInsights(period);
 
     return NextResponse.json({
       success: true,
       data: insights,
       period: period,
       timestamp: new Date().toISOString(),
-      note: 'AI insights generated using real market data analysis'
+      source: 'MarketDataService AI Analysis'
     });
 
   } catch {
