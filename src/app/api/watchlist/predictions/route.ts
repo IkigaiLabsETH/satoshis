@@ -53,8 +53,6 @@ interface MarketPrediction {
     type: 'crypto' | 'stock';
   }[];
   marketSentiment: 'bullish' | 'bearish' | 'neutral';
-  keyEvents: string[];
-  riskFactors: string[];
 }
 
 // Real Grok 4 AI prediction function using actual Grok 4 API
@@ -230,9 +228,7 @@ Provide a structured prediction for the next ${timeframe} in this exact JSON for
       "type": "<crypto_or_stock>"
     }
   ],
-  "marketSentiment": "<bullish_bearish_or_neutral>",
-  "keyEvents": ["<event1>", "<event2>", "<event3>"],
-  "riskFactors": ["<risk1>", "<risk2>", "<risk3>"]
+  "marketSentiment": "<bullish_bearish_or_neutral>"
 }
 
 Focus on:
@@ -262,7 +258,7 @@ Be realistic with predictions and provide detailed reasoning based on the data p
           max_tokens: 2000
         }),
         new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('Prediction timeout')), 4000) // 4 second timeout
+          setTimeout(() => reject(new Error('Prediction timeout')), 2000) // 2 second timeout
         )
       ]);
 
@@ -285,9 +281,7 @@ Be realistic with predictions and provide detailed reasoning based on the data p
               reasoning: predictionData.btcPrediction?.reasoning || 'Grok 4 analysis based on current market conditions'
             },
             topPerformers: predictionData.topPerformers?.slice(0, 6) || [],
-            marketSentiment: predictionData.marketSentiment || 'neutral',
-            keyEvents: predictionData.keyEvents || [],
-            riskFactors: predictionData.riskFactors || []
+            marketSentiment: predictionData.marketSentiment || 'neutral'
           };
           
           predictions.push(prediction);
@@ -347,9 +341,7 @@ const createFallbackPrediction = (timeframe: string, currentBtcPrice: number, bt
         type: 'crypto'
       }
     ],
-    marketSentiment: baseChange > 0 ? 'bullish' : baseChange < 0 ? 'bearish' : 'neutral',
-    keyEvents: ['Bitcoin halving progress', 'Institutional adoption continues', 'Market volatility expected'],
-    riskFactors: ['Macroeconomic uncertainty', 'Regulatory developments', 'Technical corrections possible']
+    marketSentiment: baseChange > 0 ? 'bullish' : baseChange < 0 ? 'bearish' : 'neutral'
   };
 };
 
