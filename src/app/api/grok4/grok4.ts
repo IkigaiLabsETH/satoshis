@@ -74,10 +74,10 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutM
 }
 
 export class Grok4Service {
-  static async chatCompletion(request: Grok4Request): Promise<ChatCompletion> {
+  static async chatCompletion(request: Grok4Request, retries = 1): Promise<ChatCompletion> {
     try {
-      // Reduced timeout to prevent long delays
-      const grok4Timeout = 15000; // 15 second timeout for faster fallback
+      // Much more aggressive timeout to prevent hanging
+      const grok4Timeout = 8000; // 8 second timeout for very fast fallback
       
       const completion = await Promise.race([
         client.chat.completions.create({
@@ -95,7 +95,16 @@ export class Grok4Service {
       
       return completion;
     } catch (error) {
-      logger.error("Grok4 API error:", error);
+      // Retry once with exponential backoff if it's a timeout
+      if (retries > 0 && error instanceof Error && error.message?.includes('timeout')) {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
+        return this.chatCompletion(request, retries - 1);
+      }
+      
+      // Don't log every timeout to reduce noise
+      if (error instanceof Error && !error.message?.includes('timeout')) {
+        logger.error("Grok4 API error:", error);
+      }
       throw new Error(`Grok4 API error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   }

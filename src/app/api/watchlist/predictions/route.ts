@@ -262,7 +262,7 @@ Be realistic with predictions and provide detailed reasoning based on the data p
           max_tokens: 2000
         }),
         new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('Prediction timeout')), 8000) // 8 second timeout
+          setTimeout(() => reject(new Error('Prediction timeout')), 4000) // 4 second timeout
         )
       ]);
 

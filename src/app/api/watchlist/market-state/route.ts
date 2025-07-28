@@ -115,7 +115,7 @@ Be realistic and data-driven in your assessment.`;
         max_tokens: 1500
       }),
       new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('Market analysis timeout')), 6000) // 6 second timeout
+        setTimeout(() => reject(new Error('Market analysis timeout')), 3000) // 3 second timeout
       )
     ]);
 

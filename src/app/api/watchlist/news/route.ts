@@ -118,7 +118,7 @@ Be realistic and data-driven in your assessment.`;
           max_tokens: 800
         }),
         new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('News analysis timeout')), 5000) // 5 second timeout
+          setTimeout(() => reject(new Error('News analysis timeout')), 2500) // 2.5 second timeout // 5 second timeout
         )
       ]);
 
@@ -255,7 +255,7 @@ Make the insights relevant, timely, and impactful for crypto market participants
         max_tokens: 1000
       }),
       new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('Market insights timeout')), 4000) // 4 second timeout
+        setTimeout(() => reject(new Error('Market insights timeout')), 2000) // 2 second timeout // 4 second timeout
       )
     ]);
 
