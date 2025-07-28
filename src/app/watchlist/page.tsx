@@ -51,14 +51,7 @@ interface MarketState {
   trend: 'up' | 'down' | 'sideways';
 }
 
-interface NewsItem {
-  title: string;
-  description: string;
-  url: string;
-  source: string;
-  publishedAt: string;
-  sentiment?: 'positive' | 'negative' | 'neutral';
-}
+
 
 export default function MarketDashboardPage() {
   const [loading, setLoading] = useState(true);
@@ -66,7 +59,6 @@ export default function MarketDashboardPage() {
   const [cryptoData, setCryptoData] = useState<CryptoData[]>([]);
   const [predictions, setPredictions] = useState<MarketPrediction[]>([]);
   const [marketState, setMarketState] = useState<MarketState | null>(null);
-  const [newsData, setNewsData] = useState<NewsItem[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch data from APIs
@@ -108,15 +100,7 @@ export default function MarketDashboardPage() {
           throw new Error('Failed to fetch market state');
         }
 
-        // Fetch latest news (including Mando Minutes)
-        const newsResponse = await fetch('/api/watchlist/news');
-        const newsResult = await newsResponse.json();
-        
-        if (newsResult.success) {
-          setNewsData(newsResult.data);
-        } else {
-          throw new Error('Failed to fetch news data');
-        }
+
 
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -423,56 +407,7 @@ export default function MarketDashboardPage() {
             )}
           </div>
 
-          {/* Mando Minutes Latest News */}
-          {newsData.length > 0 && (
-            <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl md:text-3xl font-bold text-yellow-500">
-                  Latest from Mando Minutes
-                </h3>
-                <a 
-                  href="https://www.mandominutes.com/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-yellow-500 hover:text-yellow-400 text-sm font-bold underline"
-                >
-                  Subscribe →
-                </a>
-              </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {newsData.filter(news => news.source === 'Mando Minutes').slice(0, 6).map((news, index) => (
-                  <div key={index} className="bg-black p-6 rounded-none border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs px-2 py-1 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded">
-                        {news.source}
-                      </span>
-                      <span className="text-white/40 text-xs">
-                        {new Date(news.publishedAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <h4 className="text-lg font-bold text-white mb-2">{news.title}</h4>
-                    <p className="text-white/70 text-sm mb-4">{news.description}</p>
-                    <a 
-                      href={news.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-yellow-500 hover:text-yellow-400 text-sm font-bold"
-                    >
-                      Read More →
-                    </a>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 text-center">
-                <p className="text-white/60 text-sm mb-2">
-                  &ldquo;Crypto Twitter&rsquo;s Favorite Newsletter&rdquo; - Never miss a minute!
-                </p>
-                <p className="text-white/40 text-xs">
-                  Daily crypto, DeFi, and macro summaries sent to your inbox
-                </p>
-              </div>
-            </div>
-          )}
+
 
           {/* Live Market Data */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
