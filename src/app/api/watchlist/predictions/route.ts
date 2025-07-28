@@ -2,40 +2,51 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MarketDataService } from '@/services/market-data';
 import { PredictionEngine } from '@/services/prediction-engine';
 import { MarketPrediction } from '@/types/watchlist';
-import { predictionCache } from '@/utils/cache';
-import { measureApiResponse } from '@/utils/performance';
 
-// Generate predictions using the service layer with caching
+// Configure timeout for this API route
+export const maxDuration = 30; // 30 seconds max duration
+
+// Simple in-memory cache for predictions
+const predictionsCache = new Map<string, { data: MarketPrediction[]; timestamp: number; ttl: number }>();
+
+// Generate predictions using the service layer with caching and parallel processing
 const generatePredictions = async (): Promise<MarketPrediction[]> => {
   const cacheKey = 'predictions_all_timeframes';
-  const cached = predictionCache.get(cacheKey);
-  if (cached) {
-    return cached as unknown as MarketPrediction[];
+  const cached = predictionsCache.get(cacheKey);
+  
+  if (cached && Date.now() - cached.timestamp < cached.ttl) {
+    return cached.data;
   }
 
-  const predictions = await measureApiResponse(
-    'predictions_generation',
-    async () => {
-      try {
-        // Fetch all market data using the service layer
-        const marketData = await MarketDataService.getAllMarketData();
-        
-        // Generate predictions using the prediction engine
-        return await PredictionEngine.generatePredictions(
-          marketData.bitcoin,
-          marketData.crypto,
-          marketData.stocks,
-          marketData.news
-        );
-      } catch {
-        return [];
-      }
-    }
-  );
+  try {
+    // Fetch all data in parallel using static methods
+    const [bitcoinData, cryptoData, stockData, newsData] = await Promise.all([
+      MarketDataService.getBitcoinData(),
+      MarketDataService.getCryptoData(),
+      MarketDataService.getStockData(),
+      MarketDataService.getNewsData()
+    ]);
 
-  // Cache the predictions for 5 minutes
-  predictionCache.set(cacheKey, predictions as unknown as Record<string, unknown>);
-  return predictions;
+    // Generate predictions with parallel processing using static method
+    const predictions = await PredictionEngine.generatePredictions(
+      bitcoinData,
+      cryptoData,
+      stockData,
+      newsData
+    );
+
+    // Cache the results for 5 minutes
+    predictionsCache.set(cacheKey, {
+      data: predictions,
+      timestamp: Date.now(),
+      ttl: 5 * 60 * 1000
+    });
+
+    return predictions;
+  } catch {
+    // Return empty array on error
+    return [];
+  }
 };
 
 export const dynamic = 'force-dynamic';

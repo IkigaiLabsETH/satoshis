@@ -15,30 +15,55 @@ export default function WatchlistPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const predictionsRes = await fetch('/api/watchlist/predictions');
-        const marketStateRes = await fetch('/api/watchlist/market-state');
+        setError(null);
+        
+        // Fetch both APIs in parallel
+        const [predictionsRes, marketStateRes] = await Promise.allSettled([
+          fetch('/api/watchlist/predictions'),
+          fetch('/api/watchlist/market-state')
+        ]);
 
-        if (predictionsRes.ok && marketStateRes.ok) {
-          const [predictionsData, marketStateData] = await Promise.all([
-            predictionsRes.json(),
-            marketStateRes.json()
-          ]);
+        let hasError = false;
+        const errorMessages: string[] = [];
 
+        // Handle predictions response
+        if (predictionsRes.status === 'fulfilled' && predictionsRes.value.ok) {
+          const predictionsData = await predictionsRes.value.json();
           if (predictionsData.success) {
             setPredictions(predictionsData.data);
           } else {
-            setError(`Predictions failed: ${predictionsData.error}`);
+            hasError = true;
+            errorMessages.push(`Predictions: ${predictionsData.error}`);
           }
-          
+        } else {
+          hasError = true;
+          const status = predictionsRes.status === 'fulfilled' ? predictionsRes.value.status : 'timeout';
+          errorMessages.push(`Predictions API failed (${status})`);
+        }
+
+        // Handle market state response
+        if (marketStateRes.status === 'fulfilled' && marketStateRes.value.ok) {
+          const marketStateData = await marketStateRes.value.json();
           if (marketStateData.success) {
             setMarketState(marketStateData.data);
           } else {
-            setError(`Market state failed: ${marketStateData.error}`);
+            hasError = true;
+            errorMessages.push(`Market State: ${marketStateData.error}`);
           }
         } else {
-          const errorMsg = `API Error: Predictions ${predictionsRes.status}, Market State ${marketStateRes.status}`;
-          setError(errorMsg);
+          hasError = true;
+          const status = marketStateRes.status === 'fulfilled' ? marketStateRes.value.status : 'timeout';
+          errorMessages.push(`Market State API failed (${status})`);
         }
+
+        // Only show error if both APIs failed
+        if (hasError && predictions.length === 0 && !marketState) {
+          setError(errorMessages.join('; '));
+        } else if (hasError) {
+          // Show partial error message but don't block the UI
+          // Partial API failure logged for debugging
+        }
+
       } catch {
         setError('Error loading market data');
       } finally {
@@ -48,7 +73,7 @@ export default function WatchlistPage() {
     };
 
     fetchData();
-  }, []);
+  }, [predictions.length, marketState]);
 
   const handleRefresh = () => {
     setLoading(true);
@@ -97,8 +122,13 @@ export default function WatchlistPage() {
               <div className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent mb-4">
                 GROK420 AI Market Analysis
               </div>
-              <div className="text-white/60 text-lg">Loading AI-powered predictions...</div>
-              <div className="mt-4 flex justify-center">
+              <div className="text-white/60 text-lg mb-4">Loading AI-powered predictions...</div>
+              <div className="space-y-2 text-sm text-white/50">
+                <div>• Fetching market data from CoinGecko</div>
+                <div>• Analyzing market sentiment with Grok 4 AI</div>
+                <div>• Generating multi-timeframe predictions</div>
+              </div>
+              <div className="mt-6 flex justify-center">
                 <div className="w-8 h-8 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
               </div>
             </div>
@@ -119,13 +149,22 @@ export default function WatchlistPage() {
             <p className="text-white/60 text-lg">AI-powered predictions for assets that can outperform Bitcoin</p>
           </div>
           <div className="bg-gradient-to-r from-red-500/10 to-red-600/10 border border-red-500/30 p-8 rounded-xl backdrop-blur-sm">
-            <h2 className="text-2xl font-bold text-red-400 mb-4">Error Loading Data</h2>
-            <p className="text-red-300 mb-6 text-lg">{error}</p>
+            <h2 className="text-2xl font-bold text-red-400 mb-4">⚠️ API Connection Issue</h2>
+            <p className="text-red-300 mb-4 text-lg">{error}</p>
+            <div className="bg-black/30 p-4 rounded-lg mb-6">
+              <h3 className="text-white font-semibold mb-2">Troubleshooting:</h3>
+              <ul className="text-white/80 text-sm space-y-1 text-left">
+                <li>• Check your internet connection</li>
+                <li>• The AI prediction service may be temporarily overloaded</li>
+                <li>• Try refreshing the page in a few moments</li>
+                <li>• Market data is cached for 5 minutes to reduce load</li>
+              </ul>
+            </div>
             <button 
               onClick={handleRefresh} 
               className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-6 py-3 rounded-lg font-bold hover:from-yellow-400 hover:to-yellow-500 transition-all duration-200 shadow-lg hover:shadow-yellow-500/25"
             >
-              Retry
+              🔄 Retry Now
             </button>
           </div>
         </div>
