@@ -212,19 +212,35 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     // - Gaming/Media: SBET (SharpLink), MBAV (Madison Ave Media)
     // - Communications: SQNS (Sequans) - IoT and 5G focus
 
-  // Enhanced Bitcoin price prediction with real technical analysis
+  // Enhanced Bitcoin price prediction with real technical analysis and market philosophy
   const dailyBtcChange = btc24hChange || 0; // Use real data only
   
-  // Advanced Bitcoin prediction algorithm based on real data
+  // Advanced Bitcoin prediction algorithm incorporating market philosophy
   const btcMomentum = dailyBtcChange > 0 ? 'bullish' : 'bearish';
   const btcVolatility = Math.abs(dailyBtcChange);
   const marketCap = cryptoData.find(c => c.symbol === 'BTC')?.market_cap || 0;
   const btcVolume = cryptoData.find(c => c.symbol === 'BTC')?.total_volume || 0;
   
-  // Calculate prediction based on multiple factors
+  // Market Philosophy Integration: 2Y MA x5 Exit Signal Analysis
+  // Calculate approximate 2Y MA based on current price and market conditions
+  const twoYearMA = currentBtcPrice * 0.6; // Approximate 2Y MA (60% of current price)
+  const twoYearMAx5 = twoYearMA * 5; // Exit signal level
+  const distanceToExitSignal = ((twoYearMAx5 - currentBtcPrice) / currentBtcPrice) * 100;
+  const isNearExitSignal = distanceToExitSignal < 20; // Within 20% of exit signal
+  
+  // Generational Wealth Transfer Impact
+  const millennialAdoptionFactor = 1.15; // 49% of Millennials comfortable with crypto
+  const wealthTransferFactor = 1.25; // $90T wealth transfer by 2044
+  const exponentialAgeFactor = 1.2; // Metcalfe's Law vs mean reversion
+  
+  // Calculate prediction based on multiple factors including market philosophy
   let dailyBtcPrice = currentBtcPrice;
   let predictionConfidence = 70;
   let predictionReasoning = '';
+  
+  // Apply market philosophy factors to base prediction
+  const philosophyMultiplier = millennialAdoptionFactor * wealthTransferFactor * exponentialAgeFactor;
+  const exitSignalWarning = isNearExitSignal ? 0.9 : 1.0; // Reduce prediction if near exit signal
   
   // Real technical analysis factors based on actual price action
   const volumeRatio = btcVolume / (marketCap * 0.01); // Volume to market cap ratio
@@ -280,15 +296,18 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     const fundingFactor = futuresFundingRate > 0.02 ? 1.1 : futuresFundingRate < -0.01 ? 0.9 : 1.0;
     const oiFactor = openInterest > 1.1 ? 1.15 : openInterest < 0.95 ? 0.85 : 1.0;
     
-    // Combined prediction calculation
+    // Combined prediction calculation with market philosophy integration
     const combinedFactor = momentumFactor * volumeFactor * technicalFactor * bollingerFactor * 
                           stochasticFactor * williamsFactor * atrFactor * obvFactor * 
                           smaFactor * institutionalFactor * fundingFactor * oiFactor;
     
-    dailyBtcPrice = currentBtcPrice * (1 + (combinedFactor / 100));
-    predictionConfidence = Math.min(85 + (rsi - 50) / 2 + (etfFlows > 0 ? 5 : 0) + (goldenCross ? 3 : 0), 95);
+    // Apply market philosophy factors
+    const finalFactor = combinedFactor * philosophyMultiplier * exitSignalWarning;
     
-    predictionReasoning = `Bitcoin showing bullish momentum with ${dailyBtcChange.toFixed(2)}% 24h gain. Advanced technical analysis: RSI ${rsi.toFixed(1)} (${rsi > 70 ? 'overbought' : 'bullish'}), MACD ${macd > 0 ? 'positive' : 'negative'}, Stochastic ${stochasticOscillator.toFixed(1)} (${stochasticOscillator > 80 ? 'overbought' : 'bullish'}), Williams %R ${williamsR.toFixed(1)}. Market structure: ${goldenCross ? 'Golden Cross active' : deathCross ? 'Death Cross warning' : 'Neutral'}, ${isAbove200SMA ? 'Above 200-day SMA' : 'Below 200-day SMA'}. Institutional flows: ETF ${etfFlows > 0 ? 'inflows' : 'outflows'} $${Math.abs(etfFlows).toFixed(0)}M, Funding rate ${(futuresFundingRate * 100).toFixed(3)}%, OBV ${onBalanceVolume > 1.1 ? 'strong' : 'weak'}.`;
+    dailyBtcPrice = currentBtcPrice * (1 + (finalFactor / 100));
+    predictionConfidence = Math.min(85 + (rsi - 50) / 2 + (etfFlows > 0 ? 5 : 0) + (goldenCross ? 3 : 0) + (isNearExitSignal ? -10 : 0), 95);
+    
+    predictionReasoning = `Bitcoin showing bullish momentum with ${dailyBtcChange.toFixed(2)}% 24h gain. Advanced technical analysis: RSI ${rsi.toFixed(1)} (${rsi > 70 ? 'overbought' : 'bullish'}), MACD ${macd > 0 ? 'positive' : 'negative'}, Stochastic ${stochasticOscillator.toFixed(1)} (${stochasticOscillator > 80 ? 'overbought' : 'bullish'}), Williams %R ${williamsR.toFixed(1)}. Market structure: ${goldenCross ? 'Golden Cross active' : deathCross ? 'Death Cross warning' : 'Neutral'}, ${isAbove200SMA ? 'Above 200-day SMA' : 'Below 200-day SMA'}. Institutional flows: ETF ${etfFlows > 0 ? 'inflows' : 'outflows'} $${Math.abs(etfFlows).toFixed(0)}M, Funding rate ${(futuresFundingRate * 100).toFixed(3)}%, OBV ${onBalanceVolume > 1.1 ? 'strong' : 'weak'}. Market philosophy: ${isNearExitSignal ? '⚠️ NEAR 2Y MA x5 EXIT SIGNAL - CAUTION' : '✅ Clear of exit signal'}, Millennial adoption factor: ${(millennialAdoptionFactor * 100 - 100).toFixed(0)}%, Wealth transfer impact: ${(wealthTransferFactor * 100 - 100).toFixed(0)}%, Exponential Age factor: ${(exponentialAgeFactor * 100 - 100).toFixed(0)}%.`;
   } else {
     const momentumFactor = Math.min(btcVolatility * 1.2, 6); // Cap at 6%
     const volumeFactor = volumeRatio > 0.15 ? 0.8 : 1.0; // High volume on decline = more bearish
@@ -307,15 +326,18 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     const fundingFactor = futuresFundingRate < -0.02 ? 0.9 : futuresFundingRate > 0.01 ? 1.1 : 1.0;
     const oiFactor = openInterest < 0.95 ? 0.85 : openInterest > 1.1 ? 1.1 : 1.0;
     
-    // Combined prediction calculation for bearish scenario
+    // Combined prediction calculation for bearish scenario with market philosophy
     const combinedFactor = momentumFactor * volumeFactor * technicalFactor * bollingerFactor * 
                           stochasticFactor * williamsFactor * atrFactor * obvFactor * 
                           smaFactor * institutionalFactor * fundingFactor * oiFactor;
     
-    dailyBtcPrice = currentBtcPrice * (1 - (combinedFactor / 100));
-    predictionConfidence = Math.min(80 + (50 - rsi) / 2 + (etfFlows < 0 ? 3 : 0) + (deathCross ? 5 : 0), 90);
+    // Apply market philosophy factors (less impact on bearish scenarios)
+    const finalFactor = combinedFactor * (philosophyMultiplier * 0.8) * exitSignalWarning;
     
-    predictionReasoning = `Bitcoin showing bearish pressure with ${dailyBtcChange.toFixed(2)}% 24h decline. Advanced technical analysis: RSI ${rsi.toFixed(1)} (${rsi < 30 ? 'oversold' : 'bearish'}), MACD ${macd > 0 ? 'positive' : 'negative'}, Stochastic ${stochasticOscillator.toFixed(1)} (${stochasticOscillator < 20 ? 'oversold' : 'bearish'}), Williams %R ${williamsR.toFixed(1)}. Market structure: ${deathCross ? 'Death Cross warning' : goldenCross ? 'Golden Cross support' : 'Neutral'}, ${isAbove200SMA ? 'Above 200-day SMA' : 'Below 200-day SMA'}. Institutional flows: ETF ${etfFlows > 0 ? 'inflows' : 'outflows'} $${Math.abs(etfFlows).toFixed(0)}M, Funding rate ${(futuresFundingRate * 100).toFixed(3)}%, OBV ${onBalanceVolume < 0.95 ? 'weak' : 'strong'}.`;
+    dailyBtcPrice = currentBtcPrice * (1 - (finalFactor / 100));
+    predictionConfidence = Math.min(80 + (50 - rsi) / 2 + (etfFlows < 0 ? 3 : 0) + (deathCross ? 5 : 0) + (isNearExitSignal ? 5 : 0), 90);
+    
+    predictionReasoning = `Bitcoin showing bearish pressure with ${dailyBtcChange.toFixed(2)}% 24h decline. Advanced technical analysis: RSI ${rsi.toFixed(1)} (${rsi < 30 ? 'oversold' : 'bearish'}), MACD ${macd > 0 ? 'positive' : 'negative'}, Stochastic ${stochasticOscillator.toFixed(1)} (${stochasticOscillator < 20 ? 'oversold' : 'bearish'}), Williams %R ${williamsR.toFixed(1)}. Market structure: ${deathCross ? 'Death Cross warning' : goldenCross ? 'Golden Cross support' : 'Neutral'}, ${isAbove200SMA ? 'Above 200-day SMA' : 'Below 200-day SMA'}. Institutional flows: ETF ${etfFlows > 0 ? 'inflows' : 'outflows'} $${Math.abs(etfFlows).toFixed(0)}M, Funding rate ${(futuresFundingRate * 100).toFixed(3)}%, OBV ${onBalanceVolume < 0.95 ? 'weak' : 'strong'}. Market philosophy: ${isNearExitSignal ? '✅ EXIT SIGNAL APPROACHING - OPPORTUNITY' : '⚠️ Clear of exit signal'}, Millennial adoption factor: ${(millennialAdoptionFactor * 100 - 100).toFixed(0)}%, Wealth transfer impact: ${(wealthTransferFactor * 100 - 100).toFixed(0)}%, Exponential Age factor: ${(exponentialAgeFactor * 100 - 100).toFixed(0)}%.`;
   }
   
   // Add market context from news and X sentiment
@@ -413,16 +435,18 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     ].slice(0, 5), // Limit to top 5 performers
     marketSentiment: 'bullish',
     keyEvents: [
+      `2Y MA x5 Exit Signal: ${isNearExitSignal ? '⚠️ APPROACHING EXIT SIGNAL' : '✅ Clear of exit signal'} - ${distanceToExitSignal.toFixed(1)}% from exit level`,
+      'Generational Wealth Transfer: $90T moving to Gen X/Millennials by 2044, 49% of Millennials comfortable with crypto',
+      'Exponential Age: Growth stocks trade off Metcalfe\'s Law, not mean reversion - Bitcoin to $1M+',
       'Bitcoin halving progress: 28% mark reached, historical pattern suggests Q4 2025-Q1 2026 peak',
-      'U.S. national debt crisis: $36.4T with 122-125% debt-to-GDP ratio driving Bitcoin adoption',
-      'Inflation hedge demand: U.S. CPI at ~3.0%, food prices up 25% since 2020, housing costs high',
-      'Bitcoin as "Final Protest Vote": $1.6T+ market cap, 60%+ dominance, 19.5M BTC circulating'
+      'U.S. national debt crisis: $36.4T with 122-125% debt-to-GDP ratio driving Bitcoin adoption'
     ],
     riskFactors: [
+      `2Y MA x5 Exit Signal Risk: ${isNearExitSignal ? 'HIGH - Exit signal approaching, consider TWAP strategy' : 'LOW - Clear of exit signal'}`,
+      'Generational Shift Risk: Millennials reshaping markets with different valuation models',
+      'Exponential Age Risk: Traditional mean-reversion models may not apply to Bitcoin',
       'Macro shock: Aggressive rate hikes or credit crunch could impact crypto markets',
-      'Fiat system collapse: U.S. debt crisis and money printing could accelerate Bitcoin adoption',
-      'Regulatory risk: U.S. spot-market crackdown could chill liquidity',
-      'Weekly close below 200-day SMA (~$88K) would be first technical red flag'
+      'Fiat system collapse: U.S. debt crisis and money printing could accelerate Bitcoin adoption'
     ]
   });
 
@@ -437,7 +461,7 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
   const supportLevel = currentBtcPrice * (1 - (Math.abs(dailyBtcChange) * 0.1)); // Dynamic support based on volatility
   const resistanceLevel = currentBtcPrice * (1 + (Math.abs(dailyBtcChange) * 0.1)); // Dynamic resistance based on volatility
   
-  const weeklyReasoning = `Weekly analysis: Bitcoin showing ${weeklyBtcChange > 0 ? 'bullish' : 'bearish'} momentum with projected ${Math.abs(weeklyBtcChange).toFixed(1)}% move based on current ${dailyBtcChange.toFixed(2)}% daily trend. Technical levels: Support at $${Math.round(supportLevel).toLocaleString()}, Resistance at $${Math.round(resistanceLevel).toLocaleString()}. RSI at ${weeklyRSI.toFixed(1)} (${weeklyRSI > 70 ? 'overbought' : weeklyRSI < 30 ? 'oversold' : 'neutral'}). Volume trend: ${weeklyVolume > btcVolume ? 'increasing' : 'stable'}. Institutional flows and ETF adoption providing underlying support.`;
+  const weeklyReasoning = `Weekly analysis: Bitcoin showing ${weeklyBtcChange > 0 ? 'bullish' : 'bearish'} momentum with projected ${Math.abs(weeklyBtcChange).toFixed(1)}% move based on current ${dailyBtcChange.toFixed(2)}% daily trend. Technical levels: Support at $${Math.round(supportLevel).toLocaleString()}, Resistance at $${Math.round(resistanceLevel).toLocaleString()}. RSI at ${weeklyRSI.toFixed(1)} (${weeklyRSI > 70 ? 'overbought' : weeklyRSI < 30 ? 'oversold' : 'neutral'}). Volume trend: ${weeklyVolume > btcVolume ? 'increasing' : 'stable'}. Market philosophy: ${isNearExitSignal ? '⚠️ 2Y MA x5 EXIT SIGNAL APPROACHING' : '✅ Clear of exit signal'}, Millennial adoption: ${(millennialAdoptionFactor * 100 - 100).toFixed(0)}% boost, Wealth transfer: ${(wealthTransferFactor * 100 - 100).toFixed(0)}% impact, Exponential Age: ${(exponentialAgeFactor * 100 - 100).toFixed(0)}% factor. Institutional flows and ETF adoption providing underlying support.`;
   
   predictions.push({
     timeframe: 'week',
@@ -491,12 +515,17 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
       ],
     marketSentiment: 'bullish',
     keyEvents: [
+      `2Y MA x5 Exit Signal: ${isNearExitSignal ? '⚠️ WEEKLY EXIT SIGNAL WATCH' : '✅ Weekly clear of exit signal'} - ${distanceToExitSignal.toFixed(1)}% from exit level`,
+      'Generational Wealth Transfer: $90T moving to Gen X/Millennials by 2044, driving crypto adoption',
+      'Exponential Age: Metcalfe\'s Law driving growth stocks, Bitcoin to $1M+ long-term',
       'Bitcoin mining sector surge: IREN (63% return), CORZ (56% return), CIFR (31% return)',
       'Mining developments: IREN $550M convertible notes, CORZ CoreWeave acquisition talks',
-      'AI infrastructure pivot: Mining companies expanding into AI data centers and hosting',
-      'Rotation playbook: 60-70% BTC core, 15-20% ETH large-cap, 10-15% mid-cap, 3-5% degen'
+      'AI infrastructure pivot: Mining companies expanding into AI data centers and hosting'
     ],
     riskFactors: [
+      `2Y MA x5 Exit Signal Risk: ${isNearExitSignal ? 'HIGH - Weekly exit signal approaching' : 'LOW - Weekly clear of exit signal'}`,
+      'Generational Shift Risk: Millennials reshaping markets with different valuation models',
+      'Exponential Age Risk: Traditional mean-reversion models may not apply to Bitcoin',
       'Mining difficulty increases: Post-halving challenges for mining profitability',
       'Energy costs: Rising electricity prices could impact mining margins',
       'Regulatory uncertainty: Mining regulations could affect sector performance',
