@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'daily';
     
-    // Define crypto-related stocks to track - including mining sector
-    const symbols = ['COIN', 'MSTR', 'HOOD', 'CRCL', 'IREN', 'CORZ', 'CIFR', 'RIOT', 'CLSK', 'WULF', 'HUT', 'MARA', 'GLXY', 'SQ', 'TSLA', 'NVDA', 'AMD'];
+    // Define crypto-related stocks to track - including mining sector and PriceTicker assets
+    const symbols = ['COIN', 'MSTR', 'STRF', 'STRK', 'MTPLF', 'BMNR', 'CRCL', 'HOOD', 'SBET', 'SQNS', 'MBAV', 'IREN', 'CORZ', 'CIFR', 'RIOT', 'CLSK', 'WULF', 'HUT', 'MARA', 'GLXY', 'SQ', 'TSLA', 'NVDA', 'AMD'];
     
     // Get Finnhub API key from environment
     const finnhubApiKey = process.env.FINNHUB_API_KEY;
@@ -39,6 +39,38 @@ export async function GET(request: NextRequest) {
           high: 1900.00,
           low: 1800.00,
           volume: 500000
+        },
+        {
+          symbol: 'STRF',
+          current_price: 1850.00,
+          change_percent: 3.2,
+          high: 1900.00,
+          low: 1800.00,
+          volume: 450000
+        },
+        {
+          symbol: 'BMNR',
+          current_price: 45.80,
+          change_percent: 4.5,
+          high: 47.00,
+          low: 44.50,
+          volume: 1200000
+        },
+        {
+          symbol: 'CRCL',
+          current_price: 199.59,
+          change_percent: 5.2,
+          high: 205.00,
+          low: 195.00,
+          volume: 8000000
+        },
+        {
+          symbol: 'HOOD',
+          current_price: 78.50,
+          change_percent: 2.8,
+          high: 80.00,
+          low: 77.00,
+          volume: 12000000
         },
         {
           symbol: 'SQ',

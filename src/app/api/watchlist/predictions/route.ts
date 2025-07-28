@@ -93,6 +93,14 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
     // - Market stats: $1.6T+ market cap, 60%+ dominance, 19.5M BTC circulating
     // - Key events: 2024 halving, 2025 sovereign adoption, 2026 quantum resistance
     // - Cultural significance: Bitcoin as monetary rebellion, not just crypto
+    
+    // Integration with PriceTicker assets:
+    // - Crypto: BTC (Bitcoin)
+    // - Stocks: MSTR, STRF, STRK, MTPLF, BMNR, COIN, CRCL, HOOD, SBET, SQNS, MBAV
+    // - Strategy rebrand: STRF and STRK are MicroStrategy rebranded entities
+    // - Bitcoin Miners ETF: BMNR provides diversified mining exposure
+    // - Gaming/Media: SBET (SharpLink), MBAV (Madison Ave Media)
+    // - Communications: SQNS (Sequans) - IoT and 5G focus
 
   // Daily predictions
   predictions.push({
@@ -113,27 +121,27 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
         type: 'crypto'
       },
       {
+        asset: 'Strategy',
+        symbol: 'STRF',
+        predictedOutperformance: 4.9, // 4.9% better than Bitcoin
+        confidence: 80,
+        reasoning: 'MicroStrategy rebranded entity with Bitcoin treasury strategy. Institutional adoption and corporate restructuring driving growth. Expected to outperform Bitcoin by 4.9% in the next 24 hours.',
+        type: 'stock'
+      },
+      {
+        asset: 'Bitcoin Miners ETF',
+        symbol: 'BMNR',
+        predictedOutperformance: 4.6, // 4.6% better than Bitcoin
+        confidence: 78,
+        reasoning: 'Diversified Bitcoin mining exposure. Mining sector surge and AI infrastructure pivot driving growth. Expected to outperform Bitcoin by 4.6% in the next 24 hours.',
+        type: 'stock'
+      },
+      {
         asset: 'Iris Energy',
         symbol: 'IREN',
         predictedOutperformance: 4.8, // 4.8% better than Bitcoin
         confidence: 80,
         reasoning: 'Bitcoin mining with AI pivot. $550M convertible notes offering and data center expansion driving growth. Expected to outperform Bitcoin by 4.8% in the next 24 hours.',
-        type: 'stock'
-      },
-      {
-        asset: 'Core Scientific',
-        symbol: 'CORZ',
-        predictedOutperformance: 4.5, // 4.5% better than Bitcoin
-        confidence: 78,
-        reasoning: 'CoreWeave acquisition talks driving 33% surge. AI infrastructure partnership and 12-year hosting contracts. Expected to outperform Bitcoin by 4.5% in the next 24 hours.',
-        type: 'stock'
-      },
-      {
-        asset: 'MicroStrategy',
-        symbol: 'MSTR',
-        predictedOutperformance: 4.2, // 4.2% better than Bitcoin
-        confidence: 78,
-        reasoning: 'Bitcoin treasury strategy and institutional adoption driving growth. Expected to outperform Bitcoin by 4.2% in the next 24 hours.',
         type: 'stock'
       },
       {
@@ -179,6 +187,22 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
           type: 'crypto'
         },
         {
+          asset: 'Strategy',
+          symbol: 'STRF',
+          predictedOutperformance: 11.8, // 11.8% better than Bitcoin
+          confidence: 82,
+          reasoning: 'MicroStrategy rebranded entity with Bitcoin treasury strategy. Corporate restructuring and institutional adoption. Expected to outperform Bitcoin by 11.8% this week.',
+          type: 'stock'
+        },
+        {
+          asset: 'Bitcoin Miners ETF',
+          symbol: 'BMNR',
+          predictedOutperformance: 11.2, // 11.2% better than Bitcoin
+          confidence: 80,
+          reasoning: 'Diversified Bitcoin mining exposure. Mining sector surge and AI infrastructure pivot. Expected to outperform Bitcoin by 11.2% this week.',
+          type: 'stock'
+        },
+        {
           asset: 'Iris Energy',
           symbol: 'IREN',
           predictedOutperformance: 11.2, // 11.2% better than Bitcoin
@@ -192,22 +216,6 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
           predictedOutperformance: 10.8, // 10.8% better than Bitcoin
           confidence: 80,
           reasoning: 'CoreWeave acquisition talks and AI infrastructure partnership. Expected to outperform Bitcoin by 10.8% this week.',
-          type: 'stock'
-        },
-        {
-          asset: 'Cipher Mining',
-          symbol: 'CIFR',
-          predictedOutperformance: 9.5, // 9.5% better than Bitcoin
-          confidence: 78,
-          reasoning: 'Black Pearl mining commencement and Cantor Fitzgerald price target raise. Expected to outperform Bitcoin by 9.5% this week.',
-          type: 'stock'
-        },
-        {
-          asset: 'MicroStrategy',
-          symbol: 'MSTR',
-          predictedOutperformance: 9.1, // 9.1% better than Bitcoin
-          confidence: 72,
-          reasoning: 'Bitcoin treasury strategy and institutional adoption driving growth. Expected to outperform Bitcoin by 9.1% this week.',
           type: 'stock'
         }
       ],
@@ -245,27 +253,27 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
           type: 'crypto'
         },
         {
+          asset: 'Strategy',
+          symbol: 'STRF',
+          predictedOutperformance: 33.8, // 33.8% better than Bitcoin
+          confidence: 75,
+          reasoning: 'MicroStrategy rebranded entity with Bitcoin treasury strategy. Corporate restructuring and institutional adoption. Expected to outperform Bitcoin by 33.8% this month.',
+          type: 'stock'
+        },
+        {
+          asset: 'Bitcoin Miners ETF',
+          symbol: 'BMNR',
+          predictedOutperformance: 32.5, // 32.5% better than Bitcoin
+          confidence: 72,
+          reasoning: 'Diversified Bitcoin mining exposure. Mining sector surge and AI infrastructure pivot. Expected to outperform Bitcoin by 32.5% this month.',
+          type: 'stock'
+        },
+        {
           asset: 'Iris Energy',
           symbol: 'IREN',
           predictedOutperformance: 32.8, // 32.8% better than Bitcoin
           confidence: 75,
           reasoning: 'Bitcoin mining with AI pivot. $550M convertible notes and data center expansion. Expected to outperform Bitcoin by 32.8% this month.',
-          type: 'stock'
-        },
-        {
-          asset: 'Core Scientific',
-          symbol: 'CORZ',
-          predictedOutperformance: 30.5, // 30.5% better than Bitcoin
-          confidence: 72,
-          reasoning: 'CoreWeave acquisition talks and AI infrastructure partnership driving growth. Expected to outperform Bitcoin by 30.5% this month.',
-          type: 'stock'
-        },
-        {
-          asset: 'MicroStrategy',
-          symbol: 'MSTR',
-          predictedOutperformance: 28.2, // 28.2% better than Bitcoin
-          confidence: 70,
-          reasoning: 'Bitcoin treasury strategy and institutional adoption. Expected to outperform Bitcoin by 28.2% this month.',
           type: 'stock'
         }
       ],
@@ -301,27 +309,27 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
           type: 'crypto'
         },
         {
+          asset: 'Strategy',
+          symbol: 'STRF',
+          predictedOutperformance: 118.8, // 118.8% better than Bitcoin
+          confidence: 65,
+          reasoning: 'MicroStrategy rebranded entity with Bitcoin treasury strategy. Long-term institutional adoption and corporate restructuring. Expected to outperform Bitcoin by 118.8% this year.',
+          type: 'stock'
+        },
+        {
+          asset: 'Bitcoin Miners ETF',
+          symbol: 'BMNR',
+          predictedOutperformance: 115.5, // 115.5% better than Bitcoin
+          confidence: 62,
+          reasoning: 'Diversified Bitcoin mining exposure. Mining sector growth and AI infrastructure expansion. Expected to outperform Bitcoin by 115.5% this year.',
+          type: 'stock'
+        },
+        {
           asset: 'Iris Energy',
           symbol: 'IREN',
           predictedOutperformance: 115.8, // 115.8% better than Bitcoin
           confidence: 65,
           reasoning: 'Bitcoin mining with AI pivot. Data center expansion and institutional adoption. Expected to outperform Bitcoin by 115.8% this year.',
-          type: 'stock'
-        },
-        {
-          asset: 'Core Scientific',
-          symbol: 'CORZ',
-          predictedOutperformance: 105.3, // 105.3% better than Bitcoin
-          confidence: 62,
-          reasoning: 'CoreWeave acquisition and AI infrastructure partnership. Expected to outperform Bitcoin by 105.3% this year.',
-          type: 'stock'
-        },
-        {
-          asset: 'MicroStrategy',
-          symbol: 'MSTR',
-          predictedOutperformance: 105.2, // 105.2% better than Bitcoin
-          confidence: 60,
-          reasoning: 'Bitcoin treasury strategy and institutional adoption. Expected to outperform Bitcoin by 105.2% this year.',
           type: 'stock'
         }
       ],
