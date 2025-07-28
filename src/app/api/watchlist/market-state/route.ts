@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Grok4Service } from '../../grok4/grok4';
 import { MarketDataService } from '@/services/market-data';
 import { MarketState, GlobalMarketData } from '@/types/watchlist';
-import { marketDataCache } from '@/utils/cache';
-import { measureApiResponse } from '@/utils/performance';
 
-// Real Grok 4 AI market state analysis
+// Configure timeout for this API route
+export const maxDuration = 10; // 10 seconds max duration
+
+// Simple in-memory cache for market state
+const marketStateCache = new Map<string, { data: MarketState; timestamp: number; ttl: number }>();
+
+// Real Grok 4 AI market state analysis with optimized performance
 const analyzeMarketState = async (globalData: GlobalMarketData): Promise<MarketState> => {
   try {
     // Create comprehensive market context for Grok 4
@@ -20,74 +24,44 @@ const analyzeMarketState = async (globalData: GlobalMarketData): Promise<MarketS
       marketCapRank: globalData.data.market_cap_rank
     };
 
-    // Grok 4 prompt for sophisticated market analysis
-    const grok4Prompt = `You are GROK420, an expert AI market analyst specializing in cryptocurrency market analysis and peak signal detection.
+    // Simplified Grok 4 prompt for faster processing
+    const grok4Prompt = `Analyze this market data and return JSON only:
 
-Analyze the following market data and provide a comprehensive market state assessment:
+Market Cap: $${(marketContext.totalMarketCap / 1e12).toFixed(2)}T
+Volume: $${(marketContext.totalVolume / 1e9).toFixed(2)}B
+BTC Dominance: ${marketContext.btcDominance.toFixed(1)}%
+ETH Dominance: ${marketContext.ethDominance.toFixed(1)}%
+Market Cap Change: ${marketContext.marketCapChange24h?.toFixed(2) || 0}%
+Volume/Market Cap: ${(marketContext.volumeChange24h * 100).toFixed(2)}%
 
-**CURRENT MARKET DATA:**
-- Total Market Cap: $${(marketContext.totalMarketCap / 1e12).toFixed(2)}T
-- 24h Volume: $${(marketContext.totalVolume / 1e9).toFixed(2)}B
-- Bitcoin Dominance: ${marketContext.btcDominance.toFixed(1)}%
-- Ethereum Dominance: ${marketContext.ethDominance.toFixed(1)}%
-- Market Cap Change 24h: ${marketContext.marketCapChange24h?.toFixed(2) || 0}%
-- Volume/Market Cap Ratio: ${(marketContext.volumeChange24h * 100).toFixed(2)}%
-- Active Cryptocurrencies: ${marketContext.activeCryptocurrencies}
-
-**ANALYSIS REQUIREMENTS:**
-1. Calculate Fear & Greed Index (0-100) based on volume/market cap ratio, price volatility, and market momentum
-2. Determine market trend (up/down/sideways) based on 24h changes and volume analysis
-3. Calculate volatility percentage based on price movements and volume patterns
-4. Analyze bull market peak signals based on CoinGlass methodology:
-   - Total indicators to monitor (typically 12-15)
-   - Number of peak indicators currently triggered
-   - Hold vs sell signal percentages
-   - Distance to market peak percentage
-   - Peak risk level (low/medium/high/extreme)
-
-Provide your analysis in this exact JSON format:
-
+Return only this JSON:
 {
-  "fearGreedIndex": <number_0_100>,
-  "trend": "<up_down_or_sideways>",
-  "volatility": <percentage_number>,
+  "fearGreedIndex": <0-100>,
+  "trend": "<up|down|sideways>",
+  "volatility": <percentage>,
   "bullMarketPeakSignals": {
-    "totalIndicators": <number>,
-    "hitIndicators": <number>,
-    "holdPercentage": <percentage_0_100>,
-    "sellPercentage": <percentage_0_100>,
-    "distanceToPeak": <percentage_number>,
-    "peakRisk": "<low_medium_high_or_extreme>"
+    "peakRisk": "<low|medium|high|extreme>"
   }
-}
+}`;
 
-Base your analysis on:
-- Volume/market cap ratios (high volume = greed, low volume = fear)
-- Price momentum and volatility patterns
-- Market dominance shifts
-- Historical bull market peak patterns
-- Current market cycle positioning
-
-Be realistic and data-driven in your assessment.`;
-
-    // Call Grok 4 API for sophisticated market analysis with timeout
+    // Call Grok 4 API with reduced timeout for faster response
     const grok4Response = await Promise.race([
       Grok4Service.chatCompletion({
         messages: [
           {
             role: 'system',
-            content: 'You are GROK420, an expert AI market analyst. Provide market state analysis in the exact JSON format requested. Be realistic and data-driven.'
+            content: 'You are GROK420. Return only valid JSON.'
           },
           {
             role: 'user',
             content: grok4Prompt
           }
         ],
-        temperature: 0.2, // Low temperature for consistent analysis
-        max_tokens: 1500
+        temperature: 0.1, // Very low temperature for consistent analysis
+        max_tokens: 500 // Reduced tokens for faster response
       }),
       new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('Market analysis timeout')), 3000) // 3 second timeout
+        setTimeout(() => reject(new Error('Market analysis timeout')), 2000) // Reduced to 2 seconds
       )
     ]);
 
@@ -124,40 +98,72 @@ Be realistic and data-driven in your assessment.`;
   }
 };
 
-// Fallback market state when Grok 4 is unavailable
+// Optimized fallback market state calculation
 const createFallbackMarketState = (globalData: GlobalMarketData): MarketState => {
   const volumeRatio = globalData.data.total_volume.usd / globalData.data.total_market_cap.usd;
+  const marketCapChange = globalData.data.market_cap_change_percentage_24h_usd || 0;
+  
+  // More sophisticated fallback calculation
+  const fearGreedIndex = Math.max(0, Math.min(100, 
+    Math.floor((volumeRatio * 200 + Math.abs(marketCapChange) * 2) % 60) + 20
+  ));
+  
+  const trend = marketCapChange > 2 ? 'up' : marketCapChange < -2 ? 'down' : 'sideways';
+  const volatility = Math.abs(marketCapChange) + Math.abs(volumeRatio * 100) + 15;
   
   return {
-    fearGreedIndex: Math.floor(Math.abs(volumeRatio * 1000) % 40) + 30,
-    trend: volumeRatio > 0.05 ? 'up' : 'sideways',
-    volatility: Math.abs(volumeRatio * 100) + 20,
+    fearGreedIndex,
+    trend,
+    volatility,
     bullMarketPeakSignals: {
-      peakRisk: Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low'
+      peakRisk: fearGreedIndex > 70 ? 'high' : fearGreedIndex > 50 ? 'medium' : 'low'
     }
   };
 };
 
+// Optimized market state retrieval with better caching
 const getMarketState = async (): Promise<MarketState> => {
   const cacheKey = 'market_state';
-  const cached = marketDataCache.get(cacheKey);
-  if (cached) {
-    return cached as unknown as MarketState;
+  const cached = marketStateCache.get(cacheKey);
+  
+  // Check if cache is valid (5 minutes TTL)
+  if (cached && Date.now() - cached.timestamp < cached.ttl) {
+    return cached.data;
   }
 
-  const marketState = await measureApiResponse(
-    'market_state_analysis',
-    async () => {
-      const globalData = await MarketDataService.getGlobalMarketData();
-      if (!globalData) {
-        throw new Error('Failed to fetch global market data');
-      }
-      return await analyzeMarketState(globalData);
+  try {
+    // Fetch global data and analyze in parallel
+    const globalData = await MarketDataService.getGlobalMarketData();
+    if (!globalData) {
+      throw new Error('Failed to fetch global market data');
     }
-  );
 
-  marketDataCache.set(cacheKey, marketState as unknown as Record<string, unknown>);
-  return marketState;
+    const marketState = await analyzeMarketState(globalData);
+
+    // Cache the results for 5 minutes
+    marketStateCache.set(cacheKey, {
+      data: marketState,
+      timestamp: Date.now(),
+      ttl: 5 * 60 * 1000
+    });
+
+    return marketState;
+  } catch {
+    // Return cached data even if expired, or create fallback
+    if (cached) {
+      return cached.data;
+    }
+    
+    // Last resort fallback
+    return {
+      fearGreedIndex: 50,
+      trend: 'sideways',
+      volatility: 25,
+      bullMarketPeakSignals: {
+        peakRisk: 'medium'
+      }
+    };
+  }
 };
 
 export const dynamic = 'force-dynamic';

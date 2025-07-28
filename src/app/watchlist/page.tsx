@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MarketPrediction, MarketState } from '@/types/watchlist';
 
 export default function WatchlistPage() {
@@ -10,8 +10,12 @@ export default function WatchlistPage() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [selectedTimeframe, setSelectedTimeframe] = useState<string>('day');
+  const hasMounted = useRef(false);
 
   useEffect(() => {
+    if (hasMounted.current) return;
+    hasMounted.current = true;
+
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -72,13 +76,70 @@ export default function WatchlistPage() {
       }
     };
 
-    fetchData();
-  }, [predictions.length, marketState]);
+    // Only fetch if not already loading
+    if (!loading) {
+      fetchData();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []); // Empty dependency array - only run once on mount
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
+    if (loading) return; // Prevent multiple simultaneous requests
+    
     setLoading(true);
     setError(null);
-    window.location.reload();
+    
+    try {
+      // Fetch both APIs in parallel
+      const [predictionsRes, marketStateRes] = await Promise.allSettled([
+        fetch('/api/watchlist/predictions'),
+        fetch('/api/watchlist/market-state')
+      ]);
+
+      let hasError = false;
+      const errorMessages: string[] = [];
+
+      // Handle predictions response
+      if (predictionsRes.status === 'fulfilled' && predictionsRes.value.ok) {
+        const predictionsData = await predictionsRes.value.json();
+        if (predictionsData.success) {
+          setPredictions(predictionsData.data);
+        } else {
+          hasError = true;
+          errorMessages.push(`Predictions: ${predictionsData.error}`);
+        }
+      } else {
+        hasError = true;
+        const status = predictionsRes.status === 'fulfilled' ? predictionsRes.value.status : 'timeout';
+        errorMessages.push(`Predictions API failed (${status})`);
+      }
+
+      // Handle market state response
+      if (marketStateRes.status === 'fulfilled' && marketStateRes.value.ok) {
+        const marketStateData = await marketStateRes.value.json();
+        if (marketStateData.success) {
+          setMarketState(marketStateData.data);
+        } else {
+          hasError = true;
+          errorMessages.push(`Market State: ${marketStateData.error}`);
+        }
+      } else {
+        hasError = true;
+        const status = marketStateRes.status === 'fulfilled' ? marketStateRes.value.status : 'timeout';
+        errorMessages.push(`Market State API failed (${status})`);
+      }
+
+      // Only show error if both APIs failed
+      if (hasError && predictions.length === 0 && !marketState) {
+        setError(errorMessages.join('; '));
+      }
+
+    } catch {
+      setError('Error refreshing market data');
+    } finally {
+      setLoading(false);
+      setLastUpdated(new Date());
+    }
   };
 
   const getFearGreedColor = (index: number) => {
