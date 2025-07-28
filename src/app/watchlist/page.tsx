@@ -18,8 +18,6 @@ interface MarketPrediction {
     type: 'crypto' | 'stock';
   }[];
   marketSentiment: 'bullish' | 'bearish' | 'neutral';
-  keyEvents: string[];
-  riskFactors: string[];
 }
 
 interface MarketState {
@@ -77,11 +75,18 @@ export default function WatchlistPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white p-8">
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white p-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-500 mb-4">GROK420 AI Market Analysis</div>
-            <div className="text-white/60">Loading AI-powered predictions...</div>
+            <div className="animate-pulse">
+              <div className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent mb-4">
+                GROK420 AI Market Analysis
+              </div>
+              <div className="text-white/60 text-lg">Loading AI-powered predictions...</div>
+              <div className="mt-4 flex justify-center">
+                <div className="w-8 h-8 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -90,18 +95,20 @@ export default function WatchlistPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-black text-white p-8">
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white p-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-yellow-500 mb-2">GROK420 AI Market Analysis</h1>
-            <p className="text-white/60">AI-powered predictions for assets that can outperform Bitcoin</p>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent mb-2">
+              GROK420 AI Market Analysis
+            </h1>
+            <p className="text-white/60 text-lg">AI-powered predictions for assets that can outperform Bitcoin</p>
           </div>
-          <div className="bg-red-500/10 border border-red-500/20 p-6 rounded">
-            <h2 className="text-xl font-bold text-red-400 mb-4">Error Loading Data</h2>
-            <p className="text-red-300 mb-4">{error}</p>
+          <div className="bg-gradient-to-r from-red-500/10 to-red-600/10 border border-red-500/30 p-8 rounded-xl backdrop-blur-sm">
+            <h2 className="text-2xl font-bold text-red-400 mb-4">Error Loading Data</h2>
+            <p className="text-red-300 mb-6 text-lg">{error}</p>
             <button 
               onClick={() => window.location.reload()} 
-              className="bg-yellow-500 text-black px-4 py-2 rounded font-bold hover:bg-yellow-400"
+              className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-6 py-3 rounded-lg font-bold hover:from-yellow-400 hover:to-yellow-500 transition-all duration-200 shadow-lg hover:shadow-yellow-500/25"
             >
               Retry
             </button>
@@ -112,38 +119,47 @@ export default function WatchlistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white p-6">
+      <div className="max-w-6xl mx-auto">
         {/* Hero Section */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-yellow-500 mb-2">GROK420 AI Market Analysis</h1>
-          <p className="text-white/60">AI-powered predictions for assets that can outperform Bitcoin</p>
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent mb-4">
+            GROK420 AI Market Analysis
+          </h1>
+          <p className="text-white/70 text-xl max-w-2xl mx-auto">
+            AI-powered predictions for assets that can outperform Bitcoin
+          </p>
+          <div className="mt-6 flex justify-center">
+            <div className="w-24 h-1 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full"></div>
+          </div>
         </div>
 
         {/* Market State Summary */}
         {marketState && (
-          <div className="bg-black border border-yellow-500/20 p-6 mb-8">
-            <h2 className="text-2xl font-bold text-yellow-500 mb-4">Current Market State</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <p className="text-white/60 text-sm">Fear & Greed</p>
-                <p className={`text-2xl font-bold ${marketState.fearGreedIndex > 70 ? 'text-green-400' : marketState.fearGreedIndex < 30 ? 'text-red-400' : 'text-yellow-500'}`}>
+          <div className="bg-gradient-to-r from-gray-900/50 to-gray-800/50 border border-yellow-500/30 p-8 mb-10 rounded-2xl backdrop-blur-sm shadow-2xl">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent mb-6">
+              Current Market State
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="text-center bg-black/30 p-4 rounded-xl border border-yellow-500/20">
+                <p className="text-white/60 text-sm mb-2">Fear & Greed</p>
+                <p className={`text-3xl font-bold ${marketState.fearGreedIndex > 70 ? 'text-green-400' : marketState.fearGreedIndex < 30 ? 'text-red-400' : 'text-yellow-500'}`}>
                   {marketState.fearGreedIndex}
                 </p>
               </div>
-              <div className="text-center">
-                <p className="text-white/60 text-sm">Trend</p>
-                <p className={`text-2xl font-bold ${marketState.trend === 'up' ? 'text-green-400' : marketState.trend === 'down' ? 'text-red-400' : 'text-yellow-500'}`}>
+              <div className="text-center bg-black/30 p-4 rounded-xl border border-yellow-500/20">
+                <p className="text-white/60 text-sm mb-2">Trend</p>
+                <p className={`text-3xl font-bold ${marketState.trend === 'up' ? 'text-green-400' : marketState.trend === 'down' ? 'text-red-400' : 'text-yellow-500'}`}>
                   {marketState.trend.toUpperCase()}
                 </p>
               </div>
-              <div className="text-center">
-                <p className="text-white/60 text-sm">Volatility</p>
-                <p className="text-2xl font-bold text-yellow-500">{marketState.volatility}%</p>
+              <div className="text-center bg-black/30 p-4 rounded-xl border border-yellow-500/20">
+                <p className="text-white/60 text-sm mb-2">Volatility</p>
+                <p className="text-3xl font-bold text-yellow-500">{marketState.volatility}%</p>
               </div>
-              <div className="text-center">
-                <p className="text-white/60 text-sm">Peak Risk</p>
-                <p className={`text-2xl font-bold ${marketState.bullMarketPeakSignals.peakRisk === 'high' || marketState.bullMarketPeakSignals.peakRisk === 'extreme' ? 'text-red-400' : 'text-yellow-500'}`}>
+              <div className="text-center bg-black/30 p-4 rounded-xl border border-yellow-500/20">
+                <p className="text-white/60 text-sm mb-2">Peak Risk</p>
+                <p className={`text-3xl font-bold ${marketState.bullMarketPeakSignals.peakRisk === 'high' || marketState.bullMarketPeakSignals.peakRisk === 'extreme' ? 'text-red-400' : 'text-yellow-500'}`}>
                   {marketState.bullMarketPeakSignals.peakRisk.toUpperCase()}
                 </p>
               </div>
@@ -152,40 +168,45 @@ export default function WatchlistPage() {
         )}
 
         {/* AI Predictions */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           {predictions.map((prediction) => (
-            <div key={prediction.timeframe} className="bg-black border border-yellow-500/20 p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-yellow-500 capitalize">{prediction.timeframe} Predictions</h3>
-                <span className={`px-3 py-1 rounded text-sm font-bold ${
-                  prediction.marketSentiment === 'bullish' ? 'bg-green-500/20 text-green-400' :
-                  prediction.marketSentiment === 'bearish' ? 'bg-red-500/20 text-red-400' :
-                  'bg-yellow-500/20 text-yellow-400'
+            <div key={prediction.timeframe} className="bg-gradient-to-r from-gray-900/50 to-gray-800/50 border border-yellow-500/30 p-8 rounded-2xl backdrop-blur-sm shadow-2xl hover:shadow-yellow-500/10 transition-all duration-300">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent capitalize">
+                  {prediction.timeframe} Predictions
+                </h3>
+                <span className={`px-4 py-2 rounded-full text-sm font-bold ${
+                  prediction.marketSentiment === 'bullish' ? 'bg-gradient-to-r from-green-500/20 to-green-600/20 text-green-400 border border-green-500/30' :
+                  prediction.marketSentiment === 'bearish' ? 'bg-gradient-to-r from-red-500/20 to-red-600/20 text-red-400 border border-red-500/30' :
+                  'bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 text-yellow-400 border border-yellow-500/30'
                 }`}>
                   {prediction.marketSentiment.toUpperCase()}
                 </span>
               </div>
 
               {/* Bitcoin Prediction */}
-              <div className="mb-6">
-                <h4 className="text-lg font-bold text-white mb-2">Bitcoin (BTC)</h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <p className="text-white/60 text-sm">Predicted Price</p>
-                    <p className="text-xl font-bold text-yellow-500">${prediction.btcPrediction.price.toLocaleString()}</p>
+              <div className="mb-8">
+                <h4 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <span className="text-yellow-500">₿</span>
+                  Bitcoin (BTC)
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div className="bg-black/30 p-4 rounded-xl border border-yellow-500/20">
+                    <p className="text-white/60 text-sm mb-1">Predicted Price</p>
+                    <p className="text-2xl font-bold text-yellow-500">${prediction.btcPrediction.price.toLocaleString()}</p>
                   </div>
-                  <div>
-                    <p className="text-white/60 text-sm">Expected Change</p>
-                    <p className={`text-xl font-bold ${prediction.btcPrediction.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  <div className="bg-black/30 p-4 rounded-xl border border-yellow-500/20">
+                    <p className="text-white/60 text-sm mb-1">Expected Change</p>
+                    <p className={`text-2xl font-bold ${prediction.btcPrediction.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {prediction.btcPrediction.change >= 0 ? '+' : ''}{prediction.btcPrediction.change.toFixed(2)}%
                     </p>
                   </div>
-                  <div>
-                    <p className="text-white/60 text-sm">Confidence</p>
-                    <p className="text-xl font-bold text-yellow-500">{prediction.btcPrediction.confidence}%</p>
+                  <div className="bg-black/30 p-4 rounded-xl border border-yellow-500/20">
+                    <p className="text-white/60 text-sm mb-1">Confidence</p>
+                    <p className="text-2xl font-bold text-yellow-500">{prediction.btcPrediction.confidence}%</p>
                   </div>
-                  <div>
-                    <p className="text-white/60 text-sm">AI Reasoning</p>
+                  <div className="bg-black/30 p-4 rounded-xl border border-yellow-500/20">
+                    <p className="text-white/60 text-sm mb-1">AI Reasoning</p>
                     <p className="text-sm text-white/80 line-clamp-2">{prediction.btcPrediction.reasoning}</p>
                   </div>
                 </div>
@@ -193,26 +214,26 @@ export default function WatchlistPage() {
 
               {/* Top Performers */}
               <div>
-                <h4 className="text-lg font-bold text-white mb-3">Assets Predicted to Outperform Bitcoin</h4>
-                <div className="space-y-3">
+                <h4 className="text-xl font-bold text-white mb-4">Assets Predicted to Outperform Bitcoin</h4>
+                <div className="space-y-4">
                   {prediction.topPerformers.map((performer, index) => (
-                    <div key={index} className="bg-black/50 border border-yellow-500/10 p-4">
+                    <div key={index} className="bg-gradient-to-r from-black/40 to-gray-900/40 border border-yellow-500/20 p-6 rounded-xl hover:border-yellow-500/40 transition-all duration-200">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-white">{performer.asset}</span>
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="font-bold text-white text-lg">{performer.asset}</span>
                             <span className="text-white/60">({performer.symbol})</span>
-                            <span className={`px-2 py-1 rounded text-xs ${
-                              performer.type === 'crypto' ? 'bg-blue-500/20 text-blue-400' : 'bg-green-500/20 text-green-400'
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              performer.type === 'crypto' ? 'bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-400 border border-blue-500/30' : 'bg-gradient-to-r from-green-500/20 to-green-600/20 text-green-400 border border-green-500/30'
                             }`}>
                               {performer.type.toUpperCase()}
                             </span>
                           </div>
-                          <p className="text-sm text-white/80 mb-2">{performer.reasoning}</p>
+                          <p className="text-sm text-white/80 mb-3 leading-relaxed">{performer.reasoning}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-white/60 text-sm">Outperformance</p>
-                          <p className="text-lg font-bold text-green-400">
+                          <p className="text-white/60 text-sm mb-1">Outperformance</p>
+                          <p className="text-2xl font-bold text-green-400">
                             +{performer.predictedOutperformance.toFixed(2)}%
                           </p>
                           <p className="text-sm text-white/60">{performer.confidence}% confidence</p>
@@ -223,39 +244,15 @@ export default function WatchlistPage() {
                 </div>
               </div>
 
-              {/* Key Events & Risk Factors */}
-              <div className="grid md:grid-cols-2 gap-6 mt-6">
-                <div>
-                  <h5 className="text-white font-bold mb-2">Key Events</h5>
-                  <ul className="space-y-1">
-                    {prediction.keyEvents.map((event, index) => (
-                      <li key={index} className="text-sm text-white/80 flex items-start gap-2">
-                        <span className="text-yellow-500 mt-1">•</span>
-                        <span>{event}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <h5 className="text-white font-bold mb-2">Risk Factors</h5>
-                  <ul className="space-y-1">
-                    {prediction.riskFactors.map((risk, index) => (
-                      <li key={index} className="text-sm text-white/80 flex items-start gap-2">
-                        <span className="text-red-400 mt-1">⚠</span>
-                        <span>{risk}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+
             </div>
           ))}
         </div>
 
-        {/* Disclaimer */}
-        <div className="mt-8 p-4 bg-black/50 border border-yellow-500/10">
-          <p className="text-xs text-white/60 text-center">
-            AI predictions are based on real-time market data and Grok 4 analysis. Past performance does not guarantee future results. 
+                {/* Disclaimer */}
+        <div className="mt-12 p-6 bg-gradient-to-r from-black/40 to-gray-900/40 border border-yellow-500/20 rounded-2xl">
+          <p className="text-sm text-white/70 text-center leading-relaxed">
+            AI predictions are based on real-time market data and Grok 4 analysis. Past performance does not guarantee future results.
             Always conduct your own research and consider your risk tolerance before making investment decisions.
           </p>
         </div>

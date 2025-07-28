@@ -98,21 +98,26 @@ Base your analysis on:
 
 Be realistic and data-driven in your assessment.`;
 
-    // Call Grok 4 API for sophisticated market analysis
-    const grok4Response = await Grok4Service.chatCompletion({
-      messages: [
-        {
-          role: 'system',
-          content: 'You are GROK420, an expert AI market analyst. Provide market state analysis in the exact JSON format requested. Be realistic and data-driven.'
-        },
-        {
-          role: 'user',
-          content: grok4Prompt
-        }
-      ],
-      temperature: 0.2, // Low temperature for consistent analysis
-      max_tokens: 1500
-    });
+    // Call Grok 4 API for sophisticated market analysis with timeout
+    const grok4Response = await Promise.race([
+      Grok4Service.chatCompletion({
+        messages: [
+          {
+            role: 'system',
+            content: 'You are GROK420, an expert AI market analyst. Provide market state analysis in the exact JSON format requested. Be realistic and data-driven.'
+          },
+          {
+            role: 'user',
+            content: grok4Prompt
+          }
+        ],
+        temperature: 0.2, // Low temperature for consistent analysis
+        max_tokens: 1500
+      }),
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Market analysis timeout')), 3000) // 3 second timeout
+      )
+    ]);
 
     // Parse Grok 4 response
     const responseContent = grok4Response.choices?.[0]?.message?.content || '';

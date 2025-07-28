@@ -101,21 +101,26 @@ Base your analysis on:
 
 Be realistic and data-driven in your assessment.`;
 
-      // Call Grok 4 API for sophisticated news analysis
-      const grok4Response = await Grok4Service.chatCompletion({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are GROK420, an expert AI news analyst. Provide news analysis in the exact JSON format requested. Be realistic and data-driven.'
-          },
-          {
-            role: 'user',
-            content: grok4Prompt
-          }
-        ],
-        temperature: 0.3, // Moderate temperature for balanced analysis
-        max_tokens: 800
-      });
+      // Call Grok 4 API for sophisticated news analysis with timeout
+      const grok4Response = await Promise.race([
+        Grok4Service.chatCompletion({
+          messages: [
+            {
+              role: 'system',
+              content: 'You are GROK420, an expert AI news analyst. Provide news analysis in the exact JSON format requested. Be realistic and data-driven.'
+            },
+            {
+              role: 'user',
+              content: grok4Prompt
+            }
+          ],
+          temperature: 0.3, // Moderate temperature for balanced analysis
+          max_tokens: 800
+        }),
+        new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('News analysis timeout')), 2500) // 2.5 second timeout // 5 second timeout
+        )
+      ]);
 
       // Parse Grok 4 response
       const responseContent = grok4Response.choices?.[0]?.message?.content || '';
@@ -234,20 +239,25 @@ Provide your insights in this exact JSON format:
 
 Make the insights relevant, timely, and impactful for crypto market participants.`;
 
-    const grok4Response = await Grok4Service.chatCompletion({
-      messages: [
-        {
-          role: 'system',
-          content: 'You are GROK420, an expert AI market analyst. Generate market insights in the exact JSON format requested.'
-        },
-        {
-          role: 'user',
-          content: grok4Prompt
-        }
-      ],
-      temperature: 0.4,
-      max_tokens: 1000
-    });
+    const grok4Response = await Promise.race([
+      Grok4Service.chatCompletion({
+        messages: [
+          {
+            role: 'system',
+            content: 'You are GROK420, an expert AI market analyst. Generate market insights in the exact JSON format requested.'
+          },
+          {
+            role: 'user',
+            content: grok4Prompt
+          }
+        ],
+        temperature: 0.4,
+        max_tokens: 1000
+      }),
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Market insights timeout')), 2000) // 2 second timeout // 4 second timeout
+      )
+    ]);
 
     const responseContent = grok4Response.choices?.[0]?.message?.content || '';
     const jsonMatch = responseContent.match(/\{[\s\S]*\}/);
