@@ -1,33 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-interface MarketPrediction {
-  timeframe: string;
-  btcPrediction: {
-    price: number;
-    change: number;
-    confidence: number;
-    reasoning: string;
-  };
-  topPerformers: {
-    asset: string;
-    symbol: string;
-    predictedOutperformance: number;
-    confidence: number;
-    reasoning: string;
-    type: 'crypto' | 'stock';
-  }[];
-  marketSentiment: 'bullish' | 'bearish' | 'neutral';
-}
-
-interface MarketState {
-  fearGreedIndex: number;
-  trend: 'up' | 'down' | 'sideways';
-  volatility: number;
-  bullMarketPeakSignals: {
-    peakRisk: 'low' | 'medium' | 'high' | 'extreme';
-  };
-}
+import { MarketPrediction, MarketState } from '@/types/watchlist';
 
 export default function WatchlistPage() {
   const [predictions, setPredictions] = useState<MarketPrediction[]>([]);
