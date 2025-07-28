@@ -563,50 +563,7 @@ export default function MarketDashboardPage() {
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
-              Quick Actions
-            </h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Button
-                onClick={() => window.open('https://www.coingecko.com/en/coins/bitcoin', '_blank')}
-                className="bg-black text-yellow-500 border-2 border-yellow-500 font-bold px-6 py-4 rounded-none hover:bg-yellow-500 hover:text-black transition-all duration-300"
-              >
-                <div className="text-center">
-                  <p className="text-lg font-bold">Bitcoin Chart</p>
-                  <p className="text-sm opacity-80">View on CoinGecko</p>
-                </div>
-              </Button>
-              <Button
-                onClick={() => window.open('https://www.tradingview.com/symbols/CRYPTOCAP-BTC.D/', '_blank')}
-                className="bg-black text-yellow-500 border-2 border-yellow-500 font-bold px-6 py-4 rounded-none hover:bg-yellow-500 hover:text-black transition-all duration-300"
-              >
-                <div className="text-center">
-                  <p className="text-lg font-bold">BTC Analysis</p>
-                  <p className="text-sm opacity-80">TradingView Charts</p>
-                </div>
-              </Button>
-              <Button
-                onClick={() => window.open('https://alternative.me/crypto/fear-and-greed-index/', '_blank')}
-                className="bg-black text-yellow-500 border-2 border-yellow-500 font-bold px-6 py-4 rounded-none hover:bg-yellow-500 hover:text-black transition-all duration-300"
-              >
-                <div className="text-center">
-                  <p className="text-lg font-bold">Fear & Greed</p>
-                  <p className="text-sm opacity-80">Market Sentiment</p>
-                </div>
-              </Button>
-              <Button
-                onClick={() => window.open('https://www.lookintobitcoin.com/charts/bitcoin-halving-countdown/', '_blank')}
-                className="bg-black text-yellow-500 border-2 border-yellow-500 font-bold px-6 py-4 rounded-none hover:bg-yellow-500 hover:text-black transition-all duration-300"
-              >
-                <div className="text-center">
-                  <p className="text-lg font-bold">Halving Countdown</p>
-                  <p className="text-sm opacity-80">Next Bitcoin Halving</p>
-                </div>
-              </Button>
-            </div>
-          </div>
+
 
           {/* Disclaimer */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
