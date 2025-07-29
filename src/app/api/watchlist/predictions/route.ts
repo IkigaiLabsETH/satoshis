@@ -23,7 +23,7 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
   const startTime = Date.now();
   performanceMetrics.totalRequests++;
   
-  const cacheKey = 'predictions_day_week'; // Updated for day/week focus
+  const cacheKey = 'predictions_day_week_default'; // Cache for default day/week predictions
   const cached = predictionsCache.get(cacheKey);
   
   if (cached && Date.now() - cached.timestamp < cached.ttl) {
@@ -69,10 +69,70 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
   }
 };
 
+// Generate single timeframe prediction for lazy loading
+const generateSingleTimeframePrediction = async (timeframe: string): Promise<MarketPrediction | null> => {
+  const startTime = Date.now();
+  
+  try {
+    // Fetch all data in parallel
+    const [bitcoinData, cryptoData, stockData, newsData] = await Promise.all([
+      MarketDataService.getBitcoinData(),
+      MarketDataService.getCryptoData(),
+      MarketDataService.getStockData(),
+      MarketDataService.getNewsData()
+    ]);
+
+    // Generate single prediction for the requested timeframe
+    const prediction = await PredictionEngine.generateSingleTimeframePrediction(
+      timeframe,
+      bitcoinData,
+      cryptoData,
+      stockData,
+      newsData
+    );
+
+    // Update performance metrics
+    const responseTime = Date.now() - startTime;
+    performanceMetrics.totalRequests++;
+    performanceMetrics.averageResponseTime = 
+      (performanceMetrics.averageResponseTime * (performanceMetrics.totalRequests - 1) + responseTime) / performanceMetrics.totalRequests;
+    performanceMetrics.grok4Success++;
+
+    return prediction;
+  } catch {
+    performanceMetrics.grok4Failures++;
+    return null;
+  }
+};
+
 export const dynamic = 'force-dynamic';
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const requestedTimeframe = searchParams.get('timeframe');
+    
+    // If specific timeframe requested, generate only that one
+    if (requestedTimeframe && ['month', 'year'].includes(requestedTimeframe)) {
+      const singlePrediction = await generateSingleTimeframePrediction(requestedTimeframe);
+      
+      if (singlePrediction) {
+        return NextResponse.json({
+          success: true,
+          data: [singlePrediction],
+          timestamp: new Date().toISOString(),
+          source: `Grok 4 AI Market Analysis (${requestedTimeframe} prediction)`,
+          performance: {
+            cacheHitRate: '0',
+            grok4SuccessRate: '100',
+            averageResponseTime: 0,
+            totalRequests: 1
+          }
+        });
+      }
+    }
+    
+    // Default: generate day and week predictions
     const predictions = await generatePredictions();
     
     if (predictions.length === 0) {

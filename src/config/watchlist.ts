@@ -33,7 +33,7 @@ export const watchlistConfig: WatchlistConfig = {
     // Tech Giants with Crypto Exposure
     'TSLA', 'NVDA', 'AMD', 'SQ'
   ],
-  timeframes: ['day', 'week'], // Focus on actionable timeframes for better performance
+  timeframes: ['day', 'week', 'month', 'year'], // All timeframes available, but lazy loaded
   grok4Timeout: 6000, // 6 seconds (reduced from 10)
   maxTopPerformers: 6
 };

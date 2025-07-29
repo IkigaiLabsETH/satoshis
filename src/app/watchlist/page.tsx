@@ -11,6 +11,8 @@ export default function WatchlistPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [selectedTimeframe, setSelectedTimeframe] = useState<string>('day');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loadedTimeframes, setLoadedTimeframes] = useState<Set<string>>(new Set(['day', 'week']));
+  const [loadingTimeframe, setLoadingTimeframe] = useState<string | null>(null);
   const hasMounted = useRef(false);
 
   useEffect(() => {
@@ -140,6 +142,34 @@ export default function WatchlistPage() {
     } finally {
       setIsRefreshing(false);
       setLastUpdated(new Date());
+    }
+  };
+
+  const handleTimeframeSelect = async (timeframe: string) => {
+    setSelectedTimeframe(timeframe);
+    
+    // If this timeframe hasn't been loaded yet, load it on-demand
+    if (!loadedTimeframes.has(timeframe) && (timeframe === 'month' || timeframe === 'year')) {
+      setLoadingTimeframe(timeframe);
+      
+      try {
+        const response = await fetch(`/api/watchlist/predictions?timeframe=${timeframe}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            // Add the new prediction to existing predictions
+            setPredictions(prev => {
+              const existing = prev.filter(p => p.timeframe !== timeframe);
+              return [...existing, ...data.data];
+            });
+            setLoadedTimeframes(prev => new Set(Array.from(prev).concat(timeframe)));
+          }
+        }
+      } catch {
+        // Handle error silently for better UX
+      } finally {
+        setLoadingTimeframe(null);
+      }
     }
   };
 
@@ -334,10 +364,10 @@ export default function WatchlistPage() {
         {/* Timeframe Selector */}
         <div className="flex justify-center mb-6">
           <div className="bg-black/30 border border-yellow-500/20 rounded-xl p-1">
-            {['day', 'week'].map((timeframe) => (
+            {['day', 'week', 'month', 'year'].map((timeframe) => (
               <button
                 key={timeframe}
-                onClick={() => setSelectedTimeframe(timeframe)}
+                onClick={() => handleTimeframeSelect(timeframe)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   selectedTimeframe === timeframe
                     ? 'bg-yellow-500 text-black'
@@ -345,6 +375,9 @@ export default function WatchlistPage() {
                 }`}
               >
                 {timeframe.charAt(0).toUpperCase() + timeframe.slice(1)}
+                {loadingTimeframe === timeframe && (
+                  <div className="inline-block ml-2 w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                )}
               </button>
             ))}
           </div>
@@ -353,7 +386,7 @@ export default function WatchlistPage() {
         {/* Performance Note */}
         <div className="text-center mb-6">
           <p className="text-sm text-white/60">
-            ⚡ Optimized for speed: Focused on actionable day & week predictions for faster insights
+            ⚡ Day & Week predictions load instantly • Month & Year predictions load on-demand
           </p>
         </div>
 

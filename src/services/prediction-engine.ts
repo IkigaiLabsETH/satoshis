@@ -145,6 +145,19 @@ export class PredictionEngine {
   }
 
   /**
+   * Generate a single prediction for a specific timeframe (for lazy loading)
+   */
+  static async generateSingleTimeframePrediction(
+    timeframe: string,
+    bitcoinData: { price: number; change24h: number },
+    cryptoData: CryptoData[],
+    stockData: StockData[],
+    newsData: NewsData[]
+  ): Promise<MarketPrediction> {
+    return this.generatePredictionForTimeframe(timeframe, bitcoinData, cryptoData, stockData, newsData);
+  }
+
+  /**
    * Generate prediction for a specific timeframe
    */
   private static async generatePredictionForTimeframe(
