@@ -10,7 +10,9 @@ import {
   watchlistConfig, 
   MARKET_PHILOSOPHY, 
   TIMEFRAME_MULTIPLIERS, 
-  PERFORMANCE_THRESHOLDS 
+  PERFORMANCE_THRESHOLDS,
+  ASSET_CATEGORIES,
+  STOCK_CATEGORIES
 } from '@/config/watchlist';
 
 interface MarketContext {
@@ -49,6 +51,23 @@ interface MarketContext {
     millennialAdoption: string;
     wealthTransfer: string;
     exponentialAge: string;
+  };
+  // Add categorized data for better analysis
+  categorizedAssets: {
+    layer1s: CryptoData[];
+    aiCompute: CryptoData[];
+    defiTrading: CryptoData[];
+    emerging: CryptoData[];
+    memeViral: CryptoData[];
+    bitcoinPlay: CryptoData[];
+    scaling: CryptoData[];
+  };
+  categorizedStocks: {
+    bitcoinHoldings: StockData[];
+    mining: StockData[];
+    exchanges: StockData[];
+    infrastructure: StockData[];
+    techGiants: StockData[];
   };
 }
 
@@ -182,20 +201,39 @@ export class PredictionEngine {
     stockData: StockData[],
     newsData: NewsData[]
   ): MarketContext {
+    // Categorize assets for better analysis
+    const categorizedAssets = {
+      layer1s: cryptoData.filter(asset => ASSET_CATEGORIES.LAYER_1S.includes(asset.id as any)),
+      aiCompute: cryptoData.filter(asset => ASSET_CATEGORIES.AI_COMPUTE.includes(asset.id as any)),
+      defiTrading: cryptoData.filter(asset => ASSET_CATEGORIES.DEFI_TRADING.includes(asset.id as any)),
+      emerging: cryptoData.filter(asset => ASSET_CATEGORIES.EMERGING.includes(asset.id as any)),
+      memeViral: cryptoData.filter(asset => ASSET_CATEGORIES.MEME_VIRAL.includes(asset.id as any)),
+      bitcoinPlay: cryptoData.filter(asset => ASSET_CATEGORIES.BITCOIN_PLAY.includes(asset.id as any)),
+      scaling: cryptoData.filter(asset => ASSET_CATEGORIES.SCALING.includes(asset.id as any))
+    };
+
+    const categorizedStocks = {
+      bitcoinHoldings: stockData.filter(stock => STOCK_CATEGORIES.BITCOIN_HOLDINGS.includes(stock.symbol as any)),
+      mining: stockData.filter(stock => STOCK_CATEGORIES.MINING.includes(stock.symbol as any)),
+      exchanges: stockData.filter(stock => STOCK_CATEGORIES.EXCHANGES.includes(stock.symbol as any)),
+      infrastructure: stockData.filter(stock => STOCK_CATEGORIES.INFRASTRUCTURE.includes(stock.symbol as any)),
+      techGiants: stockData.filter(stock => STOCK_CATEGORIES.TECH_GIANTS.includes(stock.symbol as any))
+    };
+
     return {
       bitcoin: {
         currentPrice: bitcoinData.price,
         change24h: bitcoinData.change24h,
-        marketCap: cryptoData.find(c => c.symbol === 'BTC')?.market_cap || 0,
-        volume: cryptoData.find(c => c.symbol === 'BTC')?.total_volume || 0
+        marketCap: bitcoinData.price * 19_500_000, // Approximate BTC supply
+        volume: bitcoinData.price * 19_500_000 * 0.02 // Approximate daily volume
       },
-      cryptoAssets: cryptoData.map(crypto => ({
-        symbol: crypto.symbol,
-        name: crypto.name,
-        price: crypto.current_price,
-        change24h: crypto.price_change_percentage_24h,
-        marketCap: crypto.market_cap,
-        volume: crypto.total_volume
+      cryptoAssets: cryptoData.map(asset => ({
+        symbol: asset.symbol.toUpperCase(),
+        name: asset.name,
+        price: asset.current_price,
+        change24h: asset.price_change_percentage_24h,
+        marketCap: asset.market_cap,
+        volume: asset.total_volume
       })),
       stocks: stockData.map(stock => ({
         symbol: stock.symbol,
@@ -218,7 +256,10 @@ export class PredictionEngine {
         millennialAdoption: MARKET_PHILOSOPHY.MILLENNIAL_ADOPTION,
         wealthTransfer: MARKET_PHILOSOPHY.WEALTH_TRANSFER,
         exponentialAge: MARKET_PHILOSOPHY.EXPONENTIAL_AGE
-      }
+      },
+      // Add categorized data for better analysis
+      categorizedAssets,
+      categorizedStocks
     };
   }
 
@@ -229,7 +270,7 @@ export class PredictionEngine {
     const timeframeLabel = timeframe.charAt(0).toUpperCase() + timeframe.slice(1);
     const multiplier = TIMEFRAME_MULTIPLIERS[timeframe as keyof typeof TIMEFRAME_MULTIPLIERS];
     
-    // Enhanced market context with more actionable insights
+    // Enhanced market context with categorized insights
     const topPerformers = marketContext.cryptoAssets
       .sort((a, b) => b.change24h - a.change24h)
       .slice(0, 5);
@@ -238,12 +279,30 @@ export class PredictionEngine {
       .sort((a, b) => b.change - a.change)
       .slice(0, 3);
 
+    // Category performance analysis
+    const categoryPerformance = {
+      layer1s: marketContext.categorizedAssets.layer1s.length > 0 ? 
+        marketContext.categorizedAssets.layer1s.reduce((sum, asset) => sum + asset.price_change_percentage_24h, 0) / marketContext.categorizedAssets.layer1s.length : 0,
+      aiCompute: marketContext.categorizedAssets.aiCompute.length > 0 ? 
+        marketContext.categorizedAssets.aiCompute.reduce((sum, asset) => sum + asset.price_change_percentage_24h, 0) / marketContext.categorizedAssets.aiCompute.length : 0,
+      defiTrading: marketContext.categorizedAssets.defiTrading.length > 0 ? 
+        marketContext.categorizedAssets.defiTrading.reduce((sum, asset) => sum + asset.price_change_percentage_24h, 0) / marketContext.categorizedAssets.defiTrading.length : 0,
+      memeViral: marketContext.categorizedAssets.memeViral.length > 0 ? 
+        marketContext.categorizedAssets.memeViral.reduce((sum, asset) => sum + asset.price_change_percentage_24h, 0) / marketContext.categorizedAssets.memeViral.length : 0
+    };
+
     return `You are GROK420, an expert crypto market analyst focused on identifying assets that will outperform Bitcoin (BTC).
 
 CURRENT MARKET CONTEXT:
 Bitcoin: $${marketContext.bitcoin.currentPrice.toLocaleString()} (${marketContext.bitcoin.change24h > 0 ? '+' : ''}${marketContext.bitcoin.change24h.toFixed(2)}% 24h)
 Market Cap: $${(marketContext.bitcoin.marketCap / 1e12).toFixed(2)}T
 Volume: $${(marketContext.bitcoin.volume / 1e9).toFixed(2)}B
+
+CATEGORY PERFORMANCE (24h avg):
+• Layer 1s: ${categoryPerformance.layer1s > 0 ? '+' : ''}${categoryPerformance.layer1s.toFixed(2)}%
+• AI/Compute: ${categoryPerformance.aiCompute > 0 ? '+' : ''}${categoryPerformance.aiCompute.toFixed(2)}%
+• DeFi/Trading: ${categoryPerformance.defiTrading > 0 ? '+' : ''}${categoryPerformance.defiTrading.toFixed(2)}%
+• Meme/Viral: ${categoryPerformance.memeViral > 0 ? '+' : ''}${categoryPerformance.memeViral.toFixed(2)}%
 
 TOP PERFORMING ASSETS (24h):
 ${topPerformers.map(asset => `- ${asset.symbol}: $${asset.price.toLocaleString()} (${asset.change24h > 0 ? '+' : ''}${asset.change24h.toFixed(2)}%)`).join('\n')}
@@ -261,12 +320,20 @@ MARKET PHILOSOPHY:
 
 TASK: Generate ${timeframeLabel} predictions (${multiplier} days) for assets likely to outperform Bitcoin.
 
+STRATEGIC FOCUS:
+1. **Layer 1 Rotation**: Monitor ETH, SOL, SUI for institutional flows
+2. **AI/Compute Momentum**: TAO, RNDR, AR, KAS benefiting from AI boom
+3. **DeFi/Trading**: HYPE, AAVE, UNI capitalizing on trading volume
+4. **Meme/Viral**: PEPE, DOGE, SHIB, PENGU, REKT, ENA for retail momentum
+5. **Bitcoin Plays**: STX, ORDI for Bitcoin ecosystem growth
+
 REQUIREMENTS:
 1. Analyze current momentum, news sentiment, and market cycles
 2. Focus on assets with strong fundamentals and positive catalysts
 3. Consider sector rotation and market regime changes
 4. Provide specific reasoning for each prediction
 5. Include confidence levels based on data strength
+6. Prioritize assets with clear outperformance catalysts
 
 RETURN ONLY THIS JSON:
 {
