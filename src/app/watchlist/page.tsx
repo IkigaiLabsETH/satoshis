@@ -10,6 +10,7 @@ export default function WatchlistPage() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [selectedTimeframe, setSelectedTimeframe] = useState<string>('day');
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const hasMounted = useRef(false);
 
   useEffect(() => {
@@ -84,9 +85,9 @@ export default function WatchlistPage() {
 }, []); // Empty dependency array - only run once on mount
 
   const handleRefresh = async () => {
-    if (loading) return; // Prevent multiple simultaneous requests
+    if (loading || isRefreshing) return; // Prevent multiple simultaneous requests
     
-    setLoading(true);
+    setIsRefreshing(true);
     setError(null);
     
     try {
@@ -137,7 +138,7 @@ export default function WatchlistPage() {
     } catch {
       setError('Error refreshing market data');
     } finally {
-      setLoading(false);
+      setIsRefreshing(false);
       setLastUpdated(new Date());
     }
   };
@@ -171,6 +172,28 @@ export default function WatchlistPage() {
       case 'high': return 'text-orange-400';
       case 'medium': return 'text-yellow-400';
       default: return 'text-green-400';
+    }
+  };
+
+  const getMarketStrengthColor = (strength: string) => {
+    switch (strength) {
+      case 'strong_bull': return 'text-green-400';
+      case 'bull': return 'text-green-300';
+      case 'neutral': return 'text-yellow-400';
+      case 'bear': return 'text-orange-400';
+      case 'strong_bear': return 'text-red-400';
+      default: return 'text-white/60';
+    }
+  };
+
+  const getMarketStrengthLabel = (strength: string) => {
+    switch (strength) {
+      case 'strong_bull': return 'Strong Bull';
+      case 'bull': return 'Bullish';
+      case 'neutral': return 'Neutral';
+      case 'bear': return 'Bearish';
+      case 'strong_bear': return 'Strong Bear';
+      default: return 'Unknown';
     }
   };
 
@@ -248,9 +271,19 @@ export default function WatchlistPage() {
             <span>Last updated: {lastUpdated?.toLocaleTimeString()}</span>
             <button 
               onClick={handleRefresh}
-              className="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 px-3 py-1 rounded-lg transition-all duration-200"
+              disabled={isRefreshing}
+              className={`bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 px-3 py-1 rounded-lg transition-all duration-200 flex items-center gap-2 ${
+                isRefreshing ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              ↻ Refresh
+              {isRefreshing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+                  Refreshing...
+                </>
+              ) : (
+                '↻ Refresh'
+              )}
             </button>
           </div>
           <div className="mt-4 flex justify-center">
@@ -286,6 +319,12 @@ export default function WatchlistPage() {
                 <p className="text-white/60 text-sm mb-2">Peak Risk</p>
                 <p className={`text-2xl font-bold ${getPeakRiskColor(marketState.bullMarketPeakSignals.peakRisk)}`}>
                   {marketState.bullMarketPeakSignals.peakRisk.toUpperCase()}
+                </p>
+              </div>
+              <div className="text-center bg-black/30 p-4 rounded-xl border border-yellow-500/20">
+                <p className="text-white/60 text-sm mb-2">Market Strength</p>
+                <p className={`text-2xl font-bold ${getMarketStrengthColor(marketState.marketStrength)}`}>
+                  {getMarketStrengthLabel(marketState.marketStrength)}
                 </p>
               </div>
             </div>

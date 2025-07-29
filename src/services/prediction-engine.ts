@@ -226,76 +226,70 @@ export class PredictionEngine {
    * Build Grok 4 prompt
    */
   private static buildGrok4Prompt(timeframe: string, marketContext: MarketContext): string {
-    return `You are GROK420, an expert AI market analyst specializing in Bitcoin and cryptocurrency markets. 
+    const timeframeLabel = timeframe.charAt(0).toUpperCase() + timeframe.slice(1);
+    const multiplier = TIMEFRAME_MULTIPLIERS[timeframe as keyof typeof TIMEFRAME_MULTIPLIERS];
+    
+    // Enhanced market context with more actionable insights
+    const topPerformers = marketContext.cryptoAssets
+      .sort((a, b) => b.change24h - a.change24h)
+      .slice(0, 5);
+    
+    const topStocks = marketContext.stocks
+      .sort((a, b) => b.change - a.change)
+      .slice(0, 3);
 
-Analyze the following market data and provide predictions for the next ${timeframe}:
+    return `You are GROK420, an expert crypto market analyst focused on identifying assets that will outperform Bitcoin (BTC).
 
-**CURRENT MARKET DATA:**
-- Bitcoin Price: $${marketContext.bitcoin.currentPrice.toLocaleString()}
-- Bitcoin 24h Change: ${marketContext.bitcoin.change24h.toFixed(2)}%
-- Bitcoin Market Cap: $${(marketContext.bitcoin.marketCap / 1e12).toFixed(2)}T
-- Bitcoin Volume: $${(marketContext.bitcoin.volume / 1e9).toFixed(2)}B
+CURRENT MARKET CONTEXT:
+Bitcoin: $${marketContext.bitcoin.currentPrice.toLocaleString()} (${marketContext.bitcoin.change24h > 0 ? '+' : ''}${marketContext.bitcoin.change24h.toFixed(2)}% 24h)
+Market Cap: $${(marketContext.bitcoin.marketCap / 1e12).toFixed(2)}T
+Volume: $${(marketContext.bitcoin.volume / 1e9).toFixed(2)}B
 
-**TOP CRYPTO ASSETS:**
-${marketContext.cryptoAssets.map((asset) => 
-  `- ${asset.symbol}: $${asset.price.toLocaleString()} (${asset.change24h >= 0 ? '+' : ''}${asset.change24h.toFixed(2)}%)`
-).join('\n')}
+TOP PERFORMING ASSETS (24h):
+${topPerformers.map(asset => `- ${asset.symbol}: $${asset.price.toLocaleString()} (${asset.change24h > 0 ? '+' : ''}${asset.change24h.toFixed(2)}%)`).join('\n')}
 
-**CRYPTO-RELATED STOCKS:**
-${marketContext.stocks.map((stock) => 
-  `- ${stock.symbol}: $${stock.price.toFixed(2)} (${stock.change >= 0 ? '+' : ''}${stock.change.toFixed(2)}%)`
-).join('\n')}
+TOP CRYPTO STOCKS (24h):
+${topStocks.map(stock => `- ${stock.symbol}: $${stock.price.toLocaleString()} (${stock.change > 0 ? '+' : ''}${stock.change.toFixed(2)}%)`).join('\n')}
 
-**RECENT NEWS & SENTIMENT:**
-${marketContext.news.map((news) => 
-  `- ${news.title} (${news.sentiment || 'neutral'} sentiment, ${news.impact || 5}/10 impact)`
-).join('\n')}
+KEY NEWS IMPACT:
+${marketContext.news.slice(0, 3).map(news => `- ${news.title}: ${news.sentiment || 'neutral'} impact`).join('\n')}
 
-**MARKET PHILOSOPHY CONTEXT:**
-- 2Y MA x5 Exit Signal: $${marketContext.marketPhilosophy.twoYearMAx5.toLocaleString()}
-- Millennial Adoption: ${marketContext.marketPhilosophy.millennialAdoption}
-- Wealth Transfer: ${marketContext.marketPhilosophy.wealthTransfer}
+MARKET PHILOSOPHY:
+- 2-Year MA: $${marketContext.marketPhilosophy.twoYearMA.toLocaleString()}
 - Exponential Age: ${marketContext.marketPhilosophy.exponentialAge}
+- Wealth Transfer: ${marketContext.marketPhilosophy.wealthTransfer}
 
-Provide a structured prediction for the next ${timeframe} in this exact JSON format:
+TASK: Generate ${timeframeLabel} predictions (${multiplier} days) for assets likely to outperform Bitcoin.
 
+REQUIREMENTS:
+1. Analyze current momentum, news sentiment, and market cycles
+2. Focus on assets with strong fundamentals and positive catalysts
+3. Consider sector rotation and market regime changes
+4. Provide specific reasoning for each prediction
+5. Include confidence levels based on data strength
+
+RETURN ONLY THIS JSON:
 {
   "btcPrediction": {
-    "price": <predicted_price_number>,
-    "change": <predicted_percentage_change_number>,
-    "confidence": <confidence_percentage_0_100>,
-    "reasoning": "<detailed_reasoning_with_technical_analysis>"
+    "price": <predicted_price>,
+    "change": <predicted_percentage_change>,
+    "confidence": <0-100>,
+    "reasoning": "<specific reasoning based on market data>"
   },
   "topPerformers": [
     {
       "asset": "<asset_name>",
       "symbol": "<symbol>",
-      "predictedOutperformance": <percentage_vs_bitcoin_number>,
-      "confidence": <confidence_percentage_0_100>,
-      "reasoning": "<why_this_asset_will_outperform>",
-      "type": "<crypto_or_stock>"
+      "predictedOutperformance": <percentage_vs_btc>,
+      "confidence": <0-100>,
+      "reasoning": "<specific catalyst/reasoning>",
+      "type": "crypto|stock"
     }
   ],
-  "marketSentiment": "<bullish_bearish_or_neutral>"
+  "marketSentiment": "bullish|bearish|neutral"
 }
 
-Focus on:
-1. Technical analysis of current price action and momentum
-2. Market sentiment from news and social data
-3. Institutional flows and ETF data
-4. Market philosophy factors (2Y MA x5, generational shift, exponential age)
-5. **SPECIFICALLY identify assets that could outperform Bitcoin like recent examples: PENGU, REKT, ENA, PEPE, SHIB, DOGE**
-6. Look for coins with strong fundamentals, high volume, and momentum
-7. Consider meme coins, DeFi tokens, and Layer 1/2 solutions
-8. Analyze which crypto-related stocks (MSTR, COIN, RIOT, etc.) could benefit from crypto rallies
-
-**IMPORTANT:** 
-1. Look for the next potential 10x-100x performers that could follow the pattern of recent outperformers. Focus on coins with strong community, high volume, and momentum indicators.
-2. **CRITICAL:** Only use symbols that are listed in the TOP CRYPTO ASSETS section above. Do NOT make up or invent new symbols.
-3. For crypto assets, use the exact symbol from the data (e.g., "IMX" for Immutable, not "dara").
-4. For stocks, use the exact symbol from the data (e.g., "MSTR", "COIN", "RIOT").
-
-Be realistic with predictions and provide detailed reasoning based on the data provided.`;
+Focus on actionable insights and specific catalysts that will drive outperformance.`;
   }
 
   /**
