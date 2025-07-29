@@ -11,6 +11,8 @@ export default function WatchlistPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [selectedTimeframe, setSelectedTimeframe] = useState<string>('day');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loadedTimeframes, setLoadedTimeframes] = useState<Set<string>>(new Set(['day', 'week']));
+  const [loadingTimeframe, setLoadingTimeframe] = useState<string | null>(null);
   const hasMounted = useRef(false);
 
   useEffect(() => {
@@ -143,6 +145,34 @@ export default function WatchlistPage() {
     }
   };
 
+  const handleTimeframeSelect = async (timeframe: string) => {
+    setSelectedTimeframe(timeframe);
+    
+    // If this timeframe hasn't been loaded yet, load it on-demand
+    if (!loadedTimeframes.has(timeframe) && (timeframe === 'month' || timeframe === 'year')) {
+      setLoadingTimeframe(timeframe);
+      
+      try {
+        const response = await fetch(`/api/watchlist/predictions?timeframe=${timeframe}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            // Add the new prediction to existing predictions
+            setPredictions(prev => {
+              const existing = prev.filter(p => p.timeframe !== timeframe);
+              return [...existing, ...data.data];
+            });
+            setLoadedTimeframes(prev => new Set(Array.from(prev).concat(timeframe)));
+          }
+        }
+      } catch {
+        // Handle error silently for better UX
+      } finally {
+        setLoadingTimeframe(null);
+      }
+    }
+  };
+
   const getFearGreedColor = (index: number) => {
     if (index >= 75) return 'text-green-400';
     if (index >= 50) return 'text-yellow-400';
@@ -210,7 +240,7 @@ export default function WatchlistPage() {
               <div className="space-y-2 text-sm text-white/50">
                 <div>• Fetching market data from CoinGecko</div>
                 <div>• Analyzing market sentiment with Grok 4 AI</div>
-                <div>• Generating multi-timeframe predictions</div>
+                <div>• Generating day & week predictions (optimized for speed)</div>
               </div>
               <div className="mt-6 flex justify-center">
                 <div className="w-8 h-8 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
@@ -337,7 +367,7 @@ export default function WatchlistPage() {
             {['day', 'week', 'month', 'year'].map((timeframe) => (
               <button
                 key={timeframe}
-                onClick={() => setSelectedTimeframe(timeframe)}
+                onClick={() => handleTimeframeSelect(timeframe)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   selectedTimeframe === timeframe
                     ? 'bg-yellow-500 text-black'
@@ -345,9 +375,19 @@ export default function WatchlistPage() {
                 }`}
               >
                 {timeframe.charAt(0).toUpperCase() + timeframe.slice(1)}
+                {loadingTimeframe === timeframe && (
+                  <div className="inline-block ml-2 w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                )}
               </button>
             ))}
           </div>
+        </div>
+        
+        {/* Performance Note */}
+        <div className="text-center mb-6">
+          <p className="text-sm text-white/60">
+            ⚡ Day & Week predictions load instantly • Month & Year predictions load on-demand
+          </p>
         </div>
 
         {/* AI Predictions */}
