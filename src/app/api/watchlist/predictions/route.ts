@@ -4,7 +4,7 @@ import { PredictionEngine } from '@/services/prediction-engine';
 import { MarketPrediction } from '@/types/watchlist';
 
 // Configure timeout for this API route
-export const maxDuration = 30; // 30 seconds max duration
+export const maxDuration = 20; // Reduced from 30s to 20s for faster day/week predictions
 
 // Simple in-memory cache for predictions
 const predictionsCache = new Map<string, { data: MarketPrediction[]; timestamp: number; ttl: number }>();
@@ -23,7 +23,7 @@ const generatePredictions = async (): Promise<MarketPrediction[]> => {
   const startTime = Date.now();
   performanceMetrics.totalRequests++;
   
-  const cacheKey = 'predictions_all_timeframes';
+  const cacheKey = 'predictions_day_week'; // Updated for day/week focus
   const cached = predictionsCache.get(cacheKey);
   
   if (cached && Date.now() - cached.timestamp < cached.ttl) {
@@ -87,7 +87,7 @@ export async function GET(_request: NextRequest) {
       success: true,
       data: predictions,
       timestamp: new Date().toISOString(),
-      source: 'Grok 4 AI Market Analysis',
+      source: 'Grok 4 AI Market Analysis (Day/Week Focus)',
       performance: {
         cacheHitRate: performanceMetrics.totalRequests > 0 ? (performanceMetrics.cacheHits / performanceMetrics.totalRequests * 100).toFixed(1) : '0',
         grok4SuccessRate: performanceMetrics.totalRequests > 0 ? (performanceMetrics.grok4Success / performanceMetrics.totalRequests * 100).toFixed(1) : '0',

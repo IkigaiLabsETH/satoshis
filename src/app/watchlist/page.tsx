@@ -210,7 +210,7 @@ export default function WatchlistPage() {
               <div className="space-y-2 text-sm text-white/50">
                 <div>• Fetching market data from CoinGecko</div>
                 <div>• Analyzing market sentiment with Grok 4 AI</div>
-                <div>• Generating multi-timeframe predictions</div>
+                <div>• Generating day & week predictions (optimized for speed)</div>
               </div>
               <div className="mt-6 flex justify-center">
                 <div className="w-8 h-8 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
@@ -334,7 +334,7 @@ export default function WatchlistPage() {
         {/* Timeframe Selector */}
         <div className="flex justify-center mb-6">
           <div className="bg-black/30 border border-yellow-500/20 rounded-xl p-1">
-            {['day', 'week', 'month', 'year'].map((timeframe) => (
+            {['day', 'week'].map((timeframe) => (
               <button
                 key={timeframe}
                 onClick={() => setSelectedTimeframe(timeframe)}
@@ -348,6 +348,13 @@ export default function WatchlistPage() {
               </button>
             ))}
           </div>
+        </div>
+        
+        {/* Performance Note */}
+        <div className="text-center mb-6">
+          <p className="text-sm text-white/60">
+            ⚡ Optimized for speed: Focused on actionable day & week predictions for faster insights
+          </p>
         </div>
 
         {/* AI Predictions */}
