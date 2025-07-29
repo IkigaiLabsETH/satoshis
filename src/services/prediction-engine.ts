@@ -201,23 +201,33 @@ export class PredictionEngine {
     stockData: StockData[],
     newsData: NewsData[]
   ): MarketContext {
+    // Helper function to check if asset ID is in category
+    const isAssetInCategory = (assetId: string, category: readonly string[]): boolean => {
+      return category.includes(assetId);
+    };
+
+    // Helper function to check if stock symbol is in category
+    const isStockInCategory = (symbol: string, category: readonly string[]): boolean => {
+      return category.includes(symbol);
+    };
+
     // Categorize assets for better analysis
     const categorizedAssets = {
-      layer1s: cryptoData.filter(asset => ASSET_CATEGORIES.LAYER_1S.includes(asset.id as any)),
-      aiCompute: cryptoData.filter(asset => ASSET_CATEGORIES.AI_COMPUTE.includes(asset.id as any)),
-      defiTrading: cryptoData.filter(asset => ASSET_CATEGORIES.DEFI_TRADING.includes(asset.id as any)),
-      emerging: cryptoData.filter(asset => ASSET_CATEGORIES.EMERGING.includes(asset.id as any)),
-      memeViral: cryptoData.filter(asset => ASSET_CATEGORIES.MEME_VIRAL.includes(asset.id as any)),
-      bitcoinPlay: cryptoData.filter(asset => ASSET_CATEGORIES.BITCOIN_PLAY.includes(asset.id as any)),
-      scaling: cryptoData.filter(asset => ASSET_CATEGORIES.SCALING.includes(asset.id as any))
+      layer1s: cryptoData.filter(asset => isAssetInCategory(asset.id, ASSET_CATEGORIES.LAYER_1S)),
+      aiCompute: cryptoData.filter(asset => isAssetInCategory(asset.id, ASSET_CATEGORIES.AI_COMPUTE)),
+      defiTrading: cryptoData.filter(asset => isAssetInCategory(asset.id, ASSET_CATEGORIES.DEFI_TRADING)),
+      emerging: cryptoData.filter(asset => isAssetInCategory(asset.id, ASSET_CATEGORIES.EMERGING)),
+      memeViral: cryptoData.filter(asset => isAssetInCategory(asset.id, ASSET_CATEGORIES.MEME_VIRAL)),
+      bitcoinPlay: cryptoData.filter(asset => isAssetInCategory(asset.id, ASSET_CATEGORIES.BITCOIN_PLAY)),
+      scaling: cryptoData.filter(asset => isAssetInCategory(asset.id, ASSET_CATEGORIES.SCALING))
     };
 
     const categorizedStocks = {
-      bitcoinHoldings: stockData.filter(stock => STOCK_CATEGORIES.BITCOIN_HOLDINGS.includes(stock.symbol as any)),
-      mining: stockData.filter(stock => STOCK_CATEGORIES.MINING.includes(stock.symbol as any)),
-      exchanges: stockData.filter(stock => STOCK_CATEGORIES.EXCHANGES.includes(stock.symbol as any)),
-      infrastructure: stockData.filter(stock => STOCK_CATEGORIES.INFRASTRUCTURE.includes(stock.symbol as any)),
-      techGiants: stockData.filter(stock => STOCK_CATEGORIES.TECH_GIANTS.includes(stock.symbol as any))
+      bitcoinHoldings: stockData.filter(stock => isStockInCategory(stock.symbol, STOCK_CATEGORIES.BITCOIN_HOLDINGS)),
+      mining: stockData.filter(stock => isStockInCategory(stock.symbol, STOCK_CATEGORIES.MINING)),
+      exchanges: stockData.filter(stock => isStockInCategory(stock.symbol, STOCK_CATEGORIES.EXCHANGES)),
+      infrastructure: stockData.filter(stock => isStockInCategory(stock.symbol, STOCK_CATEGORIES.INFRASTRUCTURE)),
+      techGiants: stockData.filter(stock => isStockInCategory(stock.symbol, STOCK_CATEGORIES.TECH_GIANTS))
     };
 
     return {
