@@ -69,6 +69,74 @@ export class MarketDataService {
   private static globalDataCache: { data: GlobalMarketData | null; timestamp: number } | null = null;
   private static readonly CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 
+  // Technical analysis indicators
+  static calculateRSI(prices: number[], period: number = 14): number {
+    if (prices.length < period + 1) return 50;
+    
+    let gains = 0;
+    let losses = 0;
+    
+    for (let i = 1; i <= period; i++) {
+      const change = prices[i] - prices[i - 1];
+      if (change > 0) gains += change;
+      else losses -= change;
+    }
+    
+    const avgGain = gains / period;
+    const avgLoss = losses / period;
+    const rs = avgGain / avgLoss;
+    return 100 - (100 / (1 + rs));
+  }
+
+  static calculateMACD(prices: number[], fastPeriod: number = 12, slowPeriod: number = 26): { macd: number; signal: number; histogram: number } {
+    if (prices.length < slowPeriod) return { macd: 0, signal: 0, histogram: 0 };
+    
+    const ema12 = this.calculateEMA(prices, fastPeriod);
+    const ema26 = this.calculateEMA(prices, slowPeriod);
+    const macd = ema12 - ema26;
+    const signal = this.calculateEMA([...Array(slowPeriod - fastPeriod).fill(0), macd], 9);
+    const histogram = macd - signal;
+    
+    return { macd, signal, histogram };
+  }
+
+  private static calculateEMA(prices: number[], period: number): number {
+    const multiplier = 2 / (period + 1);
+    let ema = prices[0];
+    
+    for (let i = 1; i < prices.length; i++) {
+      ema = (prices[i] * multiplier) + (ema * (1 - multiplier));
+    }
+    
+    return ema;
+  }
+
+  static calculateBollingerBands(prices: number[], period: number = 20, stdDev: number = 2): { upper: number; middle: number; lower: number } {
+    if (prices.length < period) return { upper: 0, middle: 0, lower: 0 };
+    
+    const recentPrices = prices.slice(-period);
+    const sma = recentPrices.reduce((sum, price) => sum + price, 0) / period;
+    
+    const variance = recentPrices.reduce((sum, price) => sum + Math.pow(price - sma, 2), 0) / period;
+    const standardDeviation = Math.sqrt(variance);
+    
+    return {
+      upper: sma + (standardDeviation * stdDev),
+      middle: sma,
+      lower: sma - (standardDeviation * stdDev)
+    };
+  }
+
+  static getMarketStrength(btcChange: number, volumeChange: number, fearGreedIndex: number): 'strong_bull' | 'bull' | 'neutral' | 'bear' | 'strong_bear' {
+    const score = (btcChange * 0.4) + (volumeChange * 0.3) + ((fearGreedIndex - 50) * 0.3);
+    
+    if (score > 20) return 'strong_bull';
+    if (score > 10) return 'bull';
+    if (score > -10) return 'neutral';
+    if (score > -20) return 'bear';
+    return 'strong_bear';
+  }
+
   static async getBitcoinData(): Promise<{ price: number; change24h: number }> {
     try {
       const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');

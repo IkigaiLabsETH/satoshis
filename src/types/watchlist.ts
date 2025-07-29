@@ -57,6 +57,7 @@ export interface MarketState {
   fearGreedIndex: number;
   trend: 'up' | 'down' | 'sideways';
   volatility: number;
+  marketStrength: 'strong_bull' | 'bull' | 'neutral' | 'bear' | 'strong_bear';
   bullMarketPeakSignals: {
     peakRisk: 'low' | 'medium' | 'high' | 'extreme';
   };

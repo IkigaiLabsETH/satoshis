@@ -39,6 +39,7 @@ Return only this JSON:
   "fearGreedIndex": <0-100>,
   "trend": "<up|down|sideways>",
   "volatility": <percentage>,
+  "marketStrength": "<strong_bull|bull|neutral|bear|strong_bear>",
   "bullMarketPeakSignals": {
     "peakRisk": "<low|medium|high|extreme>"
   }
@@ -79,6 +80,7 @@ Return only this JSON:
           fearGreedIndex: analysisData.fearGreedIndex || Math.floor(Math.abs(marketContext.volumeChange24h * 1000) % 40) + 30,
           trend: analysisData.trend || (marketContext.volumeChange24h > 0.05 ? 'up' : 'sideways'),
           volatility: analysisData.volatility || Math.abs(marketContext.volumeChange24h * 100) + 20,
+          marketStrength: analysisData.marketStrength || 'neutral',
           bullMarketPeakSignals: {
             peakRisk: analysisData.bullMarketPeakSignals?.peakRisk || (Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low')
           }
@@ -115,6 +117,7 @@ const createFallbackMarketState = (globalData: GlobalMarketData): MarketState =>
     fearGreedIndex,
     trend,
     volatility,
+    marketStrength: fearGreedIndex > 70 ? 'strong_bull' : fearGreedIndex > 60 ? 'bull' : fearGreedIndex > 40 ? 'neutral' : fearGreedIndex > 30 ? 'bear' : 'strong_bear',
     bullMarketPeakSignals: {
       peakRisk: fearGreedIndex > 70 ? 'high' : fearGreedIndex > 50 ? 'medium' : 'low'
     }
@@ -159,6 +162,7 @@ const getMarketState = async (): Promise<MarketState> => {
       fearGreedIndex: 50,
       trend: 'sideways',
       volatility: 25,
+      marketStrength: 'neutral',
       bullMarketPeakSignals: {
         peakRisk: 'medium'
       }
