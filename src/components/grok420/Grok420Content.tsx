@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Bot, User, Loader2, Sparkles, Image as ImageIcon, Copy, Info, BarChart3 } from 'lucide-react';
 import { useChartMemory, useMarketMemory, useUserMemory } from './SupermemoryIntegration';
 import EquityResearchForm, { EquityResearchReport } from './EquityResearchForm';
+import type { EquityResearchData } from './EquityResearchForm';
 
 interface Message {
   id: string;
@@ -52,25 +53,7 @@ export default function Grok420Content() {
   const [_timeoutError, _setTimeoutError] = useState<string | null>(null);
   const [isGodmode, _setIsGodmode] = useState(false); // GODMODE disabled - always false
   const [showEquityResearch, setShowEquityResearch] = useState(false);
-  const [equityResearchData, setEquityResearchData] = useState<{
-    fundamentalAnalysis?: Record<string, string>;
-    technicalAnalysis?: Record<string, string>;
-    thesisValidation?: {
-      supportingArguments: string[];
-      counterArguments: string[];
-      verdict: string;
-      justification: string;
-    };
-    sectorMacroView?: Record<string, string>;
-    catalystWatch?: Record<string, string[]>;
-    investmentSummary?: {
-      thesis: string[];
-      recommendation: string;
-      confidence: string;
-      timeframe: string;
-      riskFactors: string[];
-    };
-  } | null>(null);
+  const [equityResearchData, setEquityResearchData] = useState<EquityResearchData | null>(null);
   const [hasInitialized, setHasInitialized] = useState(false);
 
   const scrollToBottom = () => {
@@ -112,11 +95,16 @@ export default function Grok420Content() {
       
       // Store this analysis in Supermemory
       try {
-        await storeAnalysis('mstr-vs-btc', {
-          assets: ['MSTR', 'BTC'],
-          analysis: analysisContent,
-          timestamp: new Date().toISOString(),
-          type: 'comparison'
+        await storeAnalysis({
+          type: 'market_analysis',
+          symbol: 'MSTR-BTC',
+          timeframe: 'comparison',
+          analysis: {
+            prediction: analysisContent,
+            confidence: 0.8,
+            indicators: ['MSTR', 'BTC'],
+            reasoning: 'MSTR vs BTC comparison analysis'
+          }
         });
       } catch {
         // Failed to store analysis
@@ -231,11 +219,16 @@ Use all available Finnhub data including financial statements, technical indicat
       
       // Store this analysis in Supermemory
       try {
-        await storeAnalysis(`elite-${ticker.toLowerCase()}`, {
-          assets: [ticker],
-          analysis: analysisContent,
-          timestamp: new Date().toISOString(),
-          type: 'elite_research'
+        await storeAnalysis({
+          type: 'market_analysis',
+          symbol: ticker,
+          timeframe: 'elite_research',
+          analysis: {
+            prediction: analysisContent,
+            confidence: 0.9,
+            indicators: [ticker],
+            reasoning: `Elite equity research analysis for ${ticker}`
+          }
         });
       } catch {
         // Failed to store analysis
@@ -571,7 +564,7 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
               {showEquityResearch ? 'Close' : 'Elite Research'}
             </button>
             <button
-              onClick={() => handleSubmit(new Event('submit') as React.FormEvent, 'Analyze MSTR vs BTC performance and fundamentals')}
+              onClick={() => handleSubmit({ preventDefault: () => {} } as React.FormEvent, 'Analyze MSTR vs BTC performance and fundamentals')}
               className="px-3 py-1 sm:px-4 sm:py-2 bg-green-500/20 border border-green-500/40 text-green-400 rounded-lg font-medium hover:bg-green-500/30 transition-colors text-xs sm:text-sm flex items-center gap-1"
               title="Quick MSTR vs BTC Analysis"
             >
@@ -735,7 +728,7 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSubmit(new Event('submit') as React.FormEvent, 'gm')}
+                  onClick={() => handleSubmit({ preventDefault: () => {} } as React.FormEvent, 'gm')}
                   disabled={isLoading}
                   className="w-full sm:w-auto bg-green-500/20 hover:bg-green-400/30 text-green-400 font-bold px-4 py-3 rounded-lg border border-green-500/30 transition-colors disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base"
                   title="Quick market overview"

@@ -227,14 +227,7 @@ export async function getFinnhubEarnings(symbol: string) {
   return await res.json();
 }
 
-export async function getFinnhubCompanyNews(symbol: string, from?: string, to?: string) {
-  let url = `https://finnhub.io/api/v1/company-news?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_API_KEY}`;
-  if (from) url += `&from=${from}`;
-  if (to) url += `&to=${to}`;
-  const res = await fetchWithTimeout(url);
-  if (!res.ok) throw new Error('Finnhub API error');
-  return await res.json();
-}
+
 
 // --- Market Data (Enhanced) ---
 export async function getFinnhubPeers(symbol: string) {

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Minus, Loader2, FileText, Target, Calendar, BarChart3 } from 'lucide-react';
 
-interface EquityResearchData {
+export interface EquityResearchData {
   fundamentalAnalysis: {
     revenueGrowth: string;
     margins: string;
