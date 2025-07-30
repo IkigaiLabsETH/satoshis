@@ -6,7 +6,14 @@ import {
   getFinnhubEarnings,
   getFinnhubPeers,
   getFinnhubRecommendation,
-  getFinnhubPriceTarget
+  getFinnhubPriceTarget,
+  getFinnhubCompanyNews,
+  getFinnhubCandlestickData,
+  getFinnhubTechnicalIndicators,
+  getFinnhubFinancialStatements,
+  getFinnhubRevenueBreakdown,
+  getFinnhubEarningsCalendar,
+  getFinnhubMarketStatus
 } from '@/services/market/finnhub';
 
 interface EquityResearchRequest {
@@ -77,7 +84,7 @@ export async function POST(request: Request) {
 
     const symbol = ticker.toUpperCase();
 
-    // Fetch Finnhub data in parallel - focusing on free tier endpoints that work
+    // Fetch comprehensive Finnhub data in parallel - leveraging all available free tier endpoints
     const results = await Promise.allSettled([
       getFinnhubQuote(symbol),
       getFinnhubProfile(symbol),
@@ -85,7 +92,14 @@ export async function POST(request: Request) {
       getFinnhubEarnings(symbol),
       getFinnhubPeers(symbol),
       getFinnhubRecommendation(symbol),
-      getFinnhubPriceTarget(symbol)
+      getFinnhubPriceTarget(symbol),
+      getFinnhubCompanyNews(symbol),
+      getFinnhubCandlestickData(symbol, 'D'),
+      getFinnhubTechnicalIndicators(symbol, 'D', 'rsi', 14),
+      getFinnhubFinancialStatements(symbol, 'ic', 'annual'),
+      getFinnhubRevenueBreakdown(symbol),
+      getFinnhubEarningsCalendar(),
+      getFinnhubMarketStatus()
     ]);
 
     const [
@@ -95,16 +109,25 @@ export async function POST(request: Request) {
       earnings,
       peers,
       recommendation,
-      priceTargetData
+      priceTargetData,
+      companyNews,
+      candlestickData,
+      technicalIndicators,
+      financialStatements,
+      revenueBreakdown,
+      earningsCalendar,
+      marketStatus
     ] = results;
 
     // Process enhanced fundamental analysis with better fallbacks
     const fundamentalAnalysis = {
-      revenueGrowth: profile.status === 'fulfilled' && profile.value.revenueGrowth 
-        ? `${profile.value.revenueGrowth}% YoY revenue growth`
-        : quote.status === 'fulfilled' 
-          ? `Current price: $${quote.value.c} - Revenue data from Finnhub unavailable`
-          : 'Price and revenue data unavailable - check ticker symbol',
+      revenueGrowth: financialStatements.status === 'fulfilled' && financialStatements.value.length > 0
+        ? `Financial data available with ${financialStatements.value.length} metrics`
+        : profile.status === 'fulfilled' && profile.value.revenueGrowth 
+          ? `${profile.value.revenueGrowth}% YoY revenue growth`
+          : quote.status === 'fulfilled' 
+            ? `Current price: $${quote.value.c} - Revenue data from Finnhub unavailable`
+            : 'Price and revenue data unavailable - check ticker symbol',
       margins: profile.status === 'fulfilled' && profile.value.grossMargin 
         ? `Gross margin: ${profile.value.grossMargin}%, Net margin: ${profile.value.netMargin || 'N/A'}%`
         : 'Margin data unavailable - typical tech margins: 20-40% gross, 10-20% net',
@@ -130,20 +153,28 @@ export async function POST(request: Request) {
         : 'Social sentiment data unavailable - monitor social media trends'
     };
 
-    // Process technical analysis with available data only
+    // Process enhanced technical analysis with comprehensive data
     const technicalAnalysis = {
-      trend: quote.status === 'fulfilled'
-        ? `Current price: $${quote.value.c} - Trend analysis unavailable, monitor price action`
-        : 'Trend analysis unavailable - check recent price movements',
-      momentum: quote.status === 'fulfilled'
-        ? `Current price: $${quote.value.c} - Momentum indicators unavailable, use RSI, MACD for technical analysis`
-        : 'Momentum indicators unavailable - use RSI, MACD for technical analysis',
-      supportResistance: quote.status === 'fulfilled'
-        ? `Current price: $${quote.value.c} - Support/resistance levels unavailable, identify key price levels manually`
-        : 'Support/resistance levels unavailable - identify key price levels manually',
-      volumeAnalysis: quote.status === 'fulfilled'
-        ? `Current price: $${quote.value.c} - Volume analysis unavailable, monitor trading volume patterns`
-        : 'Volume analysis unavailable - monitor trading volume patterns'
+      trend: candlestickData.status === 'fulfilled' && candlestickData.value.c.length > 0
+        ? `Current trend: ${candlestickData.value.c[candlestickData.value.c.length - 1] > candlestickData.value.c[candlestickData.value.c.length - 10] ? 'Bullish' : 'Bearish'} (Price: $${candlestickData.value.c[candlestickData.value.c.length - 1].toFixed(2)})`
+        : quote.status === 'fulfilled'
+          ? `Current price: $${quote.value.c} - Trend analysis unavailable, monitor price action`
+          : 'Trend analysis unavailable - check recent price movements',
+      momentum: technicalIndicators.status === 'fulfilled' && technicalIndicators.value.c.length > 0
+        ? `RSI: ${technicalIndicators.value.c[technicalIndicators.value.c.length - 1].toFixed(1)} (${technicalIndicators.value.c[technicalIndicators.value.c.length - 1] > 70 ? 'Overbought' : technicalIndicators.value.c[technicalIndicators.value.c.length - 1] < 30 ? 'Oversold' : 'Neutral'})`
+        : quote.status === 'fulfilled'
+          ? `Current price: $${quote.value.c} - Momentum indicators unavailable, use RSI, MACD for technical analysis`
+          : 'Momentum indicators unavailable - use RSI, MACD for technical analysis',
+      supportResistance: candlestickData.status === 'fulfilled' && candlestickData.value.c.length > 0
+        ? `Support: $${Math.min(...candlestickData.value.l.slice(-20)).toFixed(2)}, Resistance: $${Math.max(...candlestickData.value.h.slice(-20)).toFixed(2)}`
+        : quote.status === 'fulfilled'
+          ? `Current price: $${quote.value.c} - Support/resistance levels unavailable, identify key price levels manually`
+          : 'Support/resistance levels unavailable - identify key price levels manually',
+      volumeAnalysis: candlestickData.status === 'fulfilled' && candlestickData.value.v.length > 0
+        ? `Volume trend: ${candlestickData.value.v[candlestickData.value.v.length - 1] > candlestickData.value.v[candlestickData.value.v.length - 5] ? 'Increasing' : 'Decreasing'} (${candlestickData.value.v[candlestickData.value.v.length - 1].toLocaleString()} shares)`
+        : quote.status === 'fulfilled'
+          ? `Current price: $${quote.value.c} - Volume analysis unavailable, monitor trading volume patterns`
+          : 'Volume analysis unavailable - monitor trading volume patterns'
     };
 
     // Process thesis validation with enhanced data
@@ -212,7 +243,9 @@ export async function POST(request: Request) {
         earnings.status === 'fulfilled' && earnings.value.length > 0
           ? `Next earnings: ${earnings.value[0].period} (Est. EPS: $${earnings.value[0].estimateActual})`
           : 'Upcoming earnings announcement',
-        'Market sentiment shifts and technical levels',
+        companyNews.status === 'fulfilled' && companyNews.value.length > 0
+          ? `Recent news: ${companyNews.value.length} articles in last 30 days`
+          : 'Market sentiment shifts and technical levels',
         profile.status === 'fulfilled' && profile.value.industry
           ? `Industry momentum: ${profile.value.industry} sector trends`
           : 'Market sentiment monitoring'
@@ -221,16 +254,22 @@ export async function POST(request: Request) {
         'Industry consolidation opportunities',
         'Technological disruption and innovation',
         'Regulatory changes and compliance requirements',
-        profile.status === 'fulfilled' && profile.value.marketCapitalization
-          ? 'Market capitalization growth and strategic initiatives'
-          : 'Strategic growth initiatives'
+        revenueBreakdown.status === 'fulfilled' && revenueBreakdown.value.length > 0
+          ? `Revenue diversification: ${revenueBreakdown.value.length} revenue streams`
+          : profile.status === 'fulfilled' && profile.value.marketCapitalization
+            ? 'Market capitalization growth and strategic initiatives'
+            : 'Strategic growth initiatives'
       ],
       earningsCatalysts: earnings.status === 'fulfilled' && earnings.value.length > 0
         ? earnings.value.slice(0, 3).map((e: any) => `${e.period}: Est. $${e.estimateActual}`)
-        : ['Upcoming earnings announcements'],
-      regulatoryCatalysts: profile.status === 'fulfilled' && profile.value.exchange
-        ? [`Exchange compliance: ${profile.value.exchange}`, 'Regulatory updates', 'Market structure changes']
-        : ['Regulatory compliance updates']
+        : earningsCalendar.status === 'fulfilled' && earningsCalendar.value.length > 0
+          ? earningsCalendar.value.slice(0, 3).map((e: any) => `${e.date}: ${e.symbol}`)
+          : ['Upcoming earnings announcements'],
+      regulatoryCatalysts: marketStatus.status === 'fulfilled' && marketStatus.value.isOpen !== undefined
+        ? [`Market status: ${marketStatus.value.isOpen ? 'Open' : 'Closed'}`, 'Regulatory updates', 'Market structure changes']
+        : profile.status === 'fulfilled' && profile.value.exchange
+          ? [`Exchange compliance: ${profile.value.exchange}`, 'Regulatory updates', 'Market structure changes']
+          : ['Regulatory compliance updates']
     };
 
     // Process enhanced investment summary

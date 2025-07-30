@@ -260,6 +260,98 @@ export async function getFinnhubPriceTarget(symbol: string) {
   return await res.json();
 }
 
+// Enhanced functions for equity research
+export async function getFinnhubCompanyNews(symbol: string, from?: string, to?: string) {
+  try {
+    let url = `https://finnhub.io/api/v1/company-news?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_API_KEY}`;
+    if (from) url += `&from=${from}`;
+    if (to) url += `&to=${to}`;
+    const res = await fetchWithTimeout(url);
+    if (!res.ok) throw new Error('Finnhub API error');
+    return await res.json();
+  } catch (error) {
+    console.error(`Error fetching company news for ${symbol}:`, error);
+    return [];
+  }
+}
+
+export async function getFinnhubCandlestickData(symbol: string, resolution: '1' | '5' | '15' | '30' | '60' | 'D' | 'W' | 'M' = 'D', from?: number, to?: number) {
+  try {
+    let url = `https://finnhub.io/api/v1/stock/candle?symbol=${encodeURIComponent(symbol)}&resolution=${resolution}&token=${FINNHUB_API_KEY}`;
+    if (from) url += `&from=${from}`;
+    if (to) url += `&to=${to}`;
+    const res = await fetchWithTimeout(url);
+    if (!res.ok) throw new Error('Finnhub API error');
+    return await res.json();
+  } catch (error) {
+    console.error(`Error fetching candlestick data for ${symbol}:`, error);
+    return { c: [], h: [], l: [], o: [], t: [], v: [], s: 'no_data' };
+  }
+}
+
+export async function getFinnhubTechnicalIndicators(symbol: string, resolution: '1' | '5' | '15' | '30' | '60' | 'D' | 'W' | 'M' = 'D', indicator: 'sma' | 'ema' | 'rsi' | 'macd' | 'bbands' | 'stoch' = 'rsi', period: number = 14) {
+  try {
+    const url = `https://finnhub.io/api/v1/indicator?symbol=${encodeURIComponent(symbol)}&resolution=${resolution}&indicator=${indicator}&period=${period}&token=${FINNHUB_API_KEY}`;
+    const res = await fetchWithTimeout(url);
+    if (!res.ok) throw new Error('Finnhub API error');
+    return await res.json();
+  } catch (error) {
+    console.error(`Error fetching technical indicators for ${symbol}:`, error);
+    return { c: [], h: [], l: [], o: [], t: [], v: [], s: 'no_data' };
+  }
+}
+
+export async function getFinnhubFinancialStatements(symbol: string, statement: 'bs' | 'ic' | 'cf', freq: 'annual' | 'quarterly' = 'annual') {
+  try {
+    const url = `https://finnhub.io/api/v1/stock/financial-statement?symbol=${encodeURIComponent(symbol)}&statement=${statement}&freq=${freq}&token=${FINNHUB_API_KEY}`;
+    const res = await fetchWithTimeout(url);
+    if (!res.ok) throw new Error('Finnhub API error');
+    return await res.json();
+  } catch (error) {
+    console.error(`Error fetching financial statements for ${symbol}:`, error);
+    return [];
+  }
+}
+
+export async function getFinnhubRevenueBreakdown(symbol: string) {
+  try {
+    const url = `https://finnhub.io/api/v1/stock/revenue-breakdown?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_API_KEY}`;
+    const res = await fetchWithTimeout(url);
+    if (!res.ok) throw new Error('Finnhub API error');
+    return await res.json();
+  } catch (error) {
+    console.error(`Error fetching revenue breakdown for ${symbol}:`, error);
+    return [];
+  }
+}
+
+export async function getFinnhubEarningsCalendar(from?: string, to?: string) {
+  try {
+    let url = `https://finnhub.io/api/v1/calendar/earnings?token=${FINNHUB_API_KEY}`;
+    if (from) url += `&from=${from}`;
+    if (to) url += `&to=${to}`;
+    const res = await fetchWithTimeout(url);
+    if (!res.ok) throw new Error('Finnhub API error');
+    return await res.json();
+  } catch (error) {
+    console.error('Error fetching earnings calendar:', error);
+    return [];
+  }
+}
+
+export async function getFinnhubMarketStatus(exchange?: string) {
+  try {
+    let url = `https://finnhub.io/api/v1/stock/market-status?token=${FINNHUB_API_KEY}`;
+    if (exchange) url += `&exchange=${exchange}`;
+    const res = await fetchWithTimeout(url);
+    if (!res.ok) throw new Error('Finnhub API error');
+    return await res.json();
+  } catch (error) {
+    console.error('Error fetching market status:', error);
+    return { isOpen: false, sessionOpen: false, sessionClose: false };
+  }
+}
+
 // --- Market Status & Calendar ---
 export async function getMarketStatus(exchange?: string) {
   let url = `https://finnhub.io/api/v1/stock/market-status?token=${FINNHUB_API_KEY}`;
