@@ -52,7 +52,25 @@ export default function Grok420Content() {
   const [_timeoutError, _setTimeoutError] = useState<string | null>(null);
   const [isGodmode, _setIsGodmode] = useState(false); // GODMODE disabled - always false
   const [showEquityResearch, setShowEquityResearch] = useState(false);
-  const [equityResearchData, setEquityResearchData] = useState<any>(null);
+  const [equityResearchData, setEquityResearchData] = useState<{
+    fundamentalAnalysis?: Record<string, string>;
+    technicalAnalysis?: Record<string, string>;
+    thesisValidation?: {
+      supportingArguments: string[];
+      counterArguments: string[];
+      verdict: string;
+      justification: string;
+    };
+    sectorMacroView?: Record<string, string>;
+    catalystWatch?: Record<string, string[]>;
+    investmentSummary?: {
+      thesis: string[];
+      recommendation: string;
+      confidence: string;
+      timeframe: string;
+      riskFactors: string[];
+    };
+  } | null>(null);
   const [hasInitialized, setHasInitialized] = useState(false);
 
   const scrollToBottom = () => {
@@ -104,7 +122,7 @@ export default function Grok420Content() {
         // Failed to store analysis
       }
       
-    } catch (error) {
+    } catch {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -223,7 +241,7 @@ Use all available Finnhub data including financial statements, technical indicat
         // Failed to store analysis
       }
       
-    } catch (error) {
+    } catch {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -552,7 +570,7 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
               {showEquityResearch ? 'Close' : 'Elite Research'}
             </button>
             <button
-              onClick={() => handleSubmit(new Event('submit') as any, 'Analyze MSTR vs BTC performance and fundamentals')}
+              onClick={() => handleSubmit(new Event('submit') as React.FormEvent, 'Analyze MSTR vs BTC performance and fundamentals')}
               className="px-3 py-1 sm:px-4 sm:py-2 bg-green-500/20 border border-green-500/40 text-green-400 rounded-lg font-medium hover:bg-green-500/30 transition-colors text-xs sm:text-sm flex items-center gap-1"
               title="Quick MSTR vs BTC Analysis"
             >
@@ -716,7 +734,7 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSubmit(new Event('submit') as any, 'gm')}
+                  onClick={() => handleSubmit(new Event('submit') as React.FormEvent, 'gm')}
                   disabled={isLoading}
                   className="w-full sm:w-auto bg-green-500/20 hover:bg-green-400/30 text-green-400 font-bold px-4 py-3 rounded-lg border border-green-500/30 transition-colors disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base"
                   title="Quick market overview"

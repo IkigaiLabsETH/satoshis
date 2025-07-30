@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Minus, Loader2, FileText, Target, Calendar, BarChart3 } from 'lucide-react';
 
 interface EquityResearchData {
@@ -96,7 +96,7 @@ export default function EquityResearchForm({ onSubmit }: EquityResearchFormProps
     }
   };
 
-  const getVerdictIcon = (verdict: string) => {
+  const _getVerdictIcon = (verdict: string) => {
     switch (verdict) {
       case 'Bullish':
         return <TrendingUp className="h-5 w-5 text-green-400" />;

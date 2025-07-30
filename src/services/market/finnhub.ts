@@ -105,8 +105,7 @@ export async function getFinnhubQuote(symbol: string): Promise<FinnhubQuote> {
     const res = await fetchWithTimeout(url);
     if (!res.ok) throw new Error('Finnhub API error');
     return await res.json();
-  } catch (error) {
-    console.error(`Error fetching quote for ${symbol}:`, error);
+  } catch {
     // Return fallback data
     return {
       c: 0,
@@ -125,8 +124,7 @@ export async function getFinnhubProfile(symbol: string): Promise<FinnhubProfile>
     const res = await fetchWithTimeout(url);
     if (!res.ok) throw new Error('Finnhub API error');
     return await res.json();
-  } catch (error) {
-    console.error(`Error fetching profile for ${symbol}:`, error);
+  } catch {
     // Return fallback data
     return {
       name: symbol,
@@ -197,7 +195,7 @@ export async function getInstitutionalOwnership(symbol: string): Promise<Institu
   return await res.json();
 }
 
-export async function getFundOwnership(symbol: string): Promise<any[]> {
+export async function getFundOwnership(symbol: string): Promise<Record<string, unknown>[]> {
   const url = `https://finnhub.io/api/v1/stock/fund-ownership?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_API_KEY}`;
   const res = await fetchWithTimeout(url);
   if (!res.ok) throw new Error('Finnhub API error');
@@ -269,8 +267,7 @@ export async function getFinnhubCompanyNews(symbol: string, from?: string, to?: 
     const res = await fetchWithTimeout(url);
     if (!res.ok) throw new Error('Finnhub API error');
     return await res.json();
-  } catch (error) {
-    console.error(`Error fetching company news for ${symbol}:`, error);
+  } catch {
     return [];
   }
 }
@@ -283,8 +280,7 @@ export async function getFinnhubCandlestickData(symbol: string, resolution: '1' 
     const res = await fetchWithTimeout(url);
     if (!res.ok) throw new Error('Finnhub API error');
     return await res.json();
-  } catch (error) {
-    console.error(`Error fetching candlestick data for ${symbol}:`, error);
+  } catch {
     return { c: [], h: [], l: [], o: [], t: [], v: [], s: 'no_data' };
   }
 }
@@ -295,8 +291,7 @@ export async function getFinnhubTechnicalIndicators(symbol: string, resolution: 
     const res = await fetchWithTimeout(url);
     if (!res.ok) throw new Error('Finnhub API error');
     return await res.json();
-  } catch (error) {
-    console.error(`Error fetching technical indicators for ${symbol}:`, error);
+  } catch {
     return { c: [], h: [], l: [], o: [], t: [], v: [], s: 'no_data' };
   }
 }
@@ -307,8 +302,7 @@ export async function getFinnhubFinancialStatements(symbol: string, statement: '
     const res = await fetchWithTimeout(url);
     if (!res.ok) throw new Error('Finnhub API error');
     return await res.json();
-  } catch (error) {
-    console.error(`Error fetching financial statements for ${symbol}:`, error);
+  } catch {
     return [];
   }
 }
@@ -319,8 +313,7 @@ export async function getFinnhubRevenueBreakdown(symbol: string) {
     const res = await fetchWithTimeout(url);
     if (!res.ok) throw new Error('Finnhub API error');
     return await res.json();
-  } catch (error) {
-    console.error(`Error fetching revenue breakdown for ${symbol}:`, error);
+  } catch {
     return [];
   }
 }
@@ -333,8 +326,7 @@ export async function getFinnhubEarningsCalendar(from?: string, to?: string) {
     const res = await fetchWithTimeout(url);
     if (!res.ok) throw new Error('Finnhub API error');
     return await res.json();
-  } catch (error) {
-    console.error('Error fetching earnings calendar:', error);
+  } catch {
     return [];
   }
 }
@@ -346,8 +338,7 @@ export async function getFinnhubMarketStatus(exchange?: string) {
     const res = await fetchWithTimeout(url);
     if (!res.ok) throw new Error('Finnhub API error');
     return await res.json();
-  } catch (error) {
-    console.error('Error fetching market status:', error);
+  } catch {
     return { isOpen: false, sessionOpen: false, sessionClose: false };
   }
 }
