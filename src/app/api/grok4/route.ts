@@ -311,6 +311,20 @@ function isPricePredictionQuery(q: string): boolean {
   return isPredictionQuery;
 }
 
+function _isEquityResearchQuery(q: string): boolean {
+  const equityResearchKeywords = [
+    'equity research', 'stock analysis', 'fundamental analysis', 'company analysis',
+    'investment thesis', 'buy hold sell', 'stock recommendation', 'analyst report',
+    'financial analysis', 'valuation', 'pe ratio', 'earnings', 'revenue growth',
+    'insider trading', 'analyst consensus', 'price target', 'investment summary',
+    'catalyst', 'risk assessment', 'competitive analysis', 'sector analysis',
+    'macro analysis', 'investment recommendation', 'stock research', 'equity report'
+  ];
+  
+  const query = q.toLowerCase();
+  return equityResearchKeywords.some(keyword => query.includes(keyword));
+}
+
 // BTC Price fetching with better error handling and retry logic
 async function getFastBTCPrice(retryCount = 0): Promise<number | null> {
   const now = Date.now();
@@ -800,6 +814,56 @@ const ENHANCED_TOOLS: ChatCompletionTool[] = [
           }
         },
         required: []
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'generate_equity_research',
+      description: 'Generate comprehensive equity research analysis using Finnhub data. This provides elite-level equity research with fundamental analysis, thesis validation, sector analysis, catalyst watch, and investment recommendations. Use this for detailed stock analysis and investment decision-making.',
+      parameters: {
+        type: 'object',
+        properties: {
+          ticker: {
+            type: 'string',
+            description: 'The stock ticker symbol to analyze (e.g., AAPL, TSLA, MSTR, NVDA)'
+          },
+          investmentThesis: {
+            type: 'string',
+            description: 'Optional investment thesis or hypothesis to validate'
+          },
+          goal: {
+            type: 'string',
+            description: 'Optional investment goal (e.g., Long-term growth, Value play, Momentum trade)'
+          }
+        },
+        required: ['ticker']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'generate_elite_equity_research',
+      description: 'Generate elite equity research analysis using the professional framework: Fundamental Analysis, Thesis Validation, Sector & Macro View, Catalyst Watch, and Investment Summary. This provides institutional-grade analysis with comprehensive Finnhub data integration.',
+      parameters: {
+        type: 'object',
+        properties: {
+          ticker: {
+            type: 'string',
+            description: 'The stock ticker symbol to analyze (e.g., TSLA, AAPL, MSTR, NVDA)'
+          },
+          investmentThesis: {
+            type: 'string',
+            description: 'Optional investment thesis (e.g., High-growth technology company with strong market positioning)'
+          },
+          goal: {
+            type: 'string',
+            description: 'Optional analysis goal (e.g., Provide comprehensive investment analysis with clear buy/hold/sell recommendation)'
+          }
+        },
+        required: ['ticker']
       }
     }
   }
@@ -1851,6 +1915,228 @@ async function verifyFact(claim: string, context?: string): Promise<string> {
   }
 }
 
+async function generateEquityResearch(ticker: string, investmentThesis?: string, goal?: string): Promise<string> {
+  try {
+    logger.info('Generating equity research:', { ticker, investmentThesis, goal });
+    
+    // Call the equity research API endpoint
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/equity-research`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ticker: ticker.toUpperCase(),
+        investmentThesis: investmentThesis?.trim() || undefined,
+        goal: goal?.trim() || undefined,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Equity research API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to generate equity research');
+    }
+
+    // Format the response for Grok4
+    const research = data.data;
+    const formattedResponse = `📊 **ELITE EQUITY RESEARCH ANALYSIS: ${ticker.toUpperCase()}**
+
+## 🔍 Fundamental Analysis
+• **Revenue Growth:** ${research.fundamentalAnalysis.revenueGrowth}
+• **Margins:** ${research.fundamentalAnalysis.margins}
+• **Free Cash Flow:** ${research.fundamentalAnalysis.freeCashFlow}
+• **Valuation:** ${research.fundamentalAnalysis.valuation}
+• **Insider Activity:** ${research.fundamentalAnalysis.insiderActivity}
+
+## 🎯 Thesis Validation
+**Supporting Arguments:**
+${research.thesisValidation.supportingArguments.map((arg: string) => `• ${arg}`).join('\n')}
+
+**Counter Arguments:**
+${research.thesisValidation.counterArguments.map((arg: string) => `• ${arg}`).join('\n')}
+
+**🎯 VERDICT: ${research.thesisValidation.verdict.toUpperCase()}**
+${research.thesisValidation.justification}
+
+## 🌍 Sector & Macro View
+• **Sector Overview:** ${research.sectorMacroView.sectorOverview}
+• **Macro Trends:** ${research.sectorMacroView.macroTrends}
+• **Competitive Position:** ${research.sectorMacroView.competitivePosition}
+
+## ⚡ Catalyst Watch
+**Short-term Catalysts:**
+${research.catalystWatch.shortTerm.map((cat: string) => `• ${cat}`).join('\n')}
+
+**Long-term Catalysts:**
+${research.catalystWatch.longTerm.map((cat: string) => `• ${cat}`).join('\n')}
+
+## 💼 Investment Summary
+**Investment Thesis:**
+${research.investmentSummary.thesis.map((point: string) => `• ${point}`).join('\n')}
+
+**🎯 FINAL RECOMMENDATION: ${research.investmentSummary.recommendation.toUpperCase()}**
+**Confidence:** ${research.investmentSummary.confidence}
+**Timeframe:** ${research.investmentSummary.timeframe}
+
+---
+*Analysis powered by Finnhub data and elite equity research framework*`;
+
+    return formattedResponse;
+  } catch (error) {
+    logger.error('Equity research generation error:', error);
+    return `Error generating equity research for ${ticker}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+  }
+}
+
+async function generateEliteEquityResearch(ticker: string, investmentThesis?: string, goal?: string): Promise<string> {
+  try {
+    logger.info('Generating elite equity research:', { ticker, investmentThesis, goal });
+    
+    // Use the elite equity research framework
+    const _elitePrompt = `Act as an elite equity research analyst at a top-tier investment fund.
+
+Your task is to analyze ${ticker} using both fundamental and macroeconomic perspectives. Structure your response according to the framework below.
+
+Input Section:
+Stock Ticker / Company Name: ${ticker}
+Investment Thesis: ${investmentThesis || `Analyze ${ticker} as a high-growth technology company with strong market positioning`}
+Goal: ${goal || 'Provide comprehensive investment analysis with clear buy/hold/sell recommendation'}
+
+Instructions:
+Use the following structure to deliver a clear, well-reasoned equity research report:
+
+1. Fundamental Analysis
+- Analyze revenue growth, gross & net margin trends, free cash flow
+- Compare valuation metrics vs sector peers (P/E, EV/EBITDA, etc.)
+- Review insider ownership and recent insider trades
+
+2. Thesis Validation
+- Present 3 arguments supporting the thesis
+- Highlight 2 counter-arguments or key risks
+- Provide a final **verdict**: Bullish / Bearish / Neutral with justification
+
+3. Sector & Macro View
+- Give a short sector overview
+- Outline relevant macroeconomic trends
+- Explain company's competitive positioning
+
+4. Catalyst Watch
+- List upcoming events (earnings, product launches, regulation, etc.)
+- Identify both **short-term** and **long-term** catalysts
+
+5. Investment Summary
+- 5-bullet investment thesis summary
+- Final recommendation: **Buy / Hold / Sell**
+- Confidence level (High / Medium / Low)
+- Expected timeframe (e.g. 6–12 months)
+
+Formatting Requirements:
+- Use **markdown**
+- Use **bullet points** where appropriate
+- Be **concise, professional, and insight-driven**
+- Do **not** explain your process just deliver the analysis
+
+Use all available Finnhub data including financial statements, technical indicators, social sentiment, institutional ownership, and regulatory data to provide the most comprehensive analysis possible.`;
+
+    // Call the equity research API endpoint with the elite framework
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/equity-research`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ticker: ticker.toUpperCase(),
+        investmentThesis: investmentThesis?.trim() || undefined,
+        goal: goal?.trim() || undefined,
+        eliteFramework: true, // Flag to use elite framework
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Elite equity research API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to generate elite equity research');
+    }
+
+    // Format the response for Grok4 with elite framework
+    const research = data.data;
+    const formattedResponse = `🏆 **ELITE EQUITY RESEARCH ANALYSIS: ${ticker.toUpperCase()}**
+
+## 📊 Fundamental Analysis
+• **Revenue Growth:** ${research.fundamentalAnalysis.revenueGrowth}
+• **Margins:** ${research.fundamentalAnalysis.margins}
+• **Free Cash Flow:** ${research.fundamentalAnalysis.freeCashFlow}
+• **Valuation:** ${research.fundamentalAnalysis.valuation}
+• **Insider Activity:** ${research.fundamentalAnalysis.insiderActivity}
+• **Financial Health:** ${research.fundamentalAnalysis.financialHealth}
+• **Institutional Ownership:** ${research.fundamentalAnalysis.institutionalOwnership}
+• **Social Sentiment:** ${research.fundamentalAnalysis.socialSentiment}
+
+## 📈 Technical Analysis
+• **Trend:** ${research.technicalAnalysis.trend}
+• **Momentum (RSI):** ${research.technicalAnalysis.momentum}
+• **Support/Resistance:** ${research.technicalAnalysis.supportResistance}
+• **Volume Analysis:** ${research.technicalAnalysis.volumeAnalysis}
+
+## 🎯 Thesis Validation
+**Supporting Arguments:**
+${research.thesisValidation.supportingArguments.map((arg: string) => `• ${arg}`).join('\n')}
+
+**Counter Arguments:**
+${research.thesisValidation.counterArguments.map((arg: string) => `• ${arg}`).join('\n')}
+
+**🎯 VERDICT: ${research.thesisValidation.verdict.toUpperCase()}**
+${research.thesisValidation.justification}
+
+## 🌍 Sector & Macro View
+• **Sector Overview:** ${research.sectorMacroView.sectorOverview}
+• **Macro Trends:** ${research.sectorMacroView.macroTrends}
+• **Competitive Position:** ${research.sectorMacroView.competitivePosition}
+• **Regulatory Environment:** ${research.sectorMacroView.regulatoryEnvironment}
+
+## ⚡ Catalyst Watch
+**Short-term Catalysts:**
+${research.catalystWatch.shortTerm.map((cat: string) => `• ${cat}`).join('\n')}
+
+**Long-term Catalysts:**
+${research.catalystWatch.longTerm.map((cat: string) => `• ${cat}`).join('\n')}
+
+**Earnings Catalysts:**
+${research.catalystWatch.earningsCatalysts.map((cat: string) => `• ${cat}`).join('\n')}
+
+**Regulatory Catalysts:**
+${research.catalystWatch.regulatoryCatalysts.map((cat: string) => `• ${cat}`).join('\n')}
+
+## 💼 Investment Summary
+**Investment Thesis:**
+${research.investmentSummary.thesis.map((point: string) => `• ${point}`).join('\n')}
+
+**🎯 FINAL RECOMMENDATION: ${research.investmentSummary.recommendation.toUpperCase()}**
+**Confidence:** ${research.investmentSummary.confidence}
+**Timeframe:** ${research.investmentSummary.timeframe}
+
+**Risk Factors:**
+${research.investmentSummary.riskFactors.map((risk: string) => `• ⚠️ ${risk}`).join('\n')}
+
+---
+*Elite analysis powered by comprehensive Finnhub data and institutional-grade research framework*`;
+
+    return formattedResponse;
+  } catch (error) {
+    logger.error('Error generating elite equity research:', error);
+    return `**❌ Elite Equity Research Error:** Unable to generate elite equity research for ${ticker}. Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
+  }
+}
+
 // Main route handler with enhanced security and monitoring
 export async function POST(request: Request) {
   const tracker = new PerformanceTracker();
@@ -2495,6 +2781,12 @@ ${change >= 0 ? '🟢' : '🔴'} 24h Change: ${change >= 0 ? '+' : ''}${change?.
                   } else if (toolCallFunction === 'get_market_status') {
                     const { exchange } = JSON.parse(toolCallArguments);
                     toolResult = await getMarketStatus(exchange);
+                  } else if (toolCallFunction === 'generate_equity_research') {
+                    const { ticker, investmentThesis, goal } = JSON.parse(toolCallArguments);
+                    toolResult = await generateEquityResearch(ticker, investmentThesis, goal);
+                  } else if (toolCallFunction === 'generate_elite_equity_research') {
+                    const { ticker, investmentThesis, goal } = JSON.parse(toolCallArguments);
+                    toolResult = await generateEliteEquityResearch(ticker, investmentThesis, goal);
                   } else if (toolCallFunction === 'verify_fact') {
                     const { claim, context } = JSON.parse(toolCallArguments);
                     toolResult = await verifyFact(claim, context);
@@ -2678,6 +2970,12 @@ ${change >= 0 ? '🟢' : '🔴'} 24h Change: ${change >= 0 ? '+' : ''}${change?.
         } else if (toolCallFunction === 'get_market_status') {
           const { exchange } = JSON.parse(toolCallArguments);
           toolResult = await getMarketStatus(exchange);
+        } else if (toolCallFunction === 'generate_equity_research') {
+          const { ticker, investmentThesis, goal } = JSON.parse(toolCallArguments);
+          toolResult = await generateEquityResearch(ticker, investmentThesis, goal);
+        } else if (toolCallFunction === 'generate_elite_equity_research') {
+          const { ticker, investmentThesis, goal } = JSON.parse(toolCallArguments);
+          toolResult = await generateEliteEquityResearch(ticker, investmentThesis, goal);
         } else if (toolCallFunction === 'verify_fact') {
           const { claim, context } = JSON.parse(toolCallArguments);
           toolResult = await verifyFact(claim, context);

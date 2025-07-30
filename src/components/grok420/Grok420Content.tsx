@@ -2,8 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, User, Loader2, Sparkles, Image as ImageIcon, Copy, Info } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles, Image as ImageIcon, Copy, Info, BarChart3 } from 'lucide-react';
 import { useChartMemory, useMarketMemory, useUserMemory } from './SupermemoryIntegration';
+import EquityResearchForm, { EquityResearchReport } from './EquityResearchForm';
+import type { EquityResearchData } from './EquityResearchForm';
 
 interface Message {
   id: string;
@@ -50,14 +52,257 @@ export default function Grok420Content() {
   const [_lastUserMessage, _setLastUserMessage] = useState<string | null>(null);
   const [_timeoutError, _setTimeoutError] = useState<string | null>(null);
   const [isGodmode, _setIsGodmode] = useState(false); // GODMODE disabled - always false
+  const [showEquityResearch, setShowEquityResearch] = useState(false);
+  const [equityResearchData, setEquityResearchData] = useState<EquityResearchData | null>(null);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const handleAutoAnalysis = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Fetch MSTR vs BTC analysis
+      const response = await fetch('/api/grok4', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: 'Analyze MSTR vs BTC performance, fundamentals, and investment thesis. Focus on why MSTR is the ultimate Bitcoin proxy stock and how it compares to direct BTC investment.',
+          systemPrompt: 'You are a Bitcoin-first investment analyst. Focus on MSTR as the premier Bitcoin proxy stock. Compare MSTR vs BTC performance, fundamentals, and investment strategy. Be bullish on Bitcoin and MSTR.',
+          temperature: 0.7,
+          stream: false,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch analysis');
+      }
+
+      const analysisContent = await response.text();
+      
+      const analysisMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: analysisContent,
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, analysisMessage]);
+      
+      // Store this analysis in Supermemory
+      try {
+        await storeAnalysis({
+          type: 'market_analysis',
+          symbol: 'MSTR-BTC',
+          timeframe: 'comparison',
+          analysis: {
+            prediction: analysisContent,
+            confidence: 0.8,
+            indicators: ['MSTR', 'BTC'],
+            reasoning: 'MSTR vs BTC comparison analysis'
+          }
+        });
+      } catch {
+        // Failed to store analysis
+      }
+      
+    } catch {
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `❌ **Analysis Error**
+        
+I couldn't fetch the latest MSTR vs BTC analysis right now. But here's what you need to know:
+
+**MSTR (MicroStrategy) - The Bitcoin Proxy King:**
+• **Bitcoin Holdings:** 214,400+ BTC (~$13.5B)
+• **Strategy:** Convert all cash to Bitcoin
+• **Performance:** Often outperforms BTC due to leverage
+• **Risk:** Higher volatility than direct BTC
+
+**Why MSTR vs BTC:**
+- MSTR gives you Bitcoin exposure in traditional markets
+- They're the purest Bitcoin play available
+- Michael Saylor's strategy is legendary
+
+Try asking me about MSTR again or use the Research button above for detailed equity analysis!`,
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEliteAnalysis = async (ticker: string) => {
+    setIsLoading(true);
+    
+    try {
+      // Use the elite equity research framework
+      const elitePrompt = `Act as an elite equity research analyst at a top-tier investment fund.
+
+Your task is to analyze ${ticker} using both fundamental and macroeconomic perspectives. Structure your response according to the framework below.
+
+Input Section:
+Stock Ticker / Company Name: ${ticker}
+Investment Thesis: Analyze ${ticker} as a high-growth technology company with strong market positioning
+Goal: Provide comprehensive investment analysis with clear buy/hold/sell recommendation
+
+Instructions:
+Use the following structure to deliver a clear, well-reasoned equity research report:
+
+1. Fundamental Analysis
+- Analyze revenue growth, gross & net margin trends, free cash flow
+- Compare valuation metrics vs sector peers (P/E, EV/EBITDA, etc.)
+- Review insider ownership and recent insider trades
+
+2. Thesis Validation
+- Present 3 arguments supporting the thesis
+- Highlight 2 counter-arguments or key risks
+- Provide a final **verdict**: Bullish / Bearish / Neutral with justification
+
+3. Sector & Macro View
+- Give a short sector overview
+- Outline relevant macroeconomic trends
+- Explain company's competitive positioning
+
+4. Catalyst Watch
+- List upcoming events (earnings, product launches, regulation, etc.)
+- Identify both **short-term** and **long-term** catalysts
+
+5. Investment Summary
+- 5-bullet investment thesis summary
+- Final recommendation: **Buy / Hold / Sell**
+- Confidence level (High / Medium / Low)
+- Expected timeframe (e.g. 6–12 months)
+
+Formatting Requirements:
+- Use **markdown**
+- Use **bullet points** where appropriate
+- Be **concise, professional, and insight-driven**
+- Do **not** explain your process just deliver the analysis
+
+Use all available Finnhub data including financial statements, technical indicators, social sentiment, institutional ownership, and regulatory data to provide the most comprehensive analysis possible.`;
+
+      const response = await fetch('/api/grok4', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: `Generate elite equity research analysis for ${ticker} using comprehensive Finnhub data and the professional framework provided.`,
+          systemPrompt: elitePrompt,
+          temperature: 0.7,
+          stream: false,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch elite analysis');
+      }
+
+      const analysisContent = await response.text();
+      
+      const analysisMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: analysisContent,
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, analysisMessage]);
+      
+      // Store this analysis in Supermemory
+      try {
+        await storeAnalysis({
+          type: 'market_analysis',
+          symbol: ticker,
+          timeframe: 'elite_research',
+          analysis: {
+            prediction: analysisContent,
+            confidence: 0.9,
+            indicators: [ticker],
+            reasoning: `Elite equity research analysis for ${ticker}`
+          }
+        });
+      } catch {
+        // Failed to store analysis
+      }
+      
+    } catch {
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `❌ **Elite Analysis Error**
+        
+I couldn't generate the elite equity research analysis for ${ticker} right now. 
+
+**What Elite Analysis Includes:**
+• **Fundamental Analysis** - Revenue, margins, FCF, valuation metrics
+• **Thesis Validation** - Supporting/counter arguments with verdict
+• **Sector & Macro View** - Industry trends and competitive positioning
+• **Catalyst Watch** - Short-term and long-term catalysts
+• **Investment Summary** - Buy/Hold/Sell with confidence level
+
+**Try Again:**
+- Click the ${ticker} button again
+- Use the "Elite Research" panel for detailed analysis
+- Ask me directly: "Analyze ${ticker} with elite framework"`,
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Auto-initialize with MSTR vs BTC analysis
+  useEffect(() => {
+    if (!hasInitialized && messages.length === 0) {
+      setHasInitialized(true);
+      
+      // Auto-generate MSTR vs BTC analysis
+      const autoMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `🚀 **Welcome to GROK420 - Your Bitcoin-First Investment Intelligence**
+
+I'm automatically analyzing **MSTR (MicroStrategy) vs BTC** for you - the ultimate Bitcoin proxy stock that's been crushing it.
+
+**📊 Quick MSTR vs BTC Check:**
+• MSTR is the OG Bitcoin company - they've been buying BTC since 2020
+• They hold over 214,000 BTC worth ~$13.5B
+• Their strategy: Convert all cash to Bitcoin
+• Performance: MSTR often outperforms BTC due to leverage effect
+
+**🎯 Why MSTR vs BTC matters:**
+- MSTR gives you Bitcoin exposure with stock market benefits
+- They're the purest Bitcoin play in traditional markets
+- Their Bitcoin strategy is legendary - "Buy Bitcoin, hold Bitcoin"
+
+Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis...`,
+        timestamp: new Date(),
+      };
+      
+      setMessages([autoMessage]);
+      
+      // Auto-trigger MSTR analysis
+      setTimeout(() => {
+        handleAutoAnalysis();
+      }, 2000);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasInitialized, messages.length]);
 
   const handleSubmit = async (e: React.FormEvent, retryMessage?: string) => {
     e.preventDefault();
@@ -305,9 +550,38 @@ export default function Grok420Content() {
             >
               Reset
             </button>
+            <button
+              onClick={() => {
+                setShowEquityResearch(!showEquityResearch);
+                if (showEquityResearch) {
+                  setEquityResearchData(null);
+                }
+              }}
+              className="px-3 py-1 sm:px-4 sm:py-2 bg-yellow-500/20 border border-yellow-500/40 text-yellow-500 rounded-lg font-medium hover:bg-yellow-500/30 transition-colors text-xs sm:text-sm flex items-center gap-1"
+              title="Elite Equity Research Analysis"
+            >
+              <BarChart3 className="h-4 w-4" />
+              {showEquityResearch ? 'Close' : 'Elite Research'}
+            </button>
+            <button
+              onClick={() => handleSubmit({ preventDefault: () => {} } as React.FormEvent, 'Analyze MSTR vs BTC performance and fundamentals')}
+              className="px-3 py-1 sm:px-4 sm:py-2 bg-green-500/20 border border-green-500/40 text-green-400 rounded-lg font-medium hover:bg-green-500/30 transition-colors text-xs sm:text-sm flex items-center gap-1"
+              title="Quick MSTR vs BTC Analysis"
+            >
+              <BarChart3 className="h-4 w-4" />
+              MSTR vs BTC
+            </button>
+            <button
+              onClick={() => handleEliteAnalysis('TSLA')}
+              className="px-3 py-1 sm:px-4 sm:py-2 bg-blue-500/20 border border-blue-500/40 text-blue-400 rounded-lg font-medium hover:bg-blue-500/30 transition-colors text-xs sm:text-sm flex items-center gap-1"
+              title="Elite TSLA Analysis"
+            >
+              <BarChart3 className="h-4 w-4" />
+              TSLA
+            </button>
           </div>
           <p className="text-yellow-400/80 text-xs sm:text-base max-w-xs sm:max-w-2xl mx-auto mt-2">
-            Grok420 is your edge for finding the altcoins with the best beta to BTC during price discovery. Already holding BTC? This is for the silly part of your portfolio. Say GM.
+            <span className="font-bold text-yellow-400">MSTR vs BTC Focus:</span> Your Bitcoin-first investment intelligence. Find assets that outperform BTC, starting with MicroStrategy - the ultimate Bitcoin proxy stock. Say GM for market analysis.
           </p>
           {/* Reset message would appear here */}
         </div>
@@ -316,6 +590,35 @@ export default function Grok420Content() {
         <div className="w-full flex justify-center">
           <div className="flex-1 flex justify-center w-full">
             <div className="bg-[#1c1f26] backdrop-blur-sm border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] rounded-lg p-2 sm:p-6 h-[50vh] sm:h-[70vh] flex flex-col w-full max-w-full sm:max-w-7xl mx-auto">
+              {/* Equity Research Panel */}
+              <AnimatePresence>
+                {showEquityResearch && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mb-4 overflow-hidden"
+                  >
+                    {equityResearchData ? (
+                      <EquityResearchReport data={equityResearchData} />
+                    ) : (
+                      <EquityResearchForm 
+                        onSubmit={(data) => {
+                          setEquityResearchData(data);
+                          // Add a message to the chat about the analysis
+                          const analysisMessage: Message = {
+                            id: Date.now().toString(),
+                            role: 'assistant',
+                            content: `📊 **Equity Research Analysis Complete**\n\nI've analyzed the stock using Finnhub data and generated a comprehensive research report. The analysis includes fundamental metrics, insider activity, analyst consensus, and investment recommendations.\n\n**Key Finding:** ${data.thesisValidation.verdict} - ${data.thesisValidation.justification}\n\n**Recommendation:** ${data.investmentSummary.recommendation} (${data.investmentSummary.confidence} confidence)\n\nView the full report above for detailed analysis.`,
+                            timestamp: new Date(),
+                          };
+                          setMessages(prev => [...prev, analysisMessage]);
+                        }}
+                      />
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
               {/* Messages */}
               <div className="flex-1 overflow-y-auto space-y-4 mb-4 scrollbar-thin scrollbar-thumb-yellow-500/20 scrollbar-track-transparent">
                 {messages.length === 0 ? (
@@ -324,8 +627,11 @@ export default function Grok420Content() {
                       <div className="inline-block p-4 rounded-full bg-yellow-500/10 border border-yellow-500/20 mb-4">
                         <Bot className="h-8 w-8 text-yellow-500" />
                       </div>
-                      <p className="text-yellow-400/80 text-base sm:text-lg font-bold">Talk to Satoshi</p>
-                      <p className="text-white/50 text-xs sm:text-sm mt-2">&ldquo;If you don&rsquo;t believe it or don&rsquo;t get it, I don&rsquo;t have the time to try to convince you, sorry.&rdquo;</p>
+                      <p className="text-yellow-400/80 text-base sm:text-lg font-bold">MSTR vs BTC Analysis Loading...</p>
+                      <p className="text-white/50 text-xs sm:text-sm mt-2">Analyzing MicroStrategy - the ultimate Bitcoin proxy stock</p>
+                      <div className="mt-4">
+                        <div className="w-8 h-8 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -400,7 +706,7 @@ export default function Grok420Content() {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask Grok4 anything..."
+                  placeholder="Try: 'TSLA analysis' or 'gm' for market overview..."
                   className="w-full sm:flex-1 bg-black/60 border border-yellow-500/30 rounded-lg px-4 py-3 text-white placeholder-yellow-400/50 focus:border-yellow-500 focus:outline-none text-sm sm:text-base"
                   disabled={isLoading || _isImageLoading}
                 />
@@ -419,6 +725,24 @@ export default function Grok420Content() {
                   title="Generate image with art direction prompt"
                 >
                   <ImageIcon className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSubmit({ preventDefault: () => {} } as React.FormEvent, 'gm')}
+                  disabled={isLoading}
+                  className="w-full sm:w-auto bg-green-500/20 hover:bg-green-400/30 text-green-400 font-bold px-4 py-3 rounded-lg border border-green-500/30 transition-colors disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base"
+                  title="Quick market overview"
+                >
+                  GM
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleEliteAnalysis('TSLA')}
+                  disabled={isLoading}
+                  className="w-full sm:w-auto bg-blue-500/20 hover:bg-blue-400/30 text-blue-400 font-bold px-4 py-3 rounded-lg border border-blue-500/30 transition-colors disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base"
+                  title="Elite TSLA Analysis"
+                >
+                  TSLA
                 </button>
               </form>
             </div>
