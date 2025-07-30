@@ -261,9 +261,9 @@ export async function POST(request: Request) {
             : 'Strategic growth initiatives'
       ],
       earningsCatalysts: earnings.status === 'fulfilled' && earnings.value.length > 0
-        ? earnings.value.slice(0, 3).map((e: any) => `${e.period}: Est. $${e.estimateActual}`)
+        ? earnings.value.slice(0, 3).map((e: { period: string; estimateActual: string }) => `${e.period}: Est. $${e.estimateActual}`)
         : earningsCalendar.status === 'fulfilled' && earningsCalendar.value.length > 0
-          ? earningsCalendar.value.slice(0, 3).map((e: any) => `${e.date}: ${e.symbol}`)
+          ? earningsCalendar.value.slice(0, 3).map((e: { date: string; symbol: string }) => `${e.date}: ${e.symbol}`)
           : ['Upcoming earnings announcements'],
       regulatoryCatalysts: marketStatus.status === 'fulfilled' && marketStatus.value.isOpen !== undefined
         ? [`Market status: ${marketStatus.value.isOpen ? 'Open' : 'Closed'}`, 'Regulatory updates', 'Market structure changes']
@@ -312,8 +312,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(response);
 
-  } catch (error) {
-    console.error('Equity research analysis error:', error);
+  } catch {
+    // Handle any errors during equity research analysis
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to perform equity research analysis' 
