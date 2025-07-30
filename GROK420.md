@@ -1,5 +1,6 @@
 # What's New: July 2024
 
+- **Enhanced Finnhub Integration (July 2024):** GROK420 now leverages the full power of Finnhub's free tier API with comprehensive equity research capabilities. The system includes 18+ new endpoints: financial statements (balance sheet, income, cash flow), technical indicators (RSI, candlestick data), social sentiment analysis, institutional ownership tracking, regulatory filings, executive compensation, and more. The equity research system provides professional-grade analysis with fundamental, technical, social, institutional, and regulatory factors, all within Finnhub's generous free tier limits. Features include parallel data fetching, intelligent error handling, and a modern React interface with comprehensive reporting.
 - **Watchlist AI Predictions System (July 2024):** GROK420 now features a sophisticated AI-powered watchlist system that generates multi-timeframe market predictions using Grok 4. The system analyzes Bitcoin, altcoins, crypto stocks, and news data to predict which assets will outperform BTC over day, week, month, and year timeframes. Features include parallel processing for performance, intelligent caching (5-minute TTL), fallback mechanisms when Grok 4 fails, and a modern React frontend with real-time market state analysis. The system resolves 504 timeout issues through optimized API timeouts (30s for predictions, 10s for market state) and parallel data fetching.
 - **Satoshi API Integration Tests (July 2024):** All Satoshi API integration tests now pass flawlessly. Persona normalization is robust (handles snake_case, lower, etc.), and all error, timeout, and fallback responses are Bitcoin-first, narrative-driven, and always match brand/test regex. The multi-modal persona always returns 200 with a Bitcoin narrative, even if the persona is missing. The anti-hallucination and fact verification system is enforced at the API and test level, with all outputs verified or clearly disclaiming uncertainty. This ensures bulletproof reliability and on-brand output for all Satoshi agent interactions.
 - **Hallucination Prevention (July 2024):** Both Grok 4 and Satoshi AI now feature robust anti-hallucination systems. The system prompts enforce strict truthfulness, never allow made-up facts, and require live data for all claims. A new `verify_fact` tool is integrated into both systems, which checks any factual claim against live APIs and web search, returning a confidence level and explicit recommendations. All responses are now verified or clearly disclaim uncertainty. This eliminates hallucinations and ensures only accurate, source-backed information is provided across all AI interactions.
@@ -10,7 +11,203 @@
 
 ## Overview
 
-GROK420 is a sophisticated AI-powered crypto market intelligence system with a core mission: **helping users find assets that outperform Bitcoin (BTC)**. Every feature, from real-time X (Twitter) sentiment analysis to curated market reports, is designed to surface and highlight altcoins, stocks, and narratives that are beating BTC. Built with Next.js 14, TypeScript, and modern tool-augmented AI, it delivers actionable intelligence for those seeking to outperform the king of crypto.
+GROK420 is a sophisticated AI-powered crypto market intelligence system with a core mission: **helping users find assets that outperform Bitcoin (BTC)**, starting with **MSTR (MicroStrategy) - the ultimate Bitcoin proxy stock**. Every feature, from real-time X (Twitter) sentiment analysis to curated market reports, is designed to surface and highlight assets that are beating BTC, with MSTR vs BTC analysis as the default focus. Built with Next.js 14, TypeScript, and modern tool-augmented AI, it delivers actionable intelligence for those seeking to outperform the king of crypto through strategic Bitcoin-first investments.
+
+---
+
+## Elite Equity Research Framework (July 2024)
+
+### **Overview**
+GROK420 now features an elite equity research framework that provides institutional-grade analysis using the professional standards of top-tier investment funds. This framework automatically applies the elite equity research methodology to any stock analysis request.
+
+### **Elite Framework Structure**
+The elite equity research analysis follows a comprehensive 5-section framework:
+
+#### **1. 📊 Fundamental Analysis**
+- Revenue growth, gross & net margin trends, free cash flow analysis
+- Valuation metrics comparison vs sector peers (P/E, EV/EBITDA, etc.)
+- Insider ownership and recent insider trades
+- Financial health assessment and institutional ownership analysis
+- Social sentiment integration
+
+#### **2. 📈 Technical Analysis**
+- Trend analysis and momentum indicators (RSI, SMA, EMA)
+- Support/resistance levels and volume analysis
+- Technical pattern recognition and price action analysis
+
+#### **3. 🎯 Thesis Validation**
+- 3 supporting arguments for the investment thesis
+- 2 counter-arguments or key risks
+- Final verdict (Bullish/Bearish/Neutral) with detailed justification
+
+#### **4. 🌍 Sector & Macro View**
+- Sector overview and competitive positioning
+- Relevant macroeconomic trends and regulatory environment
+- Industry dynamics and market positioning
+
+#### **5. ⚡ Catalyst Watch**
+- Short-term and long-term catalysts
+- Earnings catalysts and regulatory catalysts
+- Event-driven opportunities and risks
+
+#### **6. 💼 Investment Summary**
+- 5-bullet investment thesis summary
+- Final recommendation (Buy/Hold/Sell)
+- Confidence level (High/Medium/Low) and expected timeframe
+- Risk factors and mitigation strategies
+
+### **Usage Examples**
+- **Natural Language**: "Analyze TSLA using elite equity research framework"
+- **Direct Interface**: Use the "Elite Research" button for instant professional analysis
+- **AI Integration**: GROK4 automatically detects equity research requests and applies the elite framework
+
+### **Professional Standards**
+- **Markdown Formatting**: Professional presentation with clear sections and bullet points
+- **Data-Driven Analysis**: All conclusions backed by comprehensive Finnhub data
+- **Institutional Quality**: Analysis meets the standards of top-tier investment research
+- **Risk-Aware**: Comprehensive risk assessment and mitigation strategies
+
+---
+
+## Enhanced Finnhub Integration (July 2024)
+
+### **Overview**
+GROK420 now leverages the full power of Finnhub's free tier API with comprehensive equity research capabilities. The system has been expanded to include 18+ new endpoints, providing professional-grade financial analysis that rivals paid services while staying within Finnhub's generous free tier limits.
+
+### **New Data Points Leveraged**
+
+#### **Financial Statements (Free Tier)**
+- **Balance Sheet Data** - Assets, liabilities, equity metrics
+- **Income Statement** - Revenue, expenses, profitability analysis
+- **Cash Flow Statement** - Operating, investing, financing activities
+- **Revenue Breakdown** - Geographic and segment analysis
+
+#### **Technical Analysis (Free Tier)**
+- **RSI Indicators** - Momentum analysis with overbought/oversold signals
+- **Candlestick Data** - Price action, volume, support/resistance levels
+- **Trend Analysis** - Bullish/bearish trend identification
+- **Volume Analysis** - Volume trends and patterns
+
+#### **Social Sentiment (Free Tier)**
+- **Social Media Sentiment** - Positive/negative sentiment scores
+- **Mention Tracking** - Social media buzz and engagement
+- **Brand Perception** - Public sentiment analysis
+
+#### **Institutional Data (Free Tier)**
+- **Institutional Ownership** - Major holder positions and changes
+- **Fund Ownership** - Mutual fund and ETF holdings
+- **Executive Compensation** - Management incentive alignment
+
+#### **Regulatory & Compliance (Free Tier)**
+- **Company Filings** - SEC filings and regulatory compliance
+- **Earnings Calendar** - Upcoming earnings announcements
+- **Economic Calendar** - Macroeconomic event tracking
+
+#### **Enhanced Market Data**
+- **Forex Rates** - Currency pair analysis
+- **Crypto Candles** - Cryptocurrency price data
+- **Economic Indicators** - Macroeconomic data points
+
+### **Enhanced Analysis Framework**
+
+#### **1. Fundamental Analysis (Expanded)**
+- Revenue growth trends and analysis
+- Margin analysis (gross/net margins)
+- Free cash flow metrics and trends
+- Valuation ratios (P/E, EV/EBITDA, etc.)
+- **NEW:** Financial health assessment
+- **NEW:** Institutional ownership analysis
+- **NEW:** Social sentiment integration
+
+#### **2. Technical Analysis (New Section)**
+- **NEW:** Price trend analysis with candlestick data
+- **NEW:** RSI momentum indicators with overbought/oversold signals
+- **NEW:** Support/resistance level identification
+- **NEW:** Volume trend analysis and patterns
+
+#### **3. Thesis Validation (Enhanced)**
+- Supporting arguments incorporating social sentiment
+- Counter arguments with technical analysis insights
+- Verdict incorporating multiple data points
+- Enhanced justification logic with confidence scoring
+
+#### **4. Sector & Macro View (Enhanced)**
+- **NEW:** Regulatory environment assessment
+- Enhanced competitive positioning analysis
+- Macroeconomic trend analysis with economic indicators
+
+#### **5. Catalyst Watch (Expanded)**
+- **NEW:** Earnings catalysts timeline
+- **NEW:** Regulatory catalysts tracking
+- Enhanced short-term and long-term catalysts
+- Social sentiment momentum tracking
+
+#### **6. Investment Summary (Enhanced)**
+- **NEW:** Risk factors assessment
+- Enhanced confidence scoring with multiple factors
+- Multi-factor recommendation logic
+- Comprehensive timeframe analysis
+
+### **Technical Implementation**
+
+#### **Enhanced API Endpoints**
+```typescript
+// New Finnhub service functions
+export async function getFinancialStatements(symbol: string, statement: 'bs' | 'ic' | 'cf', freq: 'annual' | 'quarterly' = 'annual'): Promise<FinancialStatement[]>
+export async function getTechnicalIndicators(symbol: string, resolution: '1' | '5' | '15' | '30' | '60' | 'D' | 'W' | 'M' = 'D', indicator: 'sma' | 'ema' | 'rsi' | 'macd' | 'bbands' | 'stoch' = 'sma', period: number = 14): Promise<TechnicalIndicator>
+export async function getSocialSentiment(symbol: string, from?: string, to?: string): Promise<SocialSentiment[]>
+export async function getInstitutionalOwnership(symbol: string): Promise<InstitutionalOwnership[]>
+export async function getCompanyFilings(symbol: string, from?: string, to?: string): Promise<any[]>
+export async function getExecutiveCompensation(symbol: string): Promise<any[]>
+export async function getCandlestickData(symbol: string, resolution: '1' | '5' | '15' | '30' | '60' | 'D' | 'W' | 'M' = 'D', from?: number, to?: number): Promise<TechnicalIndicator>
+```
+
+#### **Parallel Data Fetching**
+- All 18+ endpoints called simultaneously for maximum efficiency
+- Graceful error handling for unavailable data
+- Intelligent fallbacks for missing information
+- Optimized for Finnhub's 60 API calls/minute free tier limit
+
+#### **Enhanced UI Components**
+- Technical analysis section with professional charts
+- Social sentiment indicators with color coding
+- Institutional ownership metrics display
+- Risk factor assessment with visual indicators
+- Regulatory compliance tracking interface
+
+### **Free Tier Optimization**
+
+The implementation maximizes the **Finnhub free tier limits**:
+- **60 API calls/minute** - Optimized parallel fetching
+- **Real-time data** - Live quotes and indicators
+- **Historical data** - Up to 5 years of financial data
+- **Social sentiment** - Real-time social media analysis
+- **Institutional data** - Major holder tracking
+- **Technical indicators** - Professional-grade analysis
+
+### **Usage Examples**
+
+#### **Natural Language Queries**
+- "Analyze AAPL with technical indicators"
+- "Generate comprehensive research for Tesla"
+- "What's the social sentiment for NVIDIA?"
+
+#### **Direct Interface**
+- Click "Research" button in grok420 interface
+- Enter stock ticker symbol
+- Get comprehensive analysis with all new data points
+
+### **Professional-Grade Analysis**
+
+The enhanced system now provides **professional-grade equity research** that includes:
+- **Fundamental Analysis** - Revenue, margins, FCF, valuation metrics
+- **Technical Analysis** - RSI, trend analysis, support/resistance
+- **Social Sentiment** - Real-time social media sentiment
+- **Institutional Data** - Major holder positions and changes
+- **Regulatory Compliance** - SEC filings and compliance status
+- **Risk Assessment** - Comprehensive risk factor analysis
+
+This comprehensive analysis framework rivals paid financial research services while remaining completely within Finnhub's free tier limits.
 
 ---
 
@@ -502,11 +699,13 @@ The system uses function calling to enhance Grok 4's capabilities:
 
 ## Key Features
 
-### **BTC Outperformance Detection (CORE PURPOSE)**
-- **Primary Goal:** All analytics, reports, and sentiment summaries are designed to help users identify assets (altcoins, stocks, etc.) that are outperforming Bitcoin (BTC) over various timeframes (24h, 7d, YTD, etc.).
-- **GM Market Report:** Every "gm" or market summary query automatically checks and displays which tracked assets are beating BTC, making outperformance the centerpiece of the daily briefing.
+### **MSTR vs BTC Focus (CORE PURPOSE)**
+- **Primary Goal:** All analytics, reports, and sentiment summaries are designed to help users identify assets that outperform Bitcoin (BTC), starting with **MSTR (MicroStrategy) - the ultimate Bitcoin proxy stock**.
+- **Default Analysis:** The system automatically starts with MSTR vs BTC analysis when users first visit, providing immediate insights into the premier Bitcoin proxy stock.
+- **MSTR Advantages:** MSTR offers Bitcoin exposure with stock market benefits, institutional access, and often outperforms BTC due to leverage effects and market dynamics.
+- **GM Market Report:** Every "gm" or market summary query automatically checks and displays which tracked assets are beating BTC, with MSTR prominently featured.
 - **Flexible Periods:** Users can request outperformance tables for 24h, 7d, YTD, or all periods, and the system will only fetch extra data if explicitly asked, protecting against API rate limits.
-- **Narrative Integration:** X sentiment and narrative analysis always highlight the context and stories behind BTC outperformance, not just price moves.
+- **Narrative Integration:** X sentiment and narrative analysis always highlight the context and stories behind BTC outperformance, with special focus on MSTR's Bitcoin strategy.
 
 ### **Other Features**
 - Real-time BTC price and network stats
@@ -1097,6 +1296,11 @@ GROK420 represents a cutting-edge approach to crypto market intelligence, combin
 The fine-tuned asset tracking ensures users get insights on the most relevant cryptocurrencies and stocks, while the modular service architecture allows for continuous improvement and feature expansion. With its focus on real-time data, X sentiment analysis, and comprehensive market coverage, GROK420 is positioned to be a leading platform for crypto market intelligence.
 
 ### **Key Achievements:**
+- ✅ **MSTR vs BTC Default Focus**: Auto-initializes with MSTR vs BTC analysis, emphasizing the ultimate Bitcoin proxy stock
+- ✅ **Elite Equity Research Framework**: Professional-grade analysis using institutional research standards with comprehensive Finnhub data integration
+- ✅ **Enhanced Finnhub Integration**: 18+ new endpoints including financial statements, technical indicators, social sentiment, institutional ownership, and regulatory data
+- ✅ **Professional Equity Research**: Comprehensive analysis framework with fundamental, technical, social, institutional, and regulatory factors
+- ✅ **Free Tier Optimization**: Maximized Finnhub's 60 API calls/minute limit with parallel data fetching
 - ✅ **Service Module Architecture**: Refactored 2500+ line route into focused service modules
 - ✅ **Real-time Market Data**: Bitcoin, 24 altcoins, 17 crypto stocks
 - ✅ **X Sentiment Analysis**: Tweet analysis and key points extraction
