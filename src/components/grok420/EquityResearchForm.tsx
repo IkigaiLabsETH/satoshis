@@ -262,7 +262,7 @@ export function EquityResearchReport({ data }: { data: EquityResearchData }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
+      className="space-y-6 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-yellow-500/30 scrollbar-track-transparent"
     >
       {/* Fundamental Analysis */}
       <div className="bg-gradient-to-r from-gray-900/50 to-gray-800/50 border border-yellow-500/30 p-6 rounded-2xl backdrop-blur-sm">

@@ -283,3 +283,21 @@ body {
 .font-vcr {
 	font-family: 'VCR', monospace;
 }
+
+/* Custom scrollbar styles for equity research reports */
+.scrollbar-thin::-webkit-scrollbar {
+	width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+	background: rgba(234, 179, 8, 0.3);
+	border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+	background: rgba(234, 179, 8, 0.5);
+}

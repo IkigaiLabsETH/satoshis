@@ -100,17 +100,51 @@ export interface RevenueBreakdown {
 
 // --- Enhanced Core Functions ---
 export async function getFinnhubQuote(symbol: string): Promise<FinnhubQuote> {
-  const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_API_KEY}`;
-  const res = await fetchWithTimeout(url);
-  if (!res.ok) throw new Error('Finnhub API error');
-  return await res.json();
+  try {
+    const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_API_KEY}`;
+    const res = await fetchWithTimeout(url);
+    if (!res.ok) throw new Error('Finnhub API error');
+    return await res.json();
+  } catch (error) {
+    console.error(`Error fetching quote for ${symbol}:`, error);
+    // Return fallback data
+    return {
+      c: 0,
+      o: 0,
+      h: 0,
+      l: 0,
+      pc: 0,
+      t: Date.now()
+    };
+  }
 }
 
 export async function getFinnhubProfile(symbol: string): Promise<FinnhubProfile> {
-  const url = `https://finnhub.io/api/v1/stock/profile2?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_API_KEY}`;
-  const res = await fetchWithTimeout(url);
-  if (!res.ok) throw new Error('Finnhub API error');
-  return await res.json();
+  try {
+    const url = `https://finnhub.io/api/v1/stock/profile2?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_API_KEY}`;
+    const res = await fetchWithTimeout(url);
+    if (!res.ok) throw new Error('Finnhub API error');
+    return await res.json();
+  } catch (error) {
+    console.error(`Error fetching profile for ${symbol}:`, error);
+    // Return fallback data
+    return {
+      name: symbol,
+      ticker: symbol,
+      exchange: 'NASDAQ',
+      ipo: 'N/A',
+      marketCapitalization: 0,
+      shareOutstanding: 0,
+      logo: '',
+      weburl: '',
+      industry: 'Technology',
+      revenueGrowth: 0,
+      grossMargin: 0,
+      netMargin: 0,
+      peRatio: 0,
+      freeCashFlow: 0
+    };
+  }
 }
 
 // --- Financial Statements (Free Tier) ---
