@@ -102,30 +102,10 @@ export default function EquityResearchForm({ onSubmit }: EquityResearchFormProps
         return <TrendingUp className="h-5 w-5 text-green-400" />;
       case 'Bearish':
         return <TrendingDown className="h-5 w-5 text-red-400" />;
+      case 'Neutral':
+        return <Minus className="h-5 w-5 text-yellow-400" />;
       default:
         return <Minus className="h-5 w-5 text-yellow-400" />;
-    }
-  };
-
-  const getRecommendationColor = (recommendation: string) => {
-    switch (recommendation) {
-      case 'Buy':
-        return 'text-green-400';
-      case 'Sell':
-        return 'text-red-400';
-      default:
-        return 'text-yellow-400';
-    }
-  };
-
-  const getConfidenceColor = (confidence: string) => {
-    switch (confidence) {
-      case 'High':
-        return 'text-green-400';
-      case 'Medium':
-        return 'text-yellow-400';
-      default:
-        return 'text-red-400';
     }
   };
 

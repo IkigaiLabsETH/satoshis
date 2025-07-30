@@ -308,6 +308,7 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
         handleAutoAnalysis();
       }, 2000);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasInitialized, messages.length]);
 
   const handleSubmit = async (e: React.FormEvent, retryMessage?: string) => {
