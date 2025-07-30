@@ -1,6 +1,5 @@
 'use client';
 
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -19,10 +18,10 @@ export default function Year2030Page() {
                 2030
               </h1>
               <p className="text-2xl md:text-3xl text-gray-300 font-epilogue">
-                Bitcoin's Decade of Dominance
+                Bitcoin&apos;s Decade of Dominance
               </p>
               <p className="text-lg text-gray-400 max-w-3xl mx-auto">
-                A speculative journey into Bitcoin's potential future and the evolution of digital assets
+                A speculative journey into Bitcoin&apos;s potential future and the evolution of digital assets
               </p>
             </div>
           </div>

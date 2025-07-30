@@ -1,8 +1,5 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import SupportLine from '@/components/cycles/SupportLine';
 import MaxPain from '@/components/cycles/MaxPain';
 
@@ -35,7 +32,7 @@ export default function BitcoinCyclesPage() {
                   <div className="text-8xl">📈</div>
                   <h2 className="text-3xl font-bold text-yellow-500">Bitcoin Leads the Market</h2>
                   <p className="text-xl text-white/80 max-w-2xl mx-auto">
-                    Your strategic guide to navigating Bitcoin's cycles, from accumulation to distribution, 
+                    Your strategic guide to navigating Bitcoin&apos;s cycles, from accumulation to distribution, 
                     with actionable insights for every phase of the market.
                   </p>
                 </div>
@@ -53,8 +50,8 @@ export default function BitcoinCyclesPage() {
                 <div>
                   <h4 className="text-xl font-bold text-yellow-500 mb-4">Bitcoin Leads Everything</h4>
                   <p className="text-lg leading-relaxed">
-                    Bitcoin's price action should guide both your entries and exits. When Bitcoin nears its previous all-time high around $125K, 
-                    it's time to start scaling out of altcoin positions. The goal is to derisk and lock in profits systematically.
+                    Bitcoin&apos;s price action should guide both your entries and exits. When Bitcoin nears its previous all-time high around $125K, 
+                    it&apos;s time to start scaling out of altcoin positions. The goal is to derisk and lock in profits systematically.
                   </p>
                 </div>
                 <div>
@@ -71,7 +68,7 @@ export default function BitcoinCyclesPage() {
                   <li>• <strong>2023-2024:</strong> Stack long-term bags (accumulation phase)</li>
                   <li>• <strong>2025-2026:</strong> Scale out systematically (distribution phase)</li>
                   <li>• <strong>Moonbags:</strong> Keep 5-10% untouched for potential 1000x gains</li>
-                  <li>• <strong>No Rebuying:</strong> Once sold, don't buy back - profit is profit</li>
+                  <li>• <strong>No Rebuying:</strong> Once sold, don&apos;t buy back - profit is profit</li>
                 </ul>
               </div>
             </div>
@@ -85,7 +82,7 @@ export default function BitcoinCyclesPage() {
             <div className="space-y-6 text-gray-300">
               <p className="text-lg leading-relaxed">
                 On April 20th, 2024, Bitcoin whispered its fourth epochal truth into the void — the halving. An event so deceptively simple yet so profoundly catalytic, 
-                it cuts miner rewards in half, but historically sets fire to the second half of the bull cycle. It's not magic — it's memetics and math.
+                it cuts miner rewards in half, but historically sets fire to the second half of the bull cycle. It&apos;s not magic — it&apos;s memetics and math.
               </p>
               
               <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
@@ -197,7 +194,7 @@ export default function BitcoinCyclesPage() {
                   </div>
                   <div>
                     <h5 className="text-lg font-bold text-white mb-2">$250K - Escape Velocity</h5>
-                    <p className="text-white/80 text-sm">The move that breaks the matrix - propels BTC from "digital gold" to "reserve asset" status.</p>
+                    <p className="text-white/80 text-sm">The move that breaks the matrix - propels BTC from &quot;digital gold&quot; to &quot;reserve asset&quot; status.</p>
                   </div>
                 </div>
               </div>
@@ -321,7 +318,7 @@ export default function BitcoinCyclesPage() {
                 <h4 className="text-xl font-bold text-yellow-500">Bottom Signals</h4>
                 <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
                   <ul className="text-white/80 font-satoshi space-y-3">
-                    <li>• <strong>Mass Capitulation:</strong> "Bitcoin is dead" narratives</li>
+                    <li>• <strong>Mass Capitulation:</strong> &quot;Bitcoin is dead&quot; narratives</li>
                     <li>• <strong>Fear Dominance:</strong> Everyone selling in panic</li>
                     <li>• <strong>Institutional Doubt:</strong> Major players questioning crypto</li>
                     <li>• <strong>Technical Support:</strong> Price at major support levels</li>
@@ -499,7 +496,7 @@ export default function BitcoinCyclesPage() {
                   <li>• <strong>Stack in bear markets</strong> - accumulate when others are fearful</li>
                   <li>• <strong>Scale out in bull markets</strong> - distribute when others are greedy</li>
                   <li>• <strong>Keep moonbags</strong> - never sell 100% of any position</li>
-                  <li>• <strong>Don't rebuy</strong> - once you take profits, move on</li>
+                  <li>• <strong>Don&apos;t rebuy</strong> - once you take profits, move on</li>
                   <li>• <strong>Trust the process</strong> - cycles repeat, but timing varies</li>
                 </ul>
               </div>
@@ -513,7 +510,7 @@ export default function BitcoinCyclesPage() {
               </div>
               
               <p className="text-lg text-center text-white/80 italic">
-                "The goal isn't to catch every move, but to catch the major moves and preserve capital for the next opportunity."
+                &quot;The goal isn&apos;t to catch every move, but to catch the major moves and preserve capital for the next opportunity.&quot;
               </p>
             </div>
           </div>
