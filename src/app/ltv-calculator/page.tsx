@@ -5,7 +5,6 @@ import { TrendingUp, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 import useSWR from 'swr';
 import { CalculatorForm } from "./components/CalculatorForm";
-import { ResultsSection } from "./components/ResultsSection";
 import { InteractiveChart } from "./components/InteractiveChart";
 
 interface Inputs {
