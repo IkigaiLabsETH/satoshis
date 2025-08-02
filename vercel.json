@@ -1,0 +1,9 @@
+{
+  "functions": {
+    "src/app/ltv-calculator/page.tsx": {
+      "maxDuration": 30
+    }
+  },
+  "buildCommand": "yarn build",
+  "outputDirectory": ".next"
+} 

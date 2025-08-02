@@ -1,34 +1,11 @@
 'use client';
 
 import React, { useState, useMemo } from "react";
-import { Input } from "@/components/ui/input";
-import { TrendingUp, Calculator, BarChart3 } from "lucide-react";
+import { TrendingUp, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  type ChartOptions,
-} from 'chart.js';
 import useSWR from 'swr';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
+import { CalculatorForm } from "./components/CalculatorForm";
+import { InteractiveChart } from "./components/InteractiveChart";
 
 interface Inputs {
   btcSpot: number;
@@ -46,7 +23,7 @@ const defaultInputs: Inputs = {
   interestRate: 0.05,
   btcCAGR1: 0.30,
   btcCAGR2: 0.21,
-  ltvTarget: 0.25,
+  ltvTarget: 0.10, // Zero liquidation risk: 10% LTV (90% safety margin)
   horizon: 15,
 };
 
@@ -64,115 +41,31 @@ function btcNeededSchedule(i: Inputs): number[] {
   return out;
 }
 
+function btcSoldForRepayment(i: Inputs): number[] {
+  let loanBalance = 0;
+  let btcPrice = i.btcSpot;
+  const out: number[] = [];
 
-
-// Interactive Chart Component
-function InteractiveBTCChart({ series }: { series: number[] }) {
-  const labels = series.map((_, idx) => `Year ${idx + 1}`);
-  
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: 'BTC Required',
-        data: series,
-        borderColor: '#fbbf24', // yellow-400
-        backgroundColor: 'rgba(251, 191, 36, 0.1)',
-        pointRadius: 4,
-        pointBackgroundColor: '#fbbf24',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 2,
-        tension: 0.3,
-        borderWidth: 3,
-        fill: true,
-      },
-    ],
-  };
-
-  const options: ChartOptions<'line'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-        labels: {
-          color: 'white',
-          font: {
-            size: 14,
-            weight: 'bold',
-          }
-        }
-      },
-      title: {
-        display: true,
-        text: 'Bitcoin Required Over Time',
-        color: 'white',
-        font: {
-          size: 18,
-          weight: 'bold',
-        }
-      },
-      tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: '#fbbf24',
-        bodyColor: 'white',
-        borderColor: '#fbbf24',
-        borderWidth: 1,
-        callbacks: {
-          label: function(context) {
-            return `BTC Required: ${context.parsed.y.toFixed(2)} BTC`;
-          }
-        }
-      }
-    },
-    scales: {
-      y: {
-        title: {
-          display: true,
-          text: 'Bitcoin (BTC)',
-          color: 'white',
-          font: {
-            size: 14,
-            weight: 'bold',
-          }
-        },
-        ticks: {
-          color: 'white',
-          callback: function(value) {
-            return `${Number(value).toFixed(1)} BTC`;
-          }
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.1)',
-        }
-      },
-      x: {
-        title: {
-          display: true,
-          text: 'Years',
-          color: 'white',
-          font: {
-            size: 14,
-            weight: 'bold',
-          }
-        },
-        ticks: {
-          color: 'white',
-          maxRotation: 0,
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.1)',
-        }
-      }
-    },
-    interaction: {
-      intersect: false,
-      mode: 'index',
-    },
-  };
-
-  return <Line options={options} data={data} />;
+  for (let yr = 1; yr <= i.horizon; yr++) {
+    // Calculate loan balance for this year
+    loanBalance = loanBalance * (1 + i.interestRate) + i.yearlyDrawUSD;
+    
+    // Calculate BTC price for this year
+    const growth = yr <= 8 ? i.btcCAGR1 : i.btcCAGR2;
+    btcPrice *= 1 + growth;
+    
+    // Calculate how much BTC needs to be sold to repay the yearly draw + interest
+    const yearlyPayment = i.yearlyDrawUSD + (loanBalance - i.yearlyDrawUSD) * i.interestRate;
+    const btcToSell = yearlyPayment / btcPrice;
+    
+    out.push(btcToSell);
+  }
+  return out;
 }
+
+
+
+
 
 // Vibes Integration Component
 
@@ -181,6 +74,7 @@ const Page = () => {
   const [form, setForm] = useState<Inputs>(defaultInputs);
   const [realTimePrice, setRealTimePrice] = useState<number | null>(null);
   const series = useMemo(() => btcNeededSchedule(form), [form]);
+  const repaymentSeries = useMemo(() => btcSoldForRepayment(form), [form]);
 
   // Fetch real-time Bitcoin price from CoinGecko
   const { data: priceData } = useSWR(
@@ -221,17 +115,17 @@ const Page = () => {
           {/* Hero Section */}
           <div className="text-center space-y-6">
             <p className="uppercase tracking-[0.4em] text-yellow-500/90 text-sm mb-4 font-light">
-              Risk Management • LTV Calculator • Safety Analysis
+              Zero Liquidation Risk • Ultra-Conservative • Never Sell Strategy
             </p>
             <h1 className="text-center">
               <span className="text-5xl md:text-7xl font-bold text-yellow-500 tracking-tight [text-shadow:_0_1px_20px_rgba(234,179,8,0.3)]">
-                Bitcoin LTV Safety Calculator
+                Bitcoin Zero Risk Calculator
               </span>
             </h1>
             <div className="flex items-center justify-center mt-6">
               <div className="h-px w-24 bg-yellow-500/30"></div>
               <p className="mx-6 text-lg text-white/70 font-light italic">
-                Calculate your Bitcoin safety requirements for sustainable wealth
+                Calculate Bitcoin requirements for zero liquidation risk borrowing
               </p>
               <div className="h-px w-24 bg-yellow-500/30"></div>
             </div>
@@ -239,161 +133,80 @@ const Page = () => {
 
                      {/* Main Calculator Card */}
            <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-             <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-8 text-center flex items-center justify-center gap-3">
-               <Calculator size={28} />
-               Calculator Parameters
-             </h3>
-             
-             <div className="max-w-4xl mx-auto space-y-8">
-               {/* Input Grid */}
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                 <div className="space-y-2">
-                   <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                     BTC Spot Price
-                     {realTimePrice && (
-                       <span className="text-green-400 text-xs bg-green-500/20 px-2 py-1 rounded">
-                         LIVE
-                       </span>
-                     )}
-                   </label>
-                   <Input
-                     type="number"
-                     step="any"
-                     value={currentBTCPrice}
-                     onChange={onChange("btcSpot")}
-                     placeholder="104000"
-                     className="bg-gray-800 border-gray-600 text-white"
-                   />
-                   {realTimePrice && (
-                     <div className="text-xs text-green-400">
-                       Real-time price: ${realTimePrice.toLocaleString()}
-                     </div>
-                   )}
-                 </div>
-                 
-                 <div className="space-y-2">
-                   <label className="text-sm font-medium text-gray-300">Annual Draw (USD)</label>
-                   <Input
-                     type="number"
-                     step="any"
-                     value={form.yearlyDrawUSD}
-                     onChange={onChange("yearlyDrawUSD")}
-                     placeholder="100000"
-                     className="bg-gray-800 border-gray-600 text-white"
-                   />
-                 </div>
-                 
-                 <div className="space-y-2">
-                   <label className="text-sm font-medium text-gray-300">Interest Rate</label>
-                   <Input
-                     type="number"
-                     step="any"
-                     value={form.interestRate}
-                     onChange={onChange("interestRate")}
-                     placeholder="0.05"
-                     className="bg-gray-800 border-gray-600 text-white"
-                   />
-                 </div>
-                 
-                 <div className="space-y-2">
-                   <label className="text-sm font-medium text-gray-300">Target LTV</label>
-                   <Input
-                     type="number"
-                     step="any"
-                     value={form.ltvTarget}
-                     onChange={onChange("ltvTarget")}
-                     placeholder="0.25"
-                     className="bg-gray-800 border-gray-600 text-white"
-                   />
-                 </div>
-                 
-                 <div className="space-y-2">
-                   <label className="text-sm font-medium text-gray-300">BTC CAGR (Years 1-8)</label>
-                   <Input
-                     type="number"
-                     step="any"
-                     value={form.btcCAGR1}
-                     onChange={onChange("btcCAGR1")}
-                     placeholder="0.30"
-                     className="bg-gray-800 border-gray-600 text-white"
-                   />
-                 </div>
-                 
-                 <div className="space-y-2">
-                   <label className="text-sm font-medium text-gray-300">BTC CAGR (Years 9+)</label>
-                   <Input
-                     type="number"
-                     step="any"
-                     value={form.btcCAGR2}
-                     onChange={onChange("btcCAGR2")}
-                     placeholder="0.21"
-                     className="bg-gray-800 border-gray-600 text-white"
-                   />
-                 </div>
-                 
-                 <div className="space-y-2 lg:col-span-3">
-                   <label className="text-sm font-medium text-gray-300">Time Horizon (Years)</label>
-                   <Input
-                     type="number"
-                     value={form.horizon}
-                     onChange={onChange("horizon")}
-                     placeholder="15"
-                     className="bg-gray-800 border-gray-600 text-white max-w-md"
-                   />
-                 </div>
-               </div>
-
-               {/* Results and Vibes Section */}
-               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-
-
-               </div>
-             </div>
+             <CalculatorForm form={form} onChange={onChange} setForm={setForm} />
            </div>
 
            {/* Bitcoin Safety Requirements Frame */}
            <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
              <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6 text-center flex items-center justify-center gap-3">
                <TrendingUp size={28} />
-               Your Bitcoin Safety Requirements
+               Your Zero Risk Bitcoin Requirements
              </h3>
              <p className="text-center text-gray-300 mb-8 max-w-2xl mx-auto">
-               Based on your calculator parameters, here are your projected Bitcoin requirements to maintain safe LTV ratios over time.
+               Based on your calculator parameters, here are your projected Bitcoin requirements to maintain zero liquidation risk over time.
              </p>
              
              <div className="bg-yellow-500/10 p-4 rounded-lg border border-yellow-500/20 max-w-3xl mx-auto mb-8">
-               <h4 className="text-yellow-400 font-semibold mb-3 text-center">📈 Why {totalBTCNeeded.toFixed(2)} BTC is the MINIMUM for ${form.yearlyDrawUSD.toLocaleString()} Annual Borrowing?</h4>
+               <h4 className="text-yellow-400 font-semibold mb-3 text-center">📈 Zero Liquidation Risk: Understanding Your Bitcoin Requirements for ${form.yearlyDrawUSD.toLocaleString()} Annual Borrowing</h4>
                <div className="text-gray-300 text-sm space-y-4">
-                 <div className="bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-                   <h5 className="text-red-400 font-semibold mb-2">⚠️ Important Correction:</h5>
-                   <p><strong>You need AT LEAST {totalBTCNeeded.toFixed(2)} BTC to start!</strong> This is the <span className="text-red-400 font-semibold">minimum Bitcoin required</span> to borrow ${form.yearlyDrawUSD.toLocaleString()} annually.</p>
+                 <div className="bg-green-500/10 p-3 rounded-lg border border-green-500/20">
+                   <h5 className="text-green-400 font-semibold mb-2">🛡️ Zero Risk Requirement:</h5>
+                   <p><strong>You need AT LEAST {((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice).toFixed(2)} BTC (${(((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice) * currentBTCPrice).toLocaleString()}) to start!</strong> This is the <span className="text-green-400 font-semibold">minimum Bitcoin collateral required</span> to borrow ${form.yearlyDrawUSD.toLocaleString()} annually at {(form.ltvTarget * 100).toFixed(0)}% LTV with <span className="text-green-400 font-bold">ZERO liquidation risk</span>.</p>
                  </div>
                  
                  <div className="space-y-2">
-                   <p><strong>📊 The Reality Check:</strong></p>
+                   <p><strong>📊 The Zero Risk Reality Check:</strong></p>
                    <ul className="list-disc list-inside space-y-1 ml-4">
-                     <li><strong>Year 1:</strong> You need ~1.28 BTC to borrow ${form.yearlyDrawUSD.toLocaleString()} (loan: $100K, BTC: $104K, LTV: 25%)</li>
-                     <li><strong>Year 4:</strong> You need ~{totalBTCNeeded.toFixed(2)} BTC (the minimum requirement)</li>
-                     <li><strong>Year 15:</strong> You need ~0.05 BTC (much less due to BTC appreciation)</li>
+                     <li><strong>Year 1:</strong> You need ~{((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice).toFixed(2)} BTC (${(((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice) * currentBTCPrice).toLocaleString()}) to borrow ${form.yearlyDrawUSD.toLocaleString()} at {(form.ltvTarget * 100).toFixed(0)}% LTV with 90% safety margin</li>
+                     <li><strong>Year 4:</strong> You need ~{totalBTCNeeded.toFixed(2)} BTC (${totalUSDValue.toLocaleString()}) - the minimum requirement with zero liquidation risk</li>
+                     <li><strong>Year 15:</strong> You need ~0.05 BTC (much less due to BTC appreciation, still zero risk)</li>
                    </ul>
                  </div>
                  
-                 <div className="bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20">
-                   <h5 className="text-yellow-400 font-semibold mb-2">💡 The Strategy:</h5>
-                   <p><strong>Start with {totalBTCNeeded.toFixed(2)} BTC minimum!</strong> This ensures you can borrow ${form.yearlyDrawUSD.toLocaleString()} annually while maintaining safe LTV ratios throughout the {form.horizon}-year period.</p>
+                 <div className="bg-green-500/10 p-3 rounded-lg border border-green-500/20">
+                   <h5 className="text-green-400 font-semibold mb-2">🛡️ The Zero Risk Strategy:</h5>
+                   <p><strong>Start with {((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice).toFixed(2)} BTC (${(((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice) * currentBTCPrice).toLocaleString()}) minimum!</strong> This ensures you can borrow ${form.yearlyDrawUSD.toLocaleString()} annually with <span className="text-green-400 font-bold">ZERO liquidation risk</span> throughout the {form.horizon}-year period.</p>
                  </div>
                  
                  <div className="bg-blue-500/10 p-3 rounded-lg border border-blue-500/20">
-                   <h5 className="text-blue-400 font-semibold mb-2">🔍 The Formula Breakdown:</h5>
+                   <h5 className="text-blue-400 font-semibold mb-2">🔍 The Zero Risk Formula Breakdown:</h5>
                    <p className="font-mono text-xs">Required BTC = Loan Balance ÷ ((1 - {form.ltvTarget}) × BTC Price)</p>
-                   <p className="text-xs mt-1">Where {form.ltvTarget} = {(form.ltvTarget * 100).toFixed(0)}% LTV target, and BTC Price grows at {form.btcCAGR1 * 100}% → {form.btcCAGR2 * 100}% annually</p>
-                   <p className="text-xs mt-2 text-yellow-400"><strong>Year 1 Example:</strong> $100K ÷ (0.75 × $104K) = 1.28 BTC needed</p>
+                   <p className="text-xs mt-1">Where {form.ltvTarget} = {(form.ltvTarget * 100).toFixed(0)}% LTV target (90% safety margin), and BTC Price grows at {form.btcCAGR1 * 100}% → {form.btcCAGR2 * 100}% annually</p>
+                   <p className="text-xs mt-2 text-green-400"><strong>Year 1 Example:</strong> $100K ÷ (0.90 × $104K) = {((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice).toFixed(2)} BTC needed with zero liquidation risk</p>
                  </div>
                </div>
              </div>
              
              <div className="max-w-4xl mx-auto space-y-8">
+               {/* USD Collateral Requirements - Like Grok 4 Explained */}
+               <div className="bg-green-500/10 p-6 rounded-lg border border-green-500/20 max-w-4xl mx-auto">
+                 <h3 className="text-2xl font-bold text-green-400 mb-4 text-center">💰 Zero Risk USD Collateral Requirements</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-lg mb-6">
+                     <div className="bg-black/30 p-6 rounded-lg border border-green-500/20 text-center">
+                       <div className="text-gray-300 text-sm mb-2 uppercase tracking-wider font-medium">To START Borrowing</div>
+                       <div className="text-green-400 font-bold text-4xl mb-2">{((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice).toFixed(2)}</div>
+                       <div className="text-gray-400 text-lg">BTC</div>
+                       <div className="text-green-400 font-bold text-xl mt-2">${(((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice) * currentBTCPrice).toLocaleString()}</div>
+                       <div className="text-gray-400 text-sm">USD Collateral Value</div>
+                       <p className="text-xs text-gray-500 mt-2">Required to initiate a ${form.yearlyDrawUSD.toLocaleString()} loan at {(form.ltvTarget * 100).toFixed(0)}% LTV</p>
+                     </div>
+                     <div className="bg-black/30 p-6 rounded-lg border border-green-500/20 text-center">
+                       <div className="text-gray-300 text-sm mb-2 uppercase tracking-wider font-medium">To MAINTAIN Loan</div>
+                       <div className="text-green-400 font-bold text-4xl mb-2">{totalBTCNeeded.toFixed(2)}</div>
+                       <div className="text-gray-400 text-lg">BTC</div>
+                       <div className="text-gray-400 text-sm">USD Collateral Value</div>
+                       <div className="text-green-400 font-bold text-xl mt-2">${totalUSDValue.toLocaleString()}</div>
+                       <p className="text-xs text-gray-500 mt-2">Minimum required over {form.horizon} years (peak requirement)</p>
+                     </div>
+                   </div>
+                                    <div className="bg-green-500/20 p-4 rounded-lg border border-green-500/30 text-center">
+                     <h5 className="text-green-400 font-bold mb-2">💡 Zero Risk Key Insight:</h5>
+                     <p className="text-gray-300 text-sm">
+                       You need <span className="text-green-400 font-bold">{((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice).toFixed(2)} BTC</span> (${(((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice) * currentBTCPrice).toLocaleString()}) to START borrowing, but only <span className="text-green-400 font-bold">{totalBTCNeeded.toFixed(2)} BTC</span> (${totalUSDValue.toLocaleString()}) to MAINTAIN the loan over time. With 90% safety margin, you have zero liquidation risk!
+                     </p>
+                   </div>
+               </div>
+               
                {/* Results Cards */}
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                  <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-500/5 p-8 rounded-lg border-2 border-yellow-500/30 shadow-[0_0_30px_rgba(234,179,8,0.1)] text-center">
@@ -410,26 +223,26 @@ const Page = () => {
                </div>
                
                {/* Safety Margin Analysis */}
-               <div className="bg-yellow-500/10 p-6 rounded-lg border border-yellow-500/20 max-w-4xl mx-auto">
+               <div className="bg-green-500/10 p-6 rounded-lg border border-green-500/20 max-w-4xl mx-auto">
                  <div className="text-center mb-6">
-                   <div className="text-yellow-400 font-semibold text-xl mb-3">Safety Margin Analysis</div>
+                   <div className="text-green-400 font-semibold text-xl mb-3">Zero Risk Margin Analysis</div>
                    <div className="text-gray-300 text-lg">
-                     Based on your parameters, you&apos;ll need <span className="text-yellow-400 font-bold text-2xl">{totalBTCNeeded.toFixed(2)} BTC</span> 
-                     to maintain a safe <span className="text-yellow-400 font-bold">{(form.ltvTarget * 100).toFixed(0)}% LTV ratio</span> over <span className="text-yellow-400 font-bold">{form.horizon} years</span>.
+                     Based on your parameters, you&apos;ll need <span className="text-green-400 font-bold text-2xl">{totalBTCNeeded.toFixed(2)} BTC</span> 
+                     to maintain <span className="text-green-400 font-bold">ZERO liquidation risk</span> with <span className="text-green-400 font-bold">{(form.ltvTarget * 100).toFixed(0)}% LTV ratio</span> over <span className="text-yellow-400 font-bold">{form.horizon} years</span>.
                    </div>
                  </div>
                  
                  {/* Real-Life Example */}
                  <div className="bg-black/30 p-6 rounded-lg border border-yellow-500/20">
-                   <h4 className="text-yellow-400 font-bold text-lg mb-4 text-center">📊 Real-Life Example: Sarah&apos;s Conservative Bitcoin Strategy</h4>
+                   <h4 className="text-green-400 font-bold text-lg mb-4 text-center">📊 Real-Life Example: Sarah&apos;s Zero Liquidation Risk Strategy</h4>
                    
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                      <div>
-                       <h5 className="text-yellow-400 font-semibold mb-3">Sarah&apos;s Conservative Approach:</h5>
+                       <h5 className="text-green-400 font-semibold mb-3">Sarah&apos;s Zero Risk Approach:</h5>
                        <ul className="space-y-2 text-gray-300">
                          <li>• Wants to borrow ${form.yearlyDrawUSD.toLocaleString()} annually</li>
                          <li>• Only willing to use 10% of her total Bitcoin stack for loans</li>
-                         <li>• Target LTV: {(form.ltvTarget * 100).toFixed(0)}% (conservative)</li>
+                         <li>• Target LTV: {(form.ltvTarget * 100).toFixed(0)}% (zero liquidation risk)</li>
                          <li>• Planning for {form.horizon} years</li>
                          <li>• Keeps 90% of her Bitcoin untouched</li>
                        </ul>
@@ -448,7 +261,7 @@ const Page = () => {
                    </div>
                    
                    <div className="mt-6 p-4 bg-yellow-500/20 rounded-lg border border-yellow-500/30">
-                     <h5 className="text-yellow-400 font-bold mb-3 text-center">🎯 Sarah&apos;s 10% Strategy Breakdown</h5>
+                     <h5 className="text-green-400 font-bold mb-3 text-center">🎯 Sarah&apos;s Zero Risk 10% Strategy Breakdown</h5>
                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                        <div>
                          <div className="text-yellow-400 font-bold text-lg">{totalBTCNeeded.toFixed(2)} BTC</div>
@@ -467,12 +280,12 @@ const Page = () => {
                    
                                         <div className="mt-4 text-gray-300 text-sm">
                        <p className="mb-3">
-                         <strong>Why the 10% strategy is brilliant:</strong> Sarah only risks {(totalBTCNeeded * 10).toFixed(2)} BTC × 10% = {totalBTCNeeded.toFixed(2)} BTC for her loan, 
-                         while keeping {(totalBTCNeeded * 9).toFixed(2)} BTC completely safe from liquidation. This is the ultimate conservative approach.
+                         <strong>Why the zero risk 10% strategy is brilliant:</strong> Sarah only risks {(totalBTCNeeded * 10).toFixed(2)} BTC × 10% = {totalBTCNeeded.toFixed(2)} BTC for her loan, 
+                         while keeping {(totalBTCNeeded * 9).toFixed(2)} BTC completely safe from liquidation. This is the ultimate zero liquidation risk approach.
                        </p>
                        
                        <div className="bg-black/20 p-4 rounded-lg border border-yellow-500/20 mt-4">
-                         <h6 className="text-yellow-400 font-semibold mb-3">📊 The Conservative Timeline Advantage:</h6>
+                         <h6 className="text-green-400 font-semibold mb-3">📊 The Zero Risk Timeline Advantage:</h6>
                          <div className="space-y-2 text-xs">
                            <p><strong>Years 1-4:</strong> Only 10% of Sarah&apos;s stack is at risk while 90% appreciates freely</p>
                            <p><strong>Years 5-8:</strong> Her 90% stack grows at 30% CAGR, building massive wealth</p>
@@ -493,10 +306,90 @@ const Page = () => {
                          </div>
                        </div>
                        
-                       <p className="mt-4">
-                         <strong>Bottom line:</strong> With this 10% strategy, Sarah can borrow ${form.yearlyDrawUSD.toLocaleString()} annually while keeping 90% of her Bitcoin completely safe from liquidation. 
-                         The 90% stack continues appreciating and building wealth, making this the ultimate conservative Bitcoin-backed loan strategy.
-                       </p>
+                       <div className="bg-purple-500/10 p-4 rounded-lg border border-purple-500/20 mt-4">
+                         <h6 className="text-purple-400 font-semibold mb-3">🚀 Your 90% Stack After 15 Years (After Repayment):</h6>
+                         <div className="text-center space-y-2">
+                           <div className="text-purple-400 font-bold text-xl">{((totalBTCNeeded * 9) - repaymentSeries.reduce((sum, val) => sum + val, 0)).toFixed(2)} BTC</div>
+                           <div className="text-gray-400 text-sm">Final Bitcoin Amount (90% stack minus repayment sales)</div>
+                           <div className="text-purple-400 font-bold text-lg">${(((totalBTCNeeded * 9) - repaymentSeries.reduce((sum, val) => sum + val, 0)) * currentBTCPrice * Math.pow(1.30, 8) * Math.pow(1.21, 7)).toLocaleString()}</div>
+                           <div className="text-gray-400 text-sm">Final USD Value (with price appreciation)</div>
+                           <div className="text-xs text-purple-300 mt-2">
+                             <strong>Starting Value:</strong> ${((totalBTCNeeded * 9) * currentBTCPrice).toLocaleString()} | 
+                             <strong>Final Value:</strong> ${(((totalBTCNeeded * 9) - repaymentSeries.reduce((sum, val) => sum + val, 0)) * currentBTCPrice * Math.pow(1.30, 8) * Math.pow(1.21, 7)).toLocaleString()}
+                           </div>
+                         </div>
+                       </div>
+                       
+                                                <div className="bg-red-500/10 p-4 rounded-lg border border-red-500/20 mt-4">
+                           <h6 className="text-red-400 font-semibold mb-3">💰 Bitcoin Sold for Repayment (No External Income):</h6>
+                           <div className="text-gray-300 text-sm space-y-2">
+                             <p><strong>Total BTC Sold Over 15 Years:</strong> {repaymentSeries.reduce((sum, val) => sum + val, 0).toFixed(2)} BTC</p>
+                             <p><strong>Total USD Value Sold:</strong> ${(repaymentSeries.reduce((sum, val) => sum + val, 0) * currentBTCPrice).toLocaleString()}</p>
+                             <p><strong>Impact on 90% Stack:</strong> Starting with {(totalBTCNeeded * 9).toFixed(2)} BTC, you&apos;ll end with {((totalBTCNeeded * 9) - repaymentSeries.reduce((sum, val) => sum + val, 0)).toFixed(2)} BTC after 15 years</p>
+                             <p><strong>Percentage of 90% Stack Sold:</strong> {((repaymentSeries.reduce((sum, val) => sum + val, 0) / (totalBTCNeeded * 9)) * 100).toFixed(1)}%</p>
+                           </div>
+                         </div>
+                         
+                         <div className="bg-blue-500/10 p-4 rounded-lg border border-blue-500/20 mt-4">
+                           <h6 className="text-blue-400 font-semibold mb-3">💡 Alternative Repayment Strategies:</h6>
+                           <div className="text-gray-300 text-sm space-y-2">
+                             <p><strong>Option 1 - Use 90% Stack Appreciation:</strong> Your 90% stack grows from ${((totalBTCNeeded * 9) * currentBTCPrice).toLocaleString()} to ${((totalBTCNeeded * 9) * currentBTCPrice * Math.pow(1.30, 8) * Math.pow(1.21, 7)).toLocaleString()} over 15 years. You could sell a small portion of this appreciation to repay loans.</p>
+                             <p><strong>Option 2 - External Income:</strong> Use job income, business profits, or other investments to cover loan payments without touching Bitcoin.</p>
+                             <p><strong>Option 3 - Compound Strategy:</strong> Let the 90% stack continue growing while using only the 10% for loans. The appreciation on 90% can eventually cover all loan costs.</p>
+                           </div>
+                         </div>
+                         
+                         <div className="bg-orange-500/10 p-4 rounded-lg border border-orange-500/20 mt-4">
+                           <h6 className="text-orange-400 font-semibold mb-3">⚖️ Strategy Comparison: Loans vs. Direct Selling</h6>
+                           <div className="text-gray-300 text-sm space-y-3">
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                               <div className="bg-red-500/10 p-3 rounded border border-red-500/20">
+                                 <h6 className="text-red-400 font-semibold">❌ Direct Selling Strategy:</h6>
+                                 <div className="mt-2 space-y-1">
+                                   <p><strong>Total BTC Sold:</strong> {(form.yearlyDrawUSD * form.horizon / currentBTCPrice).toFixed(2)} BTC</p>
+                                   <p><strong>Final BTC Stack:</strong> {((totalBTCNeeded * 10) - (form.yearlyDrawUSD * form.horizon / currentBTCPrice)).toFixed(2)} BTC</p>
+                                   <p><strong>Final Value:</strong> ${(((totalBTCNeeded * 10) - (form.yearlyDrawUSD * form.horizon / currentBTCPrice)) * currentBTCPrice * Math.pow(1.30, 8) * Math.pow(1.21, 7)).toLocaleString()}</p>
+                                   <p className="text-red-300 text-xs"><strong>Problem:</strong> You lose Bitcoin forever, no way to recover it</p>
+                                 </div>
+                               </div>
+                               <div className="bg-green-500/10 p-3 rounded border border-green-500/20">
+                                 <h6 className="text-green-400 font-semibold">✅ Zero Risk Loan Strategy:</h6>
+                                 <div className="mt-2 space-y-1">
+                                   <p><strong>Total BTC Sold:</strong> {repaymentSeries.reduce((sum, val) => sum + val, 0).toFixed(2)} BTC</p>
+                                   <p><strong>Final BTC Stack:</strong> {((totalBTCNeeded * 9) - repaymentSeries.reduce((sum, val) => sum + val, 0)).toFixed(2)} BTC</p>
+                                   <p><strong>Final Value:</strong> ${(((totalBTCNeeded * 9) - repaymentSeries.reduce((sum, val) => sum + val, 0)) * currentBTCPrice * Math.pow(1.30, 8) * Math.pow(1.21, 7)).toLocaleString()}</p>
+                                   <p className="text-green-300 text-xs"><strong>Advantage:</strong> You keep your Bitcoin collateral, only sell for repayment</p>
+                                 </div>
+                               </div>
+                             </div>
+                                                            <div className="bg-yellow-500/10 p-3 rounded border border-yellow-500/20">
+                                 <h6 className="text-yellow-400 font-semibold">🎯 Key Advantages of Loan Strategy:</h6>
+                                 <div className="mt-2 space-y-1 text-xs">
+                                   <p><strong>1. Tax Efficiency:</strong> Loans are not taxable events, selling Bitcoin triggers capital gains</p>
+                                   <p><strong>2. Bitcoin Preservation:</strong> You keep your Bitcoin collateral (only 10% at risk), vs. losing Bitcoin forever</p>
+                                   <p><strong>3. Compounding Power:</strong> Your 90% stack continues appreciating while you borrow</p>
+                                   <p><strong>4. Optional Repayment:</strong> You can use external income to repay loans, keeping all Bitcoin</p>
+                                   <p><strong>5. Liquidation Protection:</strong> With 10% LTV, you have massive safety margins</p>
+                                 </div>
+                               </div>
+                             <div className="bg-blue-500/10 p-3 rounded border border-blue-500/20 mt-3">
+                               <h6 className="text-blue-400 font-semibold">💰 Value Comparison After 15 Years:</h6>
+                               <div className="text-center mt-2">
+                                 <div className="text-red-400 font-bold text-lg">${(((totalBTCNeeded * 10) - (form.yearlyDrawUSD * form.horizon / currentBTCPrice)) * currentBTCPrice * Math.pow(1.30, 8) * Math.pow(1.21, 7)).toLocaleString()}</div>
+                                 <div className="text-gray-400 text-xs">Direct Selling Strategy Final Value</div>
+                                 <div className="text-green-400 font-bold text-lg">${(((totalBTCNeeded * 9) - repaymentSeries.reduce((sum, val) => sum + val, 0)) * currentBTCPrice * Math.pow(1.30, 8) * Math.pow(1.21, 7)).toLocaleString()}</div>
+                                 <div className="text-gray-400 text-xs">Loan Strategy Final Value</div>
+                                 <div className="text-yellow-400 font-bold text-lg mt-2">${(((((totalBTCNeeded * 9) - repaymentSeries.reduce((sum, val) => sum + val, 0)) * currentBTCPrice * Math.pow(1.30, 8) * Math.pow(1.21, 7)) - (((totalBTCNeeded * 10) - (form.yearlyDrawUSD * form.horizon / currentBTCPrice)) * currentBTCPrice * Math.pow(1.30, 8) * Math.pow(1.21, 7)))).toLocaleString()}</div>
+                                 <div className="text-gray-400 text-xs">Additional Value from Loan Strategy</div>
+                               </div>
+                             </div>
+                           </div>
+                         </div>
+                         
+                         <p className="mt-4">
+                           <strong>Bottom line:</strong> With this zero risk 10% strategy, Sarah can borrow ${form.yearlyDrawUSD.toLocaleString()} annually while keeping 90% of her Bitcoin completely safe from liquidation. 
+                           The 90% stack continues appreciating and building wealth, making this the ultimate zero liquidation risk Bitcoin-backed loan strategy.
+                         </p>
                      </div>
                  </div>
                </div>
@@ -507,21 +400,22 @@ const Page = () => {
            <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
              <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6 text-center flex items-center justify-center gap-3">
                <BarChart3 size={28} />
-               Interactive Bitcoin Safety Chart
+               Interactive Zero Risk Bitcoin Chart
              </h3>
              <p className="text-center text-gray-300 mb-8 max-w-2xl mx-auto">
                Watch how your Bitcoin requirements change over time as you adjust the parameters above. 
-               The chart updates in real-time to show your projected Bitcoin needs for maintaining safe LTV ratios.
+               <span className="text-yellow-400 font-semibold"> Yellow line</span> shows Bitcoin needed for collateral (zero liquidation risk).
+               <span className="text-red-400 font-semibold"> Red line</span> shows Bitcoin sold from your 90% stack to repay loans (no external income).
              </p>
              <div className="w-full h-[500px] max-w-4xl mx-auto">
-               <InteractiveBTCChart series={series} />
+               <InteractiveChart series={series} repaymentSeries={repaymentSeries} />
              </div>
            </div>
 
                       {/* Explanation Section */}
            <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
              <h3 className="text-2xl font-bold text-yellow-500 mb-6">
-               🛡️ How the Bitcoin LTV Safety Calculator Works
+               🛡️ How the Bitcoin Zero Risk Calculator Works
              </h3>
              <div className="space-y-6 text-gray-300">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -840,12 +734,12 @@ const Page = () => {
              <div className="space-y-8 text-gray-300">
                
                {/* Never Sell Philosophy */}
-               <div className="bg-yellow-500/10 p-6 rounded-lg border border-yellow-500/20">
-                 <h4 className="text-xl font-bold text-yellow-400 mb-4">💎 The Golden Rule: Never Sell Your Bitcoin</h4>
+               <div className="bg-green-500/10 p-6 rounded-lg border border-green-500/20">
+                 <h4 className="text-xl font-bold text-green-400 mb-4">💎 The Golden Rule: Never Sell Your Bitcoin</h4>
                  <p className="text-lg leading-relaxed">
-                   Bitcoin-backed loans allow you to unlock the value of your Bitcoin without selling it. 
+                   Bitcoin-backed loans with zero liquidation risk allow you to unlock the value of your Bitcoin without selling it. 
                    This is the key advantage—you maintain ownership while accessing liquidity for real estate, 
-                   business investments, or other opportunities. No capital gains taxes, no lost upside potential.
+                   business investments, or other opportunities. No capital gains taxes, no lost upside potential, and <span className="text-green-400 font-bold">zero risk of liquidation</span>.
                  </p>
                </div>
 
@@ -876,7 +770,7 @@ const Page = () => {
 
                {/* Platform Comparison */}
                <div>
-                 <h4 className="text-xl font-bold text-yellow-400 mb-6">📊 Platform Comparison & Risk Analysis</h4>
+                 <h4 className="text-xl font-bold text-yellow-400 mb-6">📊 Platform Comparison & Zero Risk Analysis</h4>
                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                    
                    {/* Xapo */}
@@ -922,16 +816,16 @@ const Page = () => {
                    </div>
 
                    {/* Peoples Reserve */}
-                   <div className="bg-purple-500/10 p-6 rounded-lg border border-purple-500/20">
-                     <h5 className="text-lg font-bold text-purple-400 mb-3">🔄 Peoples Reserve (Dynamic Rates)</h5>
+                   <div className="bg-green-500/10 p-6 rounded-lg border border-green-500/20">
+                     <h5 className="text-lg font-bold text-green-400 mb-3">🛡️ Peoples Reserve (Zero Liquidation Risk)</h5>
                      <div className="space-y-2 text-sm">
                        <div><span className="font-semibold">Rate Model:</span> Performance-based</div>
                        <div><span className="font-semibold">Risk Adjustment:</span> Rates adjust with BTC price</div>
                        <div><span className="font-semibold">Advantage:</span> No Bitcoin liquidation</div>
                        <div><span className="font-semibold">Protection:</span> Bitcoin never &quot;sacrificed&quot;</div>
                      </div>
-                     <p className="text-xs mt-3 text-purple-300">
-                       Innovative approach that protects your Bitcoin from liquidation
+                     <p className="text-xs mt-3 text-green-300">
+                       <strong>Zero liquidation risk approach</strong> that protects your Bitcoin completely
                      </p>
                    </div>
                  </div>
