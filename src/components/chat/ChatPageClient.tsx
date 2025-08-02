@@ -44,7 +44,7 @@ export default function ChatPageClient() {
             </h1>
             
             <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
-              Your Bitcoin-first AI assistant powered by Grok4. Ask complex questions, get detailed insights, and shape the AI's personality with your vibes.
+              Your Bitcoin-first AI assistant powered by Grok4. Ask complex questions, get detailed insights, and shape the AI&apos;s personality with your vibes.
             </p>
           </motion.div>
 
@@ -127,7 +127,7 @@ export default function ChatPageClient() {
                 </div>
                 <h3 className="text-yellow-400 font-semibold mb-3 text-lg">Personality Vibes</h3>
                 <p className="text-white/70 text-sm leading-relaxed">
-                  Share tweets, thoughts, or vibes to shape the AI's personality and get responses that match your energy and perspective.
+                  Share tweets, thoughts, or vibes to shape the AI&apos;s personality and get responses that match your energy and perspective.
                 </p>
               </motion.div>
 
