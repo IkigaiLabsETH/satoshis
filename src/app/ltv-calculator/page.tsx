@@ -1,10 +1,8 @@
 'use client';
 
 import React, { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TrendingUp, Shield, Calculator, BarChart3 } from "lucide-react";
+import { TrendingUp, Calculator, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Line } from 'react-chartjs-2';
 import {
@@ -395,18 +393,18 @@ const Page = () => {
                  <div className="text-center mb-6">
                    <div className="text-yellow-400 font-semibold text-xl mb-3">Safety Margin Analysis</div>
                    <div className="text-gray-300 text-lg">
-                     Based on your parameters, you'll need <span className="text-yellow-400 font-bold text-2xl">{totalBTCNeeded.toFixed(2)} BTC</span> 
+                     Based on your parameters, you&apos;ll need <span className="text-yellow-400 font-bold text-2xl">{totalBTCNeeded.toFixed(2)} BTC</span> 
                      to maintain a safe <span className="text-yellow-400 font-bold">{(form.ltvTarget * 100).toFixed(0)}% LTV ratio</span> over <span className="text-yellow-400 font-bold">{form.horizon} years</span>.
                    </div>
                  </div>
                  
                  {/* Real-Life Example */}
                  <div className="bg-black/30 p-6 rounded-lg border border-yellow-500/20">
-                   <h4 className="text-yellow-400 font-bold text-lg mb-4 text-center">📊 Real-Life Example: Sarah's Conservative Bitcoin Strategy</h4>
+                   <h4 className="text-yellow-400 font-bold text-lg mb-4 text-center">📊 Real-Life Example: Sarah&apos;s Conservative Bitcoin Strategy</h4>
                    
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                      <div>
-                       <h5 className="text-yellow-400 font-semibold mb-3">Sarah's Conservative Approach:</h5>
+                       <h5 className="text-yellow-400 font-semibold mb-3">Sarah&apos;s Conservative Approach:</h5>
                        <ul className="space-y-2 text-gray-300">
                          <li>• Wants to borrow ${form.yearlyDrawUSD.toLocaleString()} annually</li>
                          <li>• Only willing to use 10% of her total Bitcoin stack for loans</li>
@@ -429,7 +427,7 @@ const Page = () => {
                    </div>
                    
                    <div className="mt-6 p-4 bg-yellow-500/20 rounded-lg border border-yellow-500/30">
-                     <h5 className="text-yellow-400 font-bold mb-3 text-center">🎯 Sarah's 10% Strategy Breakdown</h5>
+                     <h5 className="text-yellow-400 font-bold mb-3 text-center">🎯 Sarah&apos;s 10% Strategy Breakdown</h5>
                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                        <div>
                          <div className="text-yellow-400 font-bold text-lg">{totalBTCNeeded.toFixed(2)} BTC</div>
@@ -455,7 +453,7 @@ const Page = () => {
                        <div className="bg-black/20 p-4 rounded-lg border border-yellow-500/20 mt-4">
                          <h6 className="text-yellow-400 font-semibold mb-3">📊 The Conservative Timeline Advantage:</h6>
                          <div className="space-y-2 text-xs">
-                           <p><strong>Years 1-4:</strong> Only 10% of Sarah's stack is at risk while 90% appreciates freely</p>
+                           <p><strong>Years 1-4:</strong> Only 10% of Sarah&apos;s stack is at risk while 90% appreciates freely</p>
                            <p><strong>Years 5-8:</strong> Her 90% stack grows at 30% CAGR, building massive wealth</p>
                            <p><strong>Years 9+:</strong> The 90% stack continues growing while loan requirements decrease</p>
                            <p className="text-yellow-400/80 italic">This is the "never sell" strategy perfected - maximum Bitcoin exposure with minimal liquidation risk!</p>
@@ -517,7 +515,7 @@ const Page = () => {
                  <div className="bg-yellow-500/10 p-6 rounded-lg">
                    <h4 className="text-xl font-bold text-yellow-400 mb-4">The Solution</h4>
                    <p className="text-sm leading-relaxed">
-                     This calculator projects how much Bitcoin you'll need over time to maintain your target LTV ratio, 
+                     This calculator projects how much Bitcoin you&apos;ll need over time to maintain your target LTV ratio, 
                      accounting for loan growth, Bitcoin price appreciation, and your annual drawdowns.
                    </p>
                  </div>
@@ -593,6 +591,226 @@ const Page = () => {
              </div>
            </div>
 
+           {/* The Infinite Flywheel Section */}
+           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+             <h3 className="text-2xl font-bold text-yellow-500 mb-6">
+               🚀 The Infinite Flywheel: How MicroStrategy Could Become a Multi-Trillion Dollar Company
+             </h3>
+             <div className="space-y-8 text-gray-300">
+               
+               {/* iPhone Moment */}
+               <div className="bg-yellow-500/10 p-6 rounded-lg border border-yellow-500/20">
+                 <h4 className="text-xl font-bold text-yellow-400 mb-4">📱 The "iPhone Moment" for MicroStrategy</h4>
+                                    <p className="text-lg leading-relaxed">
+                     In recent press releases, <span className="text-yellow-400 font-semibold">@saylor</span> describes how STRC (Structured Bitcoin-Backed Securities) 
+                     represents an &quot;iPhone moment&quot; for MicroStrategy. This isn&apos;t hyperbole—it&apos;s a fundamental breakthrough in corporate finance.
+                   </p>
+                                    <p className="text-sm mt-4 text-yellow-400/80">
+                     &quot;All previous forms of leverage (Bonds, Converts, Long dated Prefs) have scaling problems. The markets have limited size and the risk in bear markets is too great.&quot;
+                   </p>
+               </div>
+
+               {/* The STRC Breakthrough */}
+               <div className="border-l-4 border-yellow-500 pl-6">
+                 <h4 className="text-xl font-bold text-yellow-400 mb-4">⚡ The STRC Breakthrough</h4>
+                 <div className="space-y-4">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div className="bg-yellow-500/5 p-4 rounded">
+                       <h5 className="font-semibold text-yellow-400 mb-2">Old Problems</h5>
+                       <ul className="text-sm space-y-1">
+                         <li>• Limited market size for traditional debt</li>
+                         <li>• High liquidation risk in bear markets</li>
+                         <li>• Scaling constraints</li>
+                         <li>• Regulatory limitations</li>
+                       </ul>
+                     </div>
+                     <div className="bg-green-500/5 p-4 rounded">
+                       <h5 className="font-semibold text-green-400 mb-2">STRC Solution</h5>
+                       <ul className="text-sm space-y-1">
+                         <li>• Infinite scaling potential</li>
+                         <li>• Zero liquidation risk in bear markets</li>
+                         <li>• Bitcoin as perfect collateral</li>
+                         <li>• Regulatory arbitrage advantage</li>
+                       </ul>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+
+               {/* The Multi-Trillion Dollar Math */}
+               <div className="bg-gradient-to-r from-yellow-500/20 to-green-500/20 p-6 rounded-lg border border-yellow-500/30">
+                 <h4 className="text-xl font-bold text-yellow-400 mb-4">💰 The Multi-Trillion Dollar Math</h4>
+                 <div className="space-y-4">
+                   <div className="bg-black/30 p-4 rounded-lg">
+                     <h5 className="font-semibold text-yellow-400 mb-3">Key Assumptions:</h5>
+                     <ul className="text-sm space-y-2">
+                       <li>• <strong>BTC Growth:</strong> 40% CAGR over the next decade</li>
+                       <li>• <strong>Safety Ratio:</strong> Minimum 3:1 BTC to Prefs ratio maintained</li>
+                       <li>• <strong>Scaling:</strong> Maximum Prefs issued while maintaining safety</li>
+                                                <li>• <strong>Power Law:</strong> Bitcoin&apos;s natural growth trajectory</li>
+                     </ul>
+                   </div>
+                   
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                     <div className="bg-yellow-500/10 p-4 rounded-lg border border-yellow-500/20">
+                       <div className="text-yellow-400 font-bold text-lg">40% CAGR</div>
+                       <div className="text-gray-400 text-sm">Annual Bitcoin Growth</div>
+                     </div>
+                     <div className="bg-green-500/10 p-4 rounded-lg border border-green-500/20">
+                       <div className="text-green-400 font-bold text-lg">3:1 Ratio</div>
+                       <div className="text-gray-400 text-sm">BTC to Prefs Safety</div>
+                     </div>
+                     <div className="bg-blue-500/10 p-4 rounded-lg border border-blue-500/20">
+                       <div className="text-blue-400 font-bold text-lg">∞ Scale</div>
+                       <div className="text-gray-400 text-sm">Infinite Potential</div>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+
+               {/* The Flywheel Effect */}
+               <div>
+                 <h4 className="text-xl font-bold text-yellow-400 mb-6">🔄 The Infinite Flywheel Effect</h4>
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                   
+                   {/* Step 1 */}
+                   <div className="bg-yellow-500/10 p-6 rounded-lg border border-yellow-500/20">
+                     <h5 className="text-lg font-bold text-yellow-400 mb-3">Step 1: Bitcoin Appreciation</h5>
+                     <div className="space-y-2 text-sm">
+                       <div><span className="font-semibold">BTC Price:</span> Grows at 40% CAGR</div>
+                       <div><span className="font-semibold">Collateral Value:</span> Increases exponentially</div>
+                       <div><span className="font-semibold">Safety Margin:</span> Grows automatically</div>
+                       <div><span className="font-semibold">Result:</span> More borrowing capacity</div>
+                     </div>
+                   </div>
+
+                   {/* Step 2 */}
+                   <div className="bg-green-500/10 p-6 rounded-lg border border-green-500/20">
+                     <h5 className="text-lg font-bold text-green-400 mb-3">Step 2: Increased Borrowing</h5>
+                     <div className="space-y-2 text-sm">
+                       <div><span className="font-semibold">New Capacity:</span> Issue more Prefs</div>
+                       <div><span className="font-semibold">Buy More BTC:</span> Deploy capital</div>
+                       <div><span className="font-semibold">Maintain Ratio:</span> Keep 3:1 safety</div>
+                       <div><span className="font-semibold">Result:</span> Larger Bitcoin position</div>
+                     </div>
+                   </div>
+
+                   {/* Step 3 */}
+                   <div className="bg-blue-500/10 p-6 rounded-lg border border-blue-500/20">
+                     <h5 className="text-lg font-bold text-blue-400 mb-3">Step 3: Market Dominance</h5>
+                     <div className="space-y-2 text-sm">
+                       <div><span className="font-semibold">Largest Holder:</span> Corporate Bitcoin whale</div>
+                       <div><span className="font-semibold">Network Effect:</span> Bitcoin adoption grows</div>
+                       <div><span className="font-semibold">Price Impact:</span> Self-reinforcing cycle</div>
+                       <div><span className="font-semibold">Result:</span> Even more appreciation</div>
+                     </div>
+                   </div>
+
+                   {/* Step 4 */}
+                   <div className="bg-purple-500/10 p-6 rounded-lg border border-purple-500/20">
+                     <h5 className="text-lg font-bold text-purple-400 mb-3">Step 4: Infinite Loop</h5>
+                     <div className="space-y-2 text-sm">
+                       <div><span className="font-semibold">Repeat:</span> Back to Step 1</div>
+                       <div><span className="font-semibold">Scale:</span> Hundreds of billions</div>
+                       <div><span className="font-semibold">Valuation:</span> Multi-trillion potential</div>
+                       <div><span className="font-semibold">Result:</span> @RealJimChanos proven wrong</div>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+
+               {/* The 10-Year Projection */}
+               <div className="bg-gradient-to-br from-yellow-500/20 to-green-500/20 p-6 rounded-lg border-2 border-yellow-500/30">
+                 <h4 className="text-xl font-bold text-yellow-400 mb-4">📈 10-Year Projection: The Numbers</h4>
+                 <div className="space-y-4">
+                   <div className="bg-black/30 p-4 rounded-lg">
+                     <p className="text-sm leading-relaxed mb-4">
+                       Using AI modeling with 40% annual Bitcoin growth, it&apos;s clear that in 10 years MicroStrategy could become 
+                       one of the most valuable companies in the world.
+                     </p>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                       <div>
+                         <h6 className="font-semibold text-yellow-400 mb-2">Conservative Scenario:</h6>
+                         <ul className="space-y-1 text-gray-300">
+                           <li>• $500B+ market cap</li>
+                           <li>• 1M+ Bitcoin holdings</li>
+                           <li>• Zero liquidation risk</li>
+                           <li>• Dominant market position</li>
+                         </ul>
+                       </div>
+                       <div>
+                         <h6 className="font-semibold text-green-400 mb-2">Bullish Scenario:</h6>
+                         <ul className="space-y-1 text-gray-300">
+                           <li>• $1T+ market cap</li>
+                           <li>• 2M+ Bitcoin holdings</li>
+                           <li>• Global Bitcoin treasury</li>
+                           <li>• @RealJimChanos proven wrong</li>
+                         </ul>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+
+               {/* The Chanos Factor */}
+               <div className="bg-red-500/10 p-6 rounded-lg border-2 border-red-500/30">
+                 <h4 className="text-xl font-bold text-red-400 mb-4">💀 The @RealJimChanos Factor</h4>
+                 <div className="space-y-4">
+                   <div className="bg-red-500/20 p-4 rounded-lg">
+                     <h5 className="font-bold text-red-300 mb-2">Why This Strategy Kills Shorts</h5>
+                     <p className="text-sm leading-relaxed">
+                       <strong>The brutal reality for shorts:</strong> STRC eliminates the primary short thesis. No more liquidation risk, 
+                       infinite scaling potential, and a self-reinforcing flywheel that grows stronger with every Bitcoin appreciation cycle.
+                     </p>
+                   </div>
+                   
+                   <div className="bg-yellow-500/20 p-4 rounded-lg">
+                     <h5 className="font-bold text-yellow-300 mb-2">The Short Trap</h5>
+                     <p className="text-sm leading-relaxed">
+                       <span className="text-yellow-400 font-semibold">Shorts bet on liquidation → STRC prevents liquidation → Bitcoin appreciates → 
+                       More borrowing capacity → Larger Bitcoin position → Even more appreciation → Shorts get destroyed.</span>
+                     </p>
+                   </div>
+                   
+                   <div className="text-xs text-red-300/80 italic">
+                     This is why @saylor calls it an &quot;iPhone moment&quot; - it&apos;s a fundamental breakthrough that changes everything.
+                   </div>
+                 </div>
+               </div>
+
+               {/* Massively Bullish Conclusion */}
+               <div className="bg-green-500/10 p-6 rounded-lg border border-green-500/20">
+                 <h4 className="text-xl font-bold text-green-400 mb-4">🚀 Massively Bullish for Both MSTR and BTC</h4>
+                 <p className="text-lg leading-relaxed mb-4">
+                   This infinite flywheel strategy creates a win-win scenario that benefits both MicroStrategy shareholders and the entire Bitcoin ecosystem.
+                 </p>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div>
+                     <h5 className="font-semibold text-green-400 mb-2">For MSTR Shareholders:</h5>
+                     <ul className="list-disc list-inside space-y-1 text-sm">
+                       <li>Exponential growth potential</li>
+                       <li>Zero liquidation risk</li>
+                       <li>Dominant market position</li>
+                       <li>Infinite scaling capability</li>
+                     </ul>
+                   </div>
+                   <div>
+                     <h5 className="font-semibold text-green-400 mb-2">For Bitcoin:</h5>
+                     <ul className="list-disc list-inside space-y-1 text-sm">
+                       <li>Massive institutional adoption</li>
+                       <li>Price discovery mechanism</li>
+                       <li>Network effect acceleration</li>
+                       <li>Legitimacy and credibility</li>
+                     </ul>
+                   </div>
+                 </div>
+                 <p className="text-sm mt-4 text-green-400/80">
+                   Welcome to the future of corporate finance. The infinite flywheel is just getting started.
+                 </p>
+               </div>
+             </div>
+           </div>
+
            {/* Bitcoin-Backed Loans Guide */}
            <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
              <h3 className="text-2xl font-bold text-yellow-500 mb-6">
@@ -621,7 +839,7 @@ const Page = () => {
                      </div>
                      <div className="bg-yellow-500/5 p-4 rounded">
                        <h5 className="font-semibold text-yellow-400 mb-2">Step 2: Borrow Cash</h5>
-                       <p className="text-sm">Borrow typically 35-85% of your Bitcoin's value (depending on platform)</p>
+                       <p className="text-sm">Borrow typically 35-85% of your Bitcoin&apos;s value (depending on platform)</p>
                      </div>
                      <div className="bg-yellow-500/5 p-4 rounded">
                        <h5 className="font-semibold text-yellow-400 mb-2">Step 3: Use Funds</h5>
@@ -700,7 +918,7 @@ const Page = () => {
 
                {/* The Liquidation Trap */}
                <div className="bg-red-500/10 p-6 rounded-lg border-2 border-red-500/30">
-                 <h4 className="text-xl font-bold text-red-400 mb-4">💀 What They Don't Tell You About Bitcoin-Backed Loans</h4>
+                 <h4 className="text-xl font-bold text-red-400 mb-4">💀 What They Don&apos;t Tell You About Bitcoin-Backed Loans</h4>
                  <div className="space-y-4">
                    <div className="bg-red-500/20 p-4 rounded-lg">
                      <h5 className="font-bold text-red-300 mb-2">Lenders WANT You to Get Liquidated</h5>
@@ -759,7 +977,7 @@ const Page = () => {
                <div className="border-l-4 border-yellow-500 pl-6">
                  <h4 className="text-xl font-bold text-yellow-400 mb-4">📈 Market Evolution & Future Outlook</h4>
                  <p className="text-sm leading-relaxed mb-4">
-                   The Bitcoin-backed loan market is still in its early stages. As adoption grows, we'll see:
+                   The Bitcoin-backed loan market is still in its early stages. As adoption grows, we&apos;ll see:
                  </p>
                  <ul className="list-disc list-inside space-y-2 text-sm">
                    <li>More competitive interest rates as competition increases</li>
