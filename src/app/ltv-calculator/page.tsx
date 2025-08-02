@@ -456,7 +456,7 @@ const Page = () => {
                            <p><strong>Years 1-4:</strong> Only 10% of Sarah&apos;s stack is at risk while 90% appreciates freely</p>
                            <p><strong>Years 5-8:</strong> Her 90% stack grows at 30% CAGR, building massive wealth</p>
                            <p><strong>Years 9+:</strong> The 90% stack continues growing while loan requirements decrease</p>
-                           <p className="text-yellow-400/80 italic">This is the "never sell" strategy perfected - maximum Bitcoin exposure with minimal liquidation risk!</p>
+                           <p className="text-yellow-400/80 italic">This is the &quot;never sell&quot; strategy perfected - maximum Bitcoin exposure with minimal liquidation risk!</p>
                          </div>
                        </div>
                        
@@ -600,7 +600,7 @@ const Page = () => {
                
                {/* iPhone Moment */}
                <div className="bg-yellow-500/10 p-6 rounded-lg border border-yellow-500/20">
-                 <h4 className="text-xl font-bold text-yellow-400 mb-4">📱 The "iPhone Moment" for MicroStrategy</h4>
+                 <h4 className="text-xl font-bold text-yellow-400 mb-4">📱 The &quot;iPhone Moment&quot; for MicroStrategy</h4>
                                     <p className="text-lg leading-relaxed">
                      In recent press releases, <span className="text-yellow-400 font-semibold">@saylor</span> describes how STRC (Structured Bitcoin-Backed Securities) 
                      represents an &quot;iPhone moment&quot; for MicroStrategy. This isn&apos;t hyperbole—it&apos;s a fundamental breakthrough in corporate finance.
@@ -907,7 +907,7 @@ const Page = () => {
                        <div><span className="font-semibold">Rate Model:</span> Performance-based</div>
                        <div><span className="font-semibold">Risk Adjustment:</span> Rates adjust with BTC price</div>
                        <div><span className="font-semibold">Advantage:</span> No Bitcoin liquidation</div>
-                       <div><span className="font-semibold">Protection:</span> Bitcoin never "sacrificed"</div>
+                       <div><span className="font-semibold">Protection:</span> Bitcoin never &quot;sacrificed&quot;</div>
                      </div>
                      <p className="text-xs mt-3 text-purple-300">
                        Innovative approach that protects your Bitcoin from liquidation
