@@ -363,12 +363,33 @@ const Page = () => {
              </p>
              
              <div className="bg-yellow-500/10 p-4 rounded-lg border border-yellow-500/20 max-w-3xl mx-auto mb-8">
-               <h4 className="text-yellow-400 font-semibold mb-3 text-center">📈 Why the Chart Pattern?</h4>
-               <div className="text-gray-300 text-sm space-y-2">
-                 <p><strong>Early Years (1-4):</strong> Loan balance grows faster than BTC price → Need more Bitcoin</p>
-                 <p><strong>Middle Years (5-8):</strong> BTC price growth (30% CAGR) starts catching up</p>
-                 <p><strong>Later Years (9+):</strong> BTC price growth (21% CAGR) overtakes loan growth → Need less Bitcoin</p>
-                 <p className="text-yellow-400/80 italic">The formula: Required BTC = Loan Balance ÷ (Safety Margin × BTC Price)</p>
+               <h4 className="text-yellow-400 font-semibold mb-3 text-center">📈 Why {totalBTCNeeded.toFixed(2)} BTC is the MINIMUM for ${form.yearlyDrawUSD.toLocaleString()} Annual Borrowing?</h4>
+               <div className="text-gray-300 text-sm space-y-4">
+                 <div className="bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                   <h5 className="text-red-400 font-semibold mb-2">⚠️ Important Correction:</h5>
+                   <p><strong>You need AT LEAST {totalBTCNeeded.toFixed(2)} BTC to start!</strong> This is the <span className="text-red-400 font-semibold">minimum Bitcoin required</span> to borrow ${form.yearlyDrawUSD.toLocaleString()} annually.</p>
+                 </div>
+                 
+                 <div className="space-y-2">
+                   <p><strong>📊 The Reality Check:</strong></p>
+                   <ul className="list-disc list-inside space-y-1 ml-4">
+                     <li><strong>Year 1:</strong> You need ~1.28 BTC to borrow ${form.yearlyDrawUSD.toLocaleString()} (loan: $100K, BTC: $104K, LTV: 25%)</li>
+                     <li><strong>Year 4:</strong> You need ~{totalBTCNeeded.toFixed(2)} BTC (the minimum requirement)</li>
+                     <li><strong>Year 15:</strong> You need ~0.05 BTC (much less due to BTC appreciation)</li>
+                   </ul>
+                 </div>
+                 
+                 <div className="bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20">
+                   <h5 className="text-yellow-400 font-semibold mb-2">💡 The Strategy:</h5>
+                   <p><strong>Start with {totalBTCNeeded.toFixed(2)} BTC minimum!</strong> This ensures you can borrow ${form.yearlyDrawUSD.toLocaleString()} annually while maintaining safe LTV ratios throughout the {form.horizon}-year period.</p>
+                 </div>
+                 
+                 <div className="bg-blue-500/10 p-3 rounded-lg border border-blue-500/20">
+                   <h5 className="text-blue-400 font-semibold mb-2">🔍 The Formula Breakdown:</h5>
+                   <p className="font-mono text-xs">Required BTC = Loan Balance ÷ ((1 - {form.ltvTarget}) × BTC Price)</p>
+                   <p className="text-xs mt-1">Where {form.ltvTarget} = {(form.ltvTarget * 100).toFixed(0)}% LTV target, and BTC Price grows at {form.btcCAGR1 * 100}% → {form.btcCAGR2 * 100}% annually</p>
+                   <p className="text-xs mt-2 text-yellow-400"><strong>Year 1 Example:</strong> $100K ÷ (0.75 × $104K) = 1.28 BTC needed</p>
+                 </div>
                </div>
              </div>
              
