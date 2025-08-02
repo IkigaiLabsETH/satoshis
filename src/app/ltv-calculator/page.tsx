@@ -1,34 +1,12 @@
 'use client';
 
 import React, { useState, useMemo } from "react";
-import { Input } from "@/components/ui/input";
-import { TrendingUp, Calculator, BarChart3 } from "lucide-react";
+import { TrendingUp, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  type ChartOptions,
-} from 'chart.js';
 import useSWR from 'swr';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
+import { CalculatorForm } from "./components/CalculatorForm";
+import { ResultsSection } from "./components/ResultsSection";
+import { InteractiveChart } from "./components/InteractiveChart";
 
 interface Inputs {
   btcSpot: number;
@@ -88,130 +66,7 @@ function btcSoldForRepayment(i: Inputs): number[] {
 
 
 
-// Interactive Chart Component
-function InteractiveBTCChart({ series, repaymentSeries }: { series: number[], repaymentSeries: number[] }) {
-  const labels = series.map((_, idx) => `Year ${idx + 1}`);
-  
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: 'BTC Required for Collateral',
-        data: series,
-        borderColor: '#fbbf24', // yellow-400
-        backgroundColor: 'rgba(251, 191, 36, 0.1)',
-        pointRadius: 4,
-        pointBackgroundColor: '#fbbf24',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 2,
-        tension: 0.3,
-        borderWidth: 3,
-        fill: true,
-      },
-      {
-        label: 'BTC Sold for Repayment',
-        data: repaymentSeries,
-        borderColor: '#ef4444', // red-500
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        pointRadius: 4,
-        pointBackgroundColor: '#ef4444',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 2,
-        tension: 0.3,
-        borderWidth: 3,
-        fill: false,
-      },
-    ],
-  };
 
-  const options: ChartOptions<'line'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-        labels: {
-          color: 'white',
-          font: {
-            size: 14,
-            weight: 'bold',
-          }
-        }
-      },
-      title: {
-        display: true,
-        text: 'Bitcoin Requirements & Repayment Over Time',
-        color: 'white',
-        font: {
-          size: 18,
-          weight: 'bold',
-        }
-      },
-      tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: '#fbbf24',
-        bodyColor: 'white',
-        borderColor: '#fbbf24',
-        borderWidth: 1,
-        callbacks: {
-          label: function(context) {
-            if (context.dataset.label === 'BTC Required for Collateral') {
-              return `Collateral Required: ${context.parsed.y.toFixed(2)} BTC`;
-            } else {
-              return `BTC Sold for Repayment: ${context.parsed.y.toFixed(2)} BTC`;
-            }
-          }
-        }
-      }
-    },
-    scales: {
-      y: {
-        title: {
-          display: true,
-          text: 'Bitcoin (BTC)',
-          color: 'white',
-          font: {
-            size: 14,
-            weight: 'bold',
-          }
-        },
-        ticks: {
-          color: 'white',
-          callback: function(value) {
-            return `${Number(value).toFixed(1)} BTC`;
-          }
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.1)',
-        }
-      },
-      x: {
-        title: {
-          display: true,
-          text: 'Years',
-          color: 'white',
-          font: {
-            size: 14,
-            weight: 'bold',
-          }
-        },
-        ticks: {
-          color: 'white',
-          maxRotation: 0,
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.1)',
-        }
-      }
-    },
-    interaction: {
-      intersect: false,
-      mode: 'index',
-    },
-  };
-
-  return <Line options={options} data={data} />;
-}
 
 // Vibes Integration Component
 
@@ -279,120 +134,7 @@ const Page = () => {
 
                      {/* Main Calculator Card */}
            <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-             <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-8 text-center flex items-center justify-center gap-3">
-               <Calculator size={28} />
-               Zero Risk Calculator Parameters
-             </h3>
-             
-             <div className="max-w-4xl mx-auto space-y-8">
-               {/* Input Grid */}
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                 <div className="space-y-2">
-                   <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                     BTC Spot Price
-                     {realTimePrice && (
-                       <span className="text-green-400 text-xs bg-green-500/20 px-2 py-1 rounded">
-                         LIVE
-                       </span>
-                     )}
-                   </label>
-                   <Input
-                     type="number"
-                     step="any"
-                     value={currentBTCPrice}
-                     onChange={onChange("btcSpot")}
-                     placeholder="104000"
-                     className="bg-gray-800 border-gray-600 text-white"
-                   />
-                   {realTimePrice && (
-                     <div className="text-xs text-green-400">
-                       Real-time price: ${realTimePrice.toLocaleString()}
-                     </div>
-                   )}
-                 </div>
-                 
-                 <div className="space-y-2">
-                   <label className="text-sm font-medium text-gray-300">Annual Draw (USD)</label>
-                   <Input
-                     type="number"
-                     step="any"
-                     value={form.yearlyDrawUSD}
-                     onChange={onChange("yearlyDrawUSD")}
-                     placeholder="100000"
-                     className="bg-gray-800 border-gray-600 text-white"
-                   />
-                 </div>
-                 
-                 <div className="space-y-2">
-                   <label className="text-sm font-medium text-gray-300">Interest Rate</label>
-                   <Input
-                     type="number"
-                     step="any"
-                     value={form.interestRate}
-                     onChange={onChange("interestRate")}
-                     placeholder="0.05"
-                     className="bg-gray-800 border-gray-600 text-white"
-                   />
-                 </div>
-                 
-                 <div className="space-y-2">
-                   <label className="text-sm font-medium text-gray-300">Target LTV (Zero Risk)</label>
-                   <Input
-                     type="number"
-                     step="any"
-                     value={form.ltvTarget}
-                     onChange={onChange("ltvTarget")}
-                     placeholder="0.10"
-                     className="bg-gray-800 border-gray-600 text-white"
-                   />
-                   <div className="text-xs text-green-400">
-                     10% LTV = 90% safety margin (zero liquidation risk)
-                   </div>
-                 </div>
-                 
-                 <div className="space-y-2">
-                   <label className="text-sm font-medium text-gray-300">BTC CAGR (Years 1-8)</label>
-                   <Input
-                     type="number"
-                     step="any"
-                     value={form.btcCAGR1}
-                     onChange={onChange("btcCAGR1")}
-                     placeholder="0.30"
-                     className="bg-gray-800 border-gray-600 text-white"
-                   />
-                 </div>
-                 
-                 <div className="space-y-2">
-                   <label className="text-sm font-medium text-gray-300">BTC CAGR (Years 9+)</label>
-                   <Input
-                     type="number"
-                     step="any"
-                     value={form.btcCAGR2}
-                     onChange={onChange("btcCAGR2")}
-                     placeholder="0.21"
-                     className="bg-gray-800 border-gray-600 text-white"
-                   />
-                 </div>
-                 
-                 <div className="space-y-2 lg:col-span-3">
-                   <label className="text-sm font-medium text-gray-300">Time Horizon (Years)</label>
-                   <Input
-                     type="number"
-                     value={form.horizon}
-                     onChange={onChange("horizon")}
-                     placeholder="15"
-                     className="bg-gray-800 border-gray-600 text-white max-w-md"
-                   />
-                 </div>
-               </div>
-
-               {/* Results and Vibes Section */}
-               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-
-
-               </div>
-             </div>
+             <CalculatorForm form={form} onChange={onChange} setForm={setForm} />
            </div>
 
            {/* Bitcoin Safety Requirements Frame */}
@@ -667,7 +409,7 @@ const Page = () => {
                <span className="text-red-400 font-semibold"> Red line</span> shows Bitcoin sold from your 90% stack to repay loans (no external income).
              </p>
              <div className="w-full h-[500px] max-w-4xl mx-auto">
-               <InteractiveBTCChart series={series} repaymentSeries={repaymentSeries} />
+               <InteractiveChart series={series} repaymentSeries={repaymentSeries} />
              </div>
            </div>
 
