@@ -363,25 +363,25 @@ const Page = () => {
              </p>
              
              <div className="bg-yellow-500/10 p-4 rounded-lg border border-yellow-500/20 max-w-3xl mx-auto mb-8">
-               <h4 className="text-yellow-400 font-semibold mb-3 text-center">📈 Why {totalBTCNeeded.toFixed(2)} BTC is the MINIMUM for ${form.yearlyDrawUSD.toLocaleString()} Annual Borrowing?</h4>
+               <h4 className="text-yellow-400 font-semibold mb-3 text-center">📈 Understanding Your Bitcoin Requirements for ${form.yearlyDrawUSD.toLocaleString()} Annual Borrowing</h4>
                <div className="text-gray-300 text-sm space-y-4">
-                 <div className="bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-                   <h5 className="text-red-400 font-semibold mb-2">⚠️ Important Correction:</h5>
-                   <p><strong>You need AT LEAST {totalBTCNeeded.toFixed(2)} BTC to start!</strong> This is the <span className="text-red-400 font-semibold">minimum Bitcoin required</span> to borrow ${form.yearlyDrawUSD.toLocaleString()} annually.</p>
+                 <div className="bg-blue-500/10 p-3 rounded-lg border border-blue-500/20">
+                   <h5 className="text-blue-400 font-semibold mb-2">💡 Key Requirement:</h5>
+                   <p><strong>You need AT LEAST {((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice).toFixed(2)} BTC (${(((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice) * currentBTCPrice).toLocaleString()}) to start!</strong> This is the <span className="text-blue-400 font-semibold">minimum Bitcoin collateral required</span> to borrow ${form.yearlyDrawUSD.toLocaleString()} annually at {(form.ltvTarget * 100).toFixed(0)}% LTV.</p>
                  </div>
                  
                  <div className="space-y-2">
                    <p><strong>📊 The Reality Check:</strong></p>
                    <ul className="list-disc list-inside space-y-1 ml-4">
-                     <li><strong>Year 1:</strong> You need ~1.28 BTC to borrow ${form.yearlyDrawUSD.toLocaleString()} (loan: $100K, BTC: $104K, LTV: 25%)</li>
-                     <li><strong>Year 4:</strong> You need ~{totalBTCNeeded.toFixed(2)} BTC (the minimum requirement)</li>
+                     <li><strong>Year 1:</strong> You need ~{((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice).toFixed(2)} BTC (${(((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice) * currentBTCPrice).toLocaleString()}) to borrow ${form.yearlyDrawUSD.toLocaleString()} at {(form.ltvTarget * 100).toFixed(0)}% LTV</li>
+                     <li><strong>Year 4:</strong> You need ~{totalBTCNeeded.toFixed(2)} BTC (${totalUSDValue.toLocaleString()}) - the minimum requirement</li>
                      <li><strong>Year 15:</strong> You need ~0.05 BTC (much less due to BTC appreciation)</li>
                    </ul>
                  </div>
                  
                  <div className="bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20">
                    <h5 className="text-yellow-400 font-semibold mb-2">💡 The Strategy:</h5>
-                   <p><strong>Start with {totalBTCNeeded.toFixed(2)} BTC minimum!</strong> This ensures you can borrow ${form.yearlyDrawUSD.toLocaleString()} annually while maintaining safe LTV ratios throughout the {form.horizon}-year period.</p>
+                   <p><strong>Start with {((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice).toFixed(2)} BTC (${(((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice) * currentBTCPrice).toLocaleString()}) minimum!</strong> This ensures you can borrow ${form.yearlyDrawUSD.toLocaleString()} annually while maintaining safe LTV ratios throughout the {form.horizon}-year period.</p>
                  </div>
                  
                  <div className="bg-blue-500/10 p-3 rounded-lg border border-blue-500/20">
@@ -394,6 +394,35 @@ const Page = () => {
              </div>
              
              <div className="max-w-4xl mx-auto space-y-8">
+               {/* USD Collateral Requirements - Like Grok 4 Explained */}
+               <div className="bg-red-500/10 p-6 rounded-lg border border-red-500/20 max-w-4xl mx-auto">
+                 <h3 className="text-2xl font-bold text-red-400 mb-4 text-center">💰 USD Collateral Requirements (Like Grok 4 Explained)</h3>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-lg mb-6">
+                   <div className="bg-black/30 p-6 rounded-lg border border-red-500/20 text-center">
+                     <div className="text-gray-300 text-sm mb-2 uppercase tracking-wider font-medium">To START Borrowing</div>
+                     <div className="text-red-400 font-bold text-4xl mb-2">{((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice).toFixed(2)}</div>
+                     <div className="text-gray-400 text-lg">BTC</div>
+                     <div className="text-red-400 font-bold text-xl mt-2">${(((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice) * currentBTCPrice).toLocaleString()}</div>
+                     <div className="text-gray-400 text-sm">USD Collateral Value</div>
+                     <p className="text-xs text-gray-500 mt-2">Required to initiate a ${form.yearlyDrawUSD.toLocaleString()} loan at {(form.ltvTarget * 100).toFixed(0)}% LTV</p>
+                   </div>
+                   <div className="bg-black/30 p-6 rounded-lg border border-red-500/20 text-center">
+                     <div className="text-gray-300 text-sm mb-2 uppercase tracking-wider font-medium">To MAINTAIN Loan</div>
+                     <div className="text-red-400 font-bold text-4xl mb-2">{totalBTCNeeded.toFixed(2)}</div>
+                     <div className="text-gray-400 text-lg">BTC</div>
+                     <div className="text-red-400 font-bold text-xl mt-2">${totalUSDValue.toLocaleString()}</div>
+                     <div className="text-gray-400 text-sm">USD Collateral Value</div>
+                     <p className="text-xs text-gray-500 mt-2">Minimum required over {form.horizon} years (peak requirement)</p>
+                   </div>
+                 </div>
+                 <div className="bg-red-500/20 p-4 rounded-lg border border-red-500/30 text-center">
+                   <h5 className="text-red-400 font-bold mb-2">💡 Key Insight (Matching Grok 4&apos;s Analysis):</h5>
+                   <p className="text-gray-300 text-sm">
+                     You need <span className="text-red-400 font-bold">{((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice).toFixed(2)} BTC</span> (${(((form.yearlyDrawUSD / form.ltvTarget) / currentBTCPrice) * currentBTCPrice).toLocaleString()}) to START borrowing, but only <span className="text-red-400 font-bold">{totalBTCNeeded.toFixed(2)} BTC</span> (${totalUSDValue.toLocaleString()}) to MAINTAIN the loan over time. Bitcoin appreciation reduces your requirements!
+                   </p>
+                 </div>
+               </div>
+               
                {/* Results Cards */}
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                  <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-500/5 p-8 rounded-lg border-2 border-yellow-500/30 shadow-[0_0_30px_rgba(234,179,8,0.1)] text-center">
@@ -493,10 +522,33 @@ const Page = () => {
                          </div>
                        </div>
                        
-                       <p className="mt-4">
-                         <strong>Bottom line:</strong> With this 10% strategy, Sarah can borrow ${form.yearlyDrawUSD.toLocaleString()} annually while keeping 90% of her Bitcoin completely safe from liquidation. 
-                         The 90% stack continues appreciating and building wealth, making this the ultimate conservative Bitcoin-backed loan strategy.
-                       </p>
+                       <div className="bg-purple-500/10 p-4 rounded-lg border border-purple-500/20 mt-4">
+                         <h6 className="text-purple-400 font-semibold mb-3">🚀 Your 90% Stack After 15 Years:</h6>
+                         <div className="text-center space-y-2">
+                           <div className="text-purple-400 font-bold text-xl">{(totalBTCNeeded * 9).toFixed(2)} BTC</div>
+                           <div className="text-gray-400 text-sm">Final Bitcoin Amount (90% stack - no change)</div>
+                           <div className="text-purple-400 font-bold text-lg">${((totalBTCNeeded * 9) * currentBTCPrice * Math.pow(1.30, 8) * Math.pow(1.21, 7)).toLocaleString()}</div>
+                           <div className="text-gray-400 text-sm">Final USD Value (with price appreciation)</div>
+                           <div className="text-xs text-purple-300 mt-2">
+                             <strong>Starting Value:</strong> ${((totalBTCNeeded * 9) * currentBTCPrice).toLocaleString()} | 
+                             <strong>Final Value:</strong> ${((totalBTCNeeded * 9) * currentBTCPrice * Math.pow(1.30, 8) * Math.pow(1.21, 7)).toLocaleString()}
+                           </div>
+                         </div>
+                       </div>
+                       
+                                                <div className="bg-blue-500/10 p-4 rounded-lg border border-blue-500/20 mt-4">
+                           <h6 className="text-blue-400 font-semibold mb-3">💡 Loan Repayment Strategy:</h6>
+                           <div className="text-gray-300 text-sm space-y-2">
+                             <p><strong>Option 1 - Use 90% Stack Appreciation:</strong> Your 90% stack grows from ${((totalBTCNeeded * 9) * currentBTCPrice).toLocaleString()} to ${((totalBTCNeeded * 9) * currentBTCPrice * Math.pow(1.30, 8) * Math.pow(1.21, 7)).toLocaleString()} over 15 years. You could sell a small portion of this appreciation to repay loans.</p>
+                             <p><strong>Option 2 - External Income:</strong> Use job income, business profits, or other investments to cover loan payments without touching Bitcoin.</p>
+                             <p><strong>Option 3 - Compound Strategy:</strong> Let the 90% stack continue growing while using only the 10% for loans. The appreciation on 90% can eventually cover all loan costs.</p>
+                           </div>
+                         </div>
+                         
+                         <p className="mt-4">
+                           <strong>Bottom line:</strong> With this 10% strategy, Sarah can borrow ${form.yearlyDrawUSD.toLocaleString()} annually while keeping 90% of her Bitcoin completely safe from liquidation. 
+                           The 90% stack continues appreciating and building wealth, making this the ultimate conservative Bitcoin-backed loan strategy.
+                         </p>
                      </div>
                  </div>
                </div>
