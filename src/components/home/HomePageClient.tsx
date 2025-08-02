@@ -9,7 +9,7 @@ import BullPeakSignals from '@/components/BullPeakSignals';
 import MandoMinutes from '@/components/MandoMinutes';
 import Mindshare from '@/components/Mindshare';
 import Flows from '@/components/Flows';
-import VibesChatFooter from '@/components/VibesChatFooter';
+
 import Link from 'next/link';
 
 export default function HomePageClient() {
@@ -178,7 +178,7 @@ export default function HomePageClient() {
             >
               <Image
                 src="/bitcoin/bitcoin-plus.svg"
-                alt="Bitcoin icon for Unlock Insights button"
+                alt="Bitcoin icon for Talk to Satoshi button"
                 width={28}
                 height={28}
                 className="w-7 h-7 group-hover:scale-110 transition-transform"
@@ -210,8 +210,7 @@ export default function HomePageClient() {
         </motion.div>
       </div>
       
-      {/* Vibes Chat Footer */}
-      <VibesChatFooter />
+
     </div>
   );
 } 
