@@ -9,7 +9,7 @@ import BullPeakSignals from '@/components/BullPeakSignals';
 import MandoMinutes from '@/components/MandoMinutes';
 import Mindshare from '@/components/Mindshare';
 import Flows from '@/components/Flows';
-import VibesChatFooter from '@/components/VibesChatFooter';
+
 import Link from 'next/link';
 
 export default function HomePageClient() {
@@ -173,18 +173,18 @@ export default function HomePageClient() {
               </p>
             </div>
             <Link
-              href="/voice"
+              href="/chat"
               className="group inline-flex items-center gap-3 rounded-lg bg-[#1c1f26] border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] px-8 py-4 text-xl font-semibold text-white hover:bg-yellow-500 hover:text-black transition-all duration-300"
             >
               <Image
                 src="/bitcoin/bitcoin-plus.svg"
-                alt="Bitcoin icon for Unlock Insights button"
+                alt="Bitcoin icon for Talk to Satoshi button"
                 width={28}
                 height={28}
                 className="w-7 h-7 group-hover:scale-110 transition-transform"
                 priority
               />
-              Unlock Insights
+              Talk to Satoshi
             </Link>
           </div>
         </motion.div>
@@ -210,8 +210,7 @@ export default function HomePageClient() {
         </motion.div>
       </div>
       
-      {/* Vibes Chat Footer */}
-      <VibesChatFooter />
+
     </div>
   );
 } 
