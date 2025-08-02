@@ -39,3 +39,18 @@ model PaymentAttempt {
 
   @@index([status, createdAt])
 }
+
+model Vibe {
+  id          String   @id @default(uuid())
+  content     String   @db.Text
+  source      String   @default("user")
+  userId      String   @default("default") @map("user_id")
+  category    String   @default("personality_influence")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, isActive])
+  @@index([category, isActive])
+  @@index([createdAt])
+}
