@@ -139,7 +139,7 @@ function InteractiveBTCChart({ series }: { series: number[] }) {
         ticks: {
           color: 'white',
           callback: function(value) {
-            return `${value.toFixed(1)} BTC`;
+            return `${Number(value).toFixed(1)} BTC`;
           }
         },
         grid: {
