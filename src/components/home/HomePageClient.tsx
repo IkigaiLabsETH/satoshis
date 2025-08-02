@@ -173,7 +173,7 @@ export default function HomePageClient() {
               </p>
             </div>
             <Link
-              href="/chat"
+              href="/voice"
               className="group inline-flex items-center gap-3 rounded-lg bg-[#1c1f26] border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] px-8 py-4 text-xl font-semibold text-white hover:bg-yellow-500 hover:text-black transition-all duration-300"
             >
               <Image
@@ -184,7 +184,7 @@ export default function HomePageClient() {
                 className="w-7 h-7 group-hover:scale-110 transition-transform"
                 priority
               />
-              Talk to Satoshi
+              Unlock Insights
             </Link>
           </div>
         </motion.div>
