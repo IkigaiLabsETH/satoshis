@@ -9,6 +9,7 @@ import BullPeakSignals from '@/components/BullPeakSignals';
 import MandoMinutes from '@/components/MandoMinutes';
 import Mindshare from '@/components/Mindshare';
 import Flows from '@/components/Flows';
+import VibesChatFooter from '@/components/VibesChatFooter';
 import Link from 'next/link';
 
 export default function HomePageClient() {
@@ -208,6 +209,9 @@ export default function HomePageClient() {
           </div>
         </motion.div>
       </div>
+      
+      {/* Vibes Chat Footer */}
+      <VibesChatFooter />
     </div>
   );
 } 
