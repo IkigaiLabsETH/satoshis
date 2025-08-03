@@ -54,7 +54,7 @@ export default function BTC8020Ticker() {
                   layoutId="activeTab"
                   className="absolute bottom-0 left-0 right-0 h-0.5 bg-yellow-500"
                   initial={false}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  transition={{ type: "spring" as const, stiffness: 500, damping: 30 }}
                 />
               )}
             </button>

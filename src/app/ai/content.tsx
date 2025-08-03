@@ -23,7 +23,7 @@ const sectionVariants = {
     opacity: 1,
     y: 0,
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 100,
       damping: 15,
       mass: 1
@@ -80,7 +80,7 @@ export default function AIContent() {
             className="font-extrabold text-yellow-500 text-3xl md:text-4xl mt-10 mb-2"
             initial={{ scale: 0.95, opacity: 0 }}
             whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 80, damping: 12 }}
+            transition={{ type: 'spring' as const, stiffness: 80, damping: 12 }}
           >
             Will you pull them?
           </motion.p>

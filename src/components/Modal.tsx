@@ -42,7 +42,7 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
             initial={{ opacity: 0, scale: 0.95, y: 0 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 0 }}
-            transition={{ type: "spring", duration: 0.5 }}
+            transition={{ type: "spring" as const, duration: 0.5 }}
             className="fixed inset-0 m-auto w-[90vw] h-[90vh] max-w-[1100px] max-h-[90vh] overflow-hidden bg-[#1c1f26] border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] rounded-lg z-50"
           >
             <button
