@@ -14,7 +14,7 @@ const shimmer = {
     transition: {
       repeat: Infinity,
       duration: 3,
-      ease: 'linear',
+      ease: 'linear' as const as const,
     },
   },
 };
@@ -306,7 +306,7 @@ export default function LightningNetworkPage() {
             'radial-gradient(circle at 80% 20%, rgba(234,179,8,0.15), transparent 40%), radial-gradient(circle at 20% 80%, rgba(234,179,8,0.1), transparent 40%)',
           ],
         }}
-        transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 30, repeat: Infinity, ease: 'linear' as const }}
       />
       {/* Grid pattern overlay */}
       <div className="fixed inset-0 bg-[url('/grid-pattern.png')] bg-repeat opacity-10 pointer-events-none z-0"></div>

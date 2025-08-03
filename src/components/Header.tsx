@@ -271,7 +271,7 @@ export function Header() {
                                   <motion.div
                                     layoutId="activeDropdownItem"
                                     className="absolute left-0 w-1 top-0 bottom-0 bg-yellow-500"
-                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                    transition={{ type: "spring" as const, stiffness: 500, damping: 30 }}
                                   />
                                 )}
                                 <span className="relative z-10">{subItem.name}</span>
@@ -312,7 +312,7 @@ export function Header() {
                         <motion.div
                           layoutId="activeNavTab"
                           className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-yellow-500/40 via-yellow-500 to-yellow-500/40"
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          transition={{ type: "spring" as const, stiffness: 500, damping: 30 }}
                         />
                       )}
                     </Link>
@@ -449,7 +449,7 @@ export function Header() {
                       <motion.div
                         layoutId="activeMobileSearchTab"
                         className="absolute left-0 w-[3px] top-0 bottom-0 bg-yellow-500"
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        transition={{ type: "spring" as const, stiffness: 500, damping: 30 }}
                       />
                     )}
                   </Link>
@@ -514,7 +514,7 @@ export function Header() {
                                       <motion.div 
                                         className="absolute left-0 w-1 top-0 bottom-0 bg-yellow-400"
                                         layoutId="mobileSubItem"
-                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                        transition={{ type: "spring" as const, stiffness: 500, damping: 30 }}
                                       />
                                     )}
                                     {subItem.name}
@@ -545,7 +545,7 @@ export function Header() {
                             <motion.div
                               layoutId="activeMobileNavTab"
                               className="absolute left-0 w-[3px] top-0 bottom-0 bg-yellow-500"
-                              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                              transition={{ type: "spring" as const, stiffness: 500, damping: 30 }}
                             />
                           )}
                         </Link>

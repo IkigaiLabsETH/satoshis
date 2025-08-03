@@ -23,7 +23,7 @@ const sectionVariants = {
     opacity: 1,
     y: 0,
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 100,
       damping: 15,
       mass: 1
@@ -101,7 +101,7 @@ export default function TimePage() {
                   className="absolute left-0 top-0 h-full w-1/3 bg-yellow-100/70 blur-[2px] animate-shimmer"
                   initial={{ x: -80 }}
                   animate={{ x: 96 }}
-                  transition={{ repeat: Infinity, duration: 2.2, ease: 'linear' }}
+                  transition={{ repeat: Infinity, duration: 2.2, ease: 'linear' as const }}
                 />
               </motion.div>
             </h1>

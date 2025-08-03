@@ -53,7 +53,7 @@ const AccordionItem = ({
         </motion.span>
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
-          transition={{ duration: 0.3, type: "spring", stiffness: 200 }}
+          transition={{ duration: 0.3, type: "spring" as const, stiffness: 200 }}
         >
           <ChevronDown className="h-6 w-6 text-yellow-500" />
         </motion.div>
@@ -97,14 +97,14 @@ export default function WhitepaperPage() {
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, type: "spring", stiffness: 50 }}
+          transition={{ duration: 0.8, type: "spring" as const, stiffness: 50 }}
           className="text-center py-12 md:py-16 pt-16 md:pt-24"
         >
           <motion.div 
             className="inline-block mb-4 md:mb-6"
             initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ duration: 1, type: "spring", stiffness: 100 }}
+            transition={{ duration: 1, type: "spring" as const, stiffness: 100 }}
           >
             <motion.div
               animate={{ 
@@ -217,7 +217,7 @@ export default function WhitepaperPage() {
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.7, type: "spring", stiffness: 50 }}
+          transition={{ duration: 0.8, delay: 0.7, type: "spring" as const, stiffness: 50 }}
           className="mt-6 md:mt-16"
           whileHover={{ scale: 1.02, y: -5 }}
           whileTap={{ scale: 0.98 }}
@@ -290,7 +290,7 @@ export default function WhitepaperPage() {
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8, type: "spring", stiffness: 50 }}
+          transition={{ duration: 0.8, delay: 0.8, type: "spring" as const, stiffness: 50 }}
           className="mt-16"
           whileHover={{ y: -8, transition: { duration: 0.3 } }}
         >
@@ -356,7 +356,7 @@ export default function WhitepaperPage() {
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.9, type: "spring", stiffness: 50 }}
+          transition={{ duration: 0.8, delay: 0.9, type: "spring" as const, stiffness: 50 }}
           className="mt-8"
           whileHover={{ y: -8, transition: { duration: 0.3 } }}
         >
@@ -422,7 +422,7 @@ export default function WhitepaperPage() {
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 1.0, type: "spring", stiffness: 50 }}
+            transition={{ duration: 0.8, delay: 1.0, type: "spring" as const, stiffness: 50 }}
             className="h-full"
             whileHover={{ y: -8, transition: { duration: 0.3 } }}
           >
@@ -504,7 +504,7 @@ export default function WhitepaperPage() {
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 1.0, type: "spring", stiffness: 50 }}
+            transition={{ duration: 0.8, delay: 1.0, type: "spring" as const, stiffness: 50 }}
             className="h-full"
             whileHover={{ y: -8, transition: { duration: 0.3 } }}
           >
@@ -584,7 +584,7 @@ export default function WhitepaperPage() {
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.1, type: "spring", stiffness: 50 }}
+            transition={{ duration: 0.8, delay: 1.1, type: "spring" as const, stiffness: 50 }}
             whileHover={{ y: -8, scale: 1.02, transition: { duration: 0.3 } }}
           >
             <motion.div
@@ -642,7 +642,7 @@ export default function WhitepaperPage() {
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.2, type: "spring", stiffness: 50 }}
+            transition={{ duration: 0.8, delay: 1.2, type: "spring" as const, stiffness: 50 }}
             whileHover={{ y: -8, scale: 1.02, transition: { duration: 0.3 } }}
           >
             <motion.div
@@ -703,7 +703,7 @@ export default function WhitepaperPage() {
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.3, type: "spring", stiffness: 50 }}
+            transition={{ duration: 0.8, delay: 1.3, type: "spring" as const, stiffness: 50 }}
             whileHover={{ y: -8, scale: 1.02, transition: { duration: 0.3 } }}
           >
             <motion.div
@@ -762,7 +762,7 @@ export default function WhitepaperPage() {
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.4, type: "spring", stiffness: 50 }}
+          transition={{ duration: 0.8, delay: 1.4, type: "spring" as const, stiffness: 50 }}
           className="mt-16"
           whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
         >

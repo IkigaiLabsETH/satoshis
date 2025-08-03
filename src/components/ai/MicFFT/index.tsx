@@ -164,7 +164,7 @@ export const MicFFT = ({ isActive, className = '' }: MicFFTProps) => {
               opacity: value * 0.8 + 0.2
             }}
             transition={{ 
-              type: 'spring',
+              type: 'spring' as const,
               stiffness: 300,
               damping: 20
             }}

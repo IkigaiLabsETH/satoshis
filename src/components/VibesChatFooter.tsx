@@ -418,7 +418,7 @@ export default function VibesChatFooter() {
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              transition={{ type: 'spring' as const, damping: 25, stiffness: 200 }}
               className="w-full h-full md:h-[80vh] bg-[#1c1f26] border-t-2 border-yellow-500 flex flex-col"
             >
               {/* Header */}
