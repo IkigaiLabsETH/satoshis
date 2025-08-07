@@ -7,7 +7,8 @@ import {
   MarketAnalysis, 
   MarketEvent, 
   ChartInteraction,
-  SupermemorySearchResponse 
+  SupermemorySearchResponse,
+  OutperformWatchlist
 } from '../../types/supermemory';
 
 interface SupermemoryContextType {
@@ -27,6 +28,10 @@ interface SupermemoryContextType {
   
   // Context retrieval
   getRelevantContext: (query: string) => Promise<SupermemorySearchResponse>;
+  
+  // Watchlist
+  storeOutperformWatchlist: (list: OutperformWatchlist) => Promise<void>;
+  getOutperformWatchlists: () => Promise<SupermemorySearchResponse>;
   
   // State
   isLoading: boolean;
@@ -157,6 +162,32 @@ export const SupermemoryProvider = ({ children }: SupermemoryProviderProps) => {
     }
   };
 
+  const storeOutperformWatchlist = async (list: OutperformWatchlist) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await supermemoryService.storeOutperformWatchlist(list);
+      setLastMemoryId(result.id);
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getOutperformWatchlists = async (): Promise<SupermemorySearchResponse> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      return await supermemoryService.getOutperformWatchlists();
+    } catch (err) {
+      handleError(err);
+      return { memories: [], total: 0 };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const value: SupermemoryContextType = {
     storeUserPreference,
     getUserPreferences,
@@ -165,6 +196,8 @@ export const SupermemoryProvider = ({ children }: SupermemoryProviderProps) => {
     storeMarketEvent,
     storeChartInteraction,
     getRelevantContext,
+    storeOutperformWatchlist,
+    getOutperformWatchlists,
     isLoading,
     error,
     lastMemoryId

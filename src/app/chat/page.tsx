@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 import ChatPageClient from '@/components/chat/ChatPageClient';
 
 export const metadata: Metadata = {
@@ -19,5 +20,9 @@ export const metadata: Metadata = {
 };
 
 export default function ChatPage() {
-  return <ChatPageClient />;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>}>
+      <ChatPageClient />
+    </Suspense>
+  );
 } 

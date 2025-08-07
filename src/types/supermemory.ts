@@ -71,3 +71,21 @@ export interface ChartInteraction {
     [key: string]: unknown;
   };
 } 
+
+export interface OutperformWatchlistPick {
+  symbol: string;
+  assetType: 'crypto' | 'stock' | 'etf' | 'other';
+  thesis?: string;
+  risk?: string;
+  stop?: string;
+  target?: string;
+}
+
+export interface OutperformWatchlist {
+  type: 'watchlist';
+  base: 'BTC' | 'ETH';
+  horizon: string; // e.g., '1-3 months'
+  methodology?: string;
+  picks?: OutperformWatchlistPick[];
+  raw: string; // raw LLM text in case parsing is not possible
+}

@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import { Settings, Target, PieChart, DollarSign, Calculator } from 'lucide-react';
 import { DEFAULT_VALUES, INPUT_CONFIG } from '@/config/calculator';
 import { calculateFreedomMetrics, formatCurrency, formatNumber } from '@/utils/calculator';
@@ -59,13 +60,13 @@ const contentVariants = {
   }
 };
 
-const progressVariants = {
+const progressVariants: Variants = {
   hidden: { width: 0 },
-  visible: (progress: number) => ({
-    width: `${progress}%`,
+  visible: (custom: number) => ({
+    width: `${custom}%`,
     transition: {
       duration: 1,
-      ease: "easeOut",
+      ease: [0.25, 0.1, 0.25, 1],
       delay: 0.5
     }
   })

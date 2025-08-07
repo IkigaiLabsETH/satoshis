@@ -2,18 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import { motion, useAnimation, AnimatePresence } from 'framer-motion'
+import type { Variants } from 'framer-motion'
 import { FileText, Code, ChevronDown, Download, ExternalLink, Bitcoin } from 'lucide-react'
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
-const shimmer = {
+const shimmer: Variants = {
   hidden: { backgroundPosition: '0% 0%' },
   visible: { 
     backgroundPosition: '200% 0%',
     transition: { 
       repeat: Infinity, 
       duration: 3, 
-      ease: "linear"
+      ease: [0, 0, 1, 1]
     }
   }
 }

@@ -91,8 +91,8 @@ function detectDataSource(input: string): Array<
     sources.push('web');
   }
   
-  // Limit to max 3 sources to prevent timeout
-  return Array.from(new Set(sources)).slice(0, 3) as Array<
+  // Limit to max 2 sources to prevent timeout and rate limits
+  return Array.from(new Set(sources)).slice(0, 2) as Array<
     'coingecko' | 'finnhub' | 'web' | 'finnhub-insider' | 'finnhub-earnings' | 'finnhub-ipo' | 'finnhub-news' | 'finnhub-analyst' | 'finnhub-price-target'
   >;
 }
@@ -106,7 +106,103 @@ function isEarningsComparisonQuery(input: string): boolean {
 }
 
 // LLM timeout constant
-const LLM_TIMEOUT = 20000; // Reduced to 20 seconds to prevent function timeout
+const LLM_TIMEOUT = 12000; // 12s to leave headroom for serverless limit
+
+// --- Lightweight resilience utilities (cache, in-flight dedupe, rate limit) ---
+type CacheEntry<T = unknown> = { value: T; expiresAt: number };
+const memoryCache = new Map<string, CacheEntry>();
+const inFlight = new Map<string, Promise<unknown>>();
+
+function getFromCache<T = unknown>(key: string): T | undefined {
+  const cached = memoryCache.get(key);
+  if (!cached) return undefined;
+  if (Date.now() > cached.expiresAt) {
+    memoryCache.delete(key);
+    return undefined;
+  }
+  return cached.value as T;
+}
+
+function setInCache<T = unknown>(key: string, value: T, ttlMs: number): void {
+  memoryCache.set(key, { value, expiresAt: Date.now() + ttlMs });
+}
+
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function cachedFetch<T>(
+  key: string,
+  fetcher: () => Promise<T>,
+  ttlMs: number,
+  timeoutMs: number,
+  retries = 1
+): Promise<T> {
+  const cached = getFromCache<T>(key);
+  if (cached !== undefined) return cached;
+  if (inFlight.has(key)) return inFlight.get(key) as Promise<T>;
+
+  const exec = async (): Promise<T> => {
+    let attempt = 0;
+    let lastError: unknown;
+    const maxAttempts = Math.max(1, retries + 1);
+    while (attempt < maxAttempts) {
+      try {
+        const result = await Promise.race([
+          fetcher(),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), timeoutMs)),
+        ]) as T;
+        setInCache(key, result, ttlMs);
+        return result;
+      } catch (err) {
+        lastError = err;
+        const message = typeof err === 'string' ? err : (err as Error)?.message || '';
+        const shouldRetry = /timeout|rate limit|429|temporarily unavailable/i.test(message);
+        attempt += 1;
+        if (!shouldRetry || attempt >= maxAttempts) break;
+        const backoff = Math.min(300 * attempt + Math.random() * 200, 800);
+        await sleep(backoff);
+      }
+    }
+    throw lastError instanceof Error ? lastError : new Error(String(lastError));
+  };
+
+  const p = exec().finally(() => inFlight.delete(key));
+  inFlight.set(key, p);
+  return p;
+}
+
+// Basic per-IP rate limiting and global concurrency guard
+type RateRecord = { windowStart: number; count: number };
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 30; // per IP per window
+const rateMap = new Map<string, RateRecord>();
+
+function getClientIp(req: NextRequest): string {
+  const fwd = req.headers.get('x-forwarded-for');
+  if (fwd) return fwd.split(',')[0].trim();
+  const realIp = req.headers.get('x-real-ip');
+  if (realIp) return realIp.trim();
+  return 'anon';
+}
+
+function isRateLimited(ip: string): { limited: boolean; retryAfterMs: number } {
+  const now = Date.now();
+  const rec = rateMap.get(ip);
+  if (!rec || now - rec.windowStart >= RATE_LIMIT_WINDOW_MS) {
+    rateMap.set(ip, { windowStart: now, count: 1 });
+    return { limited: false, retryAfterMs: 0 };
+  }
+  if (rec.count < RATE_LIMIT_MAX_REQUESTS) {
+    rec.count += 1;
+    return { limited: false, retryAfterMs: 0 };
+  }
+  const retryAfterMs = RATE_LIMIT_WINDOW_MS - (now - rec.windowStart);
+  return { limited: true, retryAfterMs };
+}
+
+let activeRequests = 0;
+const MAX_CONCURRENT_REQUESTS = 8; // soft cap per instance
 
 process.on('unhandledRejection', (reason, promise) => {
   // eslint-disable-next-line no-console
@@ -206,77 +302,130 @@ async function fetchRelevantMarketData(input: string, sources: string[], symbol:
   
   const apiCalls: Promise<unknown>[] = [];
   
-  // Always get BTC price (essential)
-  apiCalls.push(Promise.race([
-    getMarketData(['BTC']),
-    new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko BTC price timeout')), 3000))
-  ]));
+  // Always get BTC price (essential) with cache
+  apiCalls.push(
+    cachedFetch(
+      'coingecko:btc',
+      () => getMarketData(['BTC']) as Promise<string>,
+      30_000,
+      3_000,
+      1
+    )
+  );
   
   if (isSimpleQuery) {
     // For simple queries, only make the essential API call
     if (isSimpleCryptoQuery) {
-      apiCalls.push(Promise.race([
-        getMarketData(['BTC', 'ETH', 'SOL']),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 3000))
-      ]));
+      apiCalls.push(
+        cachedFetch(
+          'coingecko:market:btc,eth,sol',
+          () => getMarketData(['BTC', 'ETH', 'SOL']) as Promise<string>,
+          45_000,
+          3_000,
+          1
+        )
+      );
     } else if (isSimpleStockQuery) {
-      apiCalls.push(Promise.race([
-        getFinnhubQuote(symbol),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub quote timeout')), 3000))
-      ]));
+      apiCalls.push(
+        cachedFetch(
+          `finnhub:quote:${symbol}`,
+          () => getFinnhubQuote(symbol) as Promise<unknown>,
+          20_000,
+          3_000,
+          1
+        )
+      );
     } else if (isNewsQuery) {
-      apiCalls.push(Promise.race([
-        enhancedWebSearch(input),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 3000))
-      ]));
+      apiCalls.push(
+        cachedFetch(
+          `web:${input.toLowerCase().slice(0, 256)}`,
+          () => enhancedWebSearch(input) as Promise<string>,
+          120_000,
+          3_000,
+          1
+        )
+      );
     }
   } else {
     // For complex queries, make all relevant API calls but with shorter timeouts
     const promises = [
-      sources.includes('coingecko') ? Promise.race([
-        getMarketData(['BTC', 'ETH', 'SOL']),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('CoinGecko timeout')), 3000))
-      ]) : Promise.resolve(null),
-      sources.includes('web') ? Promise.race([
-        enhancedWebSearch(input),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Web search timeout')), 3000))
-      ]) : Promise.resolve(null),
-      sources.includes('web') ? Promise.race([
-        getXSentiment(input),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('X sentiment timeout')), 3000))
-      ]) : Promise.resolve(null),
-      sources.includes('finnhub') ? Promise.race([
-        getFinnhubQuote(symbol),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub quote timeout')), 3000))
-      ]) : Promise.resolve(null),
-      sources.includes('finnhub-insider') ? Promise.race([
-        getInsiderSentiment(symbol),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub insider timeout')), 3000))
-      ]) : Promise.resolve(null),
-      sources.includes('finnhub-earnings') ? Promise.race([
-        getCompanyEarnings(symbol),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub earnings timeout')), 3000))
-      ]) : Promise.resolve(null),
-      sources.includes('finnhub-ipo') ? Promise.race([
-        getIPOCalendar(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub IPO timeout')), 3000))
-      ]) : Promise.resolve(null),
-      sources.includes('finnhub-news') ? Promise.race([
-        getCompanyNews(symbol),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub news timeout')), 3000))
-      ]) : Promise.resolve(null),
-      sources.includes('finnhub-analyst') ? Promise.race([
-        getAnalystRecommendations(symbol),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub analyst timeout')), 3000))
-      ]) : Promise.resolve(null),
-      sources.includes('finnhub-price-target') ? Promise.race([
-        getPriceTarget(symbol),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Finnhub price target timeout')), 3000))
-      ]) : Promise.resolve(null),
-      Promise.race([
-        getMarketDataWithSatoshiContext(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Satoshi market context timeout')), 3000))
-      ])
+      sources.includes('coingecko') ? cachedFetch(
+        'coingecko:market:btc,eth,sol',
+        () => getMarketData(['BTC', 'ETH', 'SOL']) as Promise<string>,
+        45_000,
+        3_000,
+        1
+      ) : Promise.resolve(null),
+      sources.includes('web') ? cachedFetch(
+        `web:${input.toLowerCase().slice(0, 256)}`,
+        () => enhancedWebSearch(input) as Promise<string>,
+        120_000,
+        3_000,
+        1
+      ) : Promise.resolve(null),
+      sources.includes('web') ? cachedFetch(
+        `x:${input.toLowerCase().slice(0, 256)}`,
+        () => getXSentiment(input) as Promise<string>,
+        60_000,
+        3_000,
+        1
+      ) : Promise.resolve(null),
+      sources.includes('finnhub') ? cachedFetch(
+        `finnhub:quote:${symbol}`,
+        () => getFinnhubQuote(symbol) as Promise<unknown>,
+        20_000,
+        3_000,
+        1
+      ) : Promise.resolve(null),
+      sources.includes('finnhub-insider') ? cachedFetch(
+        `finnhub:insider:${symbol}`,
+        () => getInsiderSentiment(symbol) as Promise<unknown>,
+        120_000,
+        3_000,
+        1
+      ) : Promise.resolve(null),
+      sources.includes('finnhub-earnings') ? cachedFetch(
+        `finnhub:earnings:${symbol}`,
+        () => getCompanyEarnings(symbol) as Promise<unknown>,
+        180_000,
+        3_000,
+        1
+      ) : Promise.resolve(null),
+      sources.includes('finnhub-ipo') ? cachedFetch(
+        'finnhub:ipo',
+        () => getIPOCalendar() as Promise<unknown>,
+        300_000,
+        3_000,
+        1
+      ) : Promise.resolve(null),
+      sources.includes('finnhub-news') ? cachedFetch(
+        `finnhub:news:${symbol}`,
+        () => getCompanyNews(symbol) as Promise<unknown>,
+        120_000,
+        3_000,
+        1
+      ) : Promise.resolve(null),
+      sources.includes('finnhub-analyst') ? cachedFetch(
+        `finnhub:analyst:${symbol}`,
+        () => getAnalystRecommendations(symbol) as Promise<unknown>,
+        180_000,
+        3_000,
+        1
+      ) : Promise.resolve(null),
+      sources.includes('finnhub-price-target') ? cachedFetch(
+        `finnhub:pt:${symbol}`,
+        () => getPriceTarget(symbol) as Promise<unknown>,
+        180_000,
+        3_000,
+        1
+      ) : Promise.resolve(null),
+      cachedFetch(
+        'satoshi:marketContext',
+        () => getMarketDataWithSatoshiContext() as Promise<string>,
+        60_000,
+        3_000,
+        1
+      )
     ];
     
     apiCalls.push(...promises);
@@ -622,6 +771,22 @@ export async function POST(request: NextRequest): Promise<Response> {
   return Promise.race([
     (async () => {
       try {
+        // Basic per-IP rate limiting and soft concurrency guard
+        const ip = getClientIp(request);
+        const rate = isRateLimited(ip);
+        if (rate.limited) {
+          return NextResponse.json({
+            error: 'Rate limited',
+            details: `Too many requests. Retry after ${Math.ceil(rate.retryAfterMs / 1000)}s.`
+          }, { status: 429, headers: { 'Retry-After': String(Math.ceil(rate.retryAfterMs / 1000)) } });
+        }
+        if (activeRequests >= MAX_CONCURRENT_REQUESTS) {
+          return NextResponse.json({
+            error: 'Server busy',
+            details: 'Too many concurrent requests. Please try again shortly.'
+          }, { status: 503 });
+        }
+        activeRequests += 1;
         const body = await request.json();
         // Defensive logging
         // eslint-disable-next-line no-console
@@ -689,10 +854,25 @@ export async function POST(request: NextRequest): Promise<Response> {
             // Debug: Log the prompt sent to the LLM
             // eslint-disable-next-line no-console
             console.log('LLM prompt being sent:', prompt);
-            fallbackLLMResponse = await Promise.race([
-              Grok4Service.generateViralResponse(input, prompt, undefined, llmMaxTokens),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('LLM timeout')), LLM_TIMEOUT))
-            ]);
+            // Try once, if timeout then one quick retry with smaller max tokens
+            try {
+              fallbackLLMResponse = await Promise.race([
+                Grok4Service.generateViralResponse(input, prompt, undefined, llmMaxTokens),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('LLM timeout')), LLM_TIMEOUT))
+              ]);
+            } catch (firstErr) {
+              const msg = firstErr instanceof Error ? firstErr.message : String(firstErr);
+              if (/LLM timeout|timeout/i.test(msg)) {
+                // quick retry with fewer tokens to reduce model latency
+                const quickMax = Math.max(256, Math.floor(llmMaxTokens * 0.5));
+                fallbackLLMResponse = await Promise.race([
+                  Grok4Service.generateViralResponse(input, prompt, undefined, quickMax),
+                  new Promise((_, reject) => setTimeout(() => reject(new Error('LLM timeout')), Math.floor(LLM_TIMEOUT * 0.75)))
+                ]);
+              } else {
+                throw firstErr;
+              }
+            }
             // Debug: Log the LLM response
             // eslint-disable-next-line no-console
             console.log('LLM response received:', fallbackLLMResponse);
@@ -735,6 +915,8 @@ export async function POST(request: NextRequest): Promise<Response> {
         const errorMsg = e instanceof Error ? e.message : String(e);
         const bitcoinNarrative = 'Bitcoin is the signal. Even when data is missing, the narrative remains: decentralization, sound money, and antifragility. Stay sovereign.';
         return NextResponse.json({ error: 'Malformed request or server error', details: `${bitcoinNarrative}\n${errorMsg}` }, { status: 400 });
+      } finally {
+        activeRequests = Math.max(0, activeRequests - 1);
       }
     })(),
     new Promise<Response>((_, reject) => 
