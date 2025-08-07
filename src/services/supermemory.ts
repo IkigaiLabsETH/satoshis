@@ -4,7 +4,8 @@ import {
   UserPreference,
   MarketAnalysis,
   MarketEvent,
-  ChartInteraction
+  ChartInteraction,
+  OutperformWatchlist
 } from '../types/supermemory';
 
 class SupermemoryService {
@@ -144,6 +145,25 @@ class SupermemoryService {
    */
   async getAnalysisHistory(symbol: string): Promise<SupermemorySearchResponse> {
     return this.searchMemories(`market analysis ${symbol}`, 5);
+  }
+
+  /**
+   * Store BTC-relative outperform watchlist
+   */
+  async storeOutperformWatchlist(list: OutperformWatchlist): Promise<SupermemoryMemory> {
+    return this.addMemory(list, {
+      type: 'watchlist',
+      base: list.base,
+      horizon: list.horizon,
+      category: 'grok420_watchlist'
+    });
+  }
+
+  /**
+   * Retrieve prior BTC-relative outperform watchlists
+   */
+  async getOutperformWatchlists(): Promise<SupermemorySearchResponse> {
+    return this.searchMemories('watchlist BTC outperform', 5);
   }
 }
 

@@ -2,10 +2,11 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, User, Loader2, Sparkles, Image as ImageIcon, Copy, Info, BarChart3 } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles, Image as ImageIcon, Copy, Info, BarChart3, Brain, ListChecks } from 'lucide-react';
 import { useChartMemory, useMarketMemory, useUserMemory } from './SupermemoryIntegration';
 import EquityResearchForm, { EquityResearchReport } from './EquityResearchForm';
 import type { EquityResearchData } from './EquityResearchForm';
+import MemoryPanel from './MemoryPanel';
 
 interface Message {
   id: string;
@@ -31,6 +32,7 @@ export default function Grok420Content() {
   const { handleChartInteraction: _handleChartInteraction } = useChartMemory();
   const { storeAnalysis, getHistory: _getHistory } = useMarketMemory();
   const { storePreferences, getPreferences: _getPreferences } = useUserMemory();
+  const { storeOutperformWatchlist, getOutperformWatchlists } = require('./SupermemoryIntegration').useSupermemory();
 
   type ImageHistoryItem = {
     id: string;
@@ -55,16 +57,48 @@ export default function Grok420Content() {
   const [showEquityResearch, setShowEquityResearch] = useState(false);
   const [equityResearchData, setEquityResearchData] = useState<EquityResearchData | null>(null);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [isMemoryOpen, setIsMemoryOpen] = useState(false);
+  const [baseAsset, setBaseAsset] = useState<'BTC' | 'ETH'>('BTC');
+  const [horizon, setHorizon] = useState<'1-3 months' | '3-6 months' | '1-4 weeks'>('1-3 months');
+  const [timeoutMs, setTimeoutMs] = useState<number>(15000);
+  const [useCachedFallback, setUseCachedFallback] = useState<boolean>(true);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Restore persisted chat
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('grok420:messages');
+      if (raw && messages.length === 0) {
+        const restored: Message[] = JSON.parse(raw).map((m: any) => ({
+          ...m,
+          timestamp: new Date(m.timestamp),
+        }));
+        if (restored.length > 0) setMessages(restored);
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist chat on change
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        'grok420:messages',
+        JSON.stringify(messages.map((m) => ({ ...m, timestamp: m.timestamp.toISOString() })))
+      );
+    } catch {}
+  }, [messages]);
 
   const handleAutoAnalysis = async () => {
     setIsLoading(true);
     
     try {
       // Fetch MSTR vs BTC analysis
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
       const response = await fetch('/api/grok4', {
         method: 'POST',
         headers: {
@@ -76,7 +110,9 @@ export default function Grok420Content() {
           temperature: 0.7,
           stream: false,
         }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error('Failed to fetch analysis');
@@ -189,6 +225,8 @@ Formatting Requirements:
 
 Use all available Finnhub data including financial statements, technical indicators, social sentiment, institutional ownership, and regulatory data to provide the most comprehensive analysis possible.`;
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
       const response = await fetch('/api/grok4', {
         method: 'POST',
         headers: {
@@ -200,7 +238,9 @@ Use all available Finnhub data including financial statements, technical indicat
           temperature: 0.7,
           stream: false,
         }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error('Failed to fetch elite analysis');
@@ -339,6 +379,8 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
 
     try {
       // Streaming support
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
       const response = await fetch('/api/grok4', {
         method: 'POST',
         headers: {
@@ -353,7 +395,9 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
             mode: 'godmode'
           }),
         }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         let errorMsg = 'Failed to get response from Grok4';
@@ -503,15 +547,6 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
-      // Show error details in a big, obvious way if present
-      if (error instanceof Error && error.message && error.message.includes('{')) {
-        setMessages(prev => [...prev, {
-          id: (Date.now() + 2).toString(),
-          role: 'assistant',
-          content: `<pre style='color: #ff3333; background: #1a0000; font-size: 1.1em; padding: 1em; border-radius: 8px; margin-top: 1em; overflow-x: auto;'>${error.message}</pre>`,
-          timestamp: new Date(),
-        }]);
-      }
     } finally {
       setIsLoading(false);
       _setIsPolling(false);
@@ -544,12 +579,56 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
               <Info className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-400" />
             </button>
             <button
+              onClick={() => setIsMemoryOpen(true)}
+              className="p-1 sm:p-2 rounded-full bg-yellow-500/10 border border-yellow-500/20 hover:bg-yellow-500/20 transition-colors"
+              title="Open Supermemory"
+            >
+              <Brain className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-400" />
+            </button>
+            <button
               onClick={() => _setShowResetDialog(true)}
               className="px-3 py-1 sm:px-4 sm:py-2 bg-yellow-500/20 border border-yellow-500/40 text-yellow-500 rounded-lg font-medium hover:bg-yellow-500/30 transition-colors text-xs sm:text-sm"
               title="Reset Grok context"
             >
               Reset
             </button>
+            <button
+              onClick={handleWatchlist}
+              className="px-3 py-1 sm:px-4 sm:py-2 bg-yellow-500/20 border border-yellow-500/40 text-yellow-500 rounded-lg font-medium hover:bg-yellow-500/30 transition-colors text-xs sm:text-sm flex items-center gap-1"
+              title="Outperform BTC Watchlist"
+            >
+              <ListChecks className="h-4 w-4" />
+              Watchlist
+            </button>
+            <div className="hidden md:flex items-center gap-2 ml-2 text-yellow-400/80">
+              <div className="flex items-center gap-1">
+                <span>Base</span>
+                <select value={baseAsset} onChange={(e) => setBaseAsset(e.target.value as 'BTC' | 'ETH')} className="bg-black/60 border border-yellow-500/30 rounded px-2 py-1">
+                  <option value="BTC">BTC</option>
+                  <option value="ETH">ETH</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-1">
+                <span>Horizon</span>
+                <select value={horizon} onChange={(e) => setHorizon(e.target.value as any)} className="bg-black/60 border border-yellow-500/30 rounded px-2 py-1">
+                  <option value="1-3 months">1-3m</option>
+                  <option value="3-6 months">3-6m</option>
+                  <option value="1-4 weeks">1-4w</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-1">
+                <span>Timeout</span>
+                <select value={timeoutMs} onChange={(e) => setTimeoutMs(parseInt(e.target.value, 10))} className="bg-black/60 border border-yellow-500/30 rounded px-2 py-1">
+                  <option value={10000}>10s</option>
+                  <option value={15000}>15s</option>
+                  <option value={20000}>20s</option>
+                </select>
+              </div>
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={useCachedFallback} onChange={(e) => setUseCachedFallback(e.target.checked)} />
+                Cached
+              </label>
+            </div>
             <button
               onClick={() => {
                 setShowEquityResearch(!showEquityResearch);
@@ -666,7 +745,9 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
                             {_copiedMessageId === message.id && (
                               <span className="absolute top-2 right-10 text-xs text-yellow-400 bg-black/80 px-2 py-1 rounded shadow">Copied!</span>
                             )}
-                            <p className="text-white/90 whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: message.content }} />
+                            <p className="text-white/90 whitespace-pre-wrap break-words">
+                              {message.content}
+                            </p>
                             <p className="text-xs text-yellow-400/50 mt-2">
                               {message.timestamp.toLocaleTimeString()}
                             </p>
@@ -706,6 +787,11 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                      handleSubmit(e as any);
+                    }
+                  }}
                   placeholder="Try: 'TSLA analysis' or 'gm' for market overview..."
                   className="w-full sm:flex-1 bg-black/60 border border-yellow-500/30 rounded-lg px-4 py-3 text-white placeholder-yellow-400/50 focus:border-yellow-500 focus:outline-none text-sm sm:text-base"
                   disabled={isLoading || _isImageLoading}
@@ -748,12 +834,98 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
             </div>
           </div>
         </div>
+        {/* Supermemory Modal */}
+        <MemoryPanel isOpen={isMemoryOpen} onClose={() => setIsMemoryOpen(false)} />
       </div>
     </div>
   );
 
   // Helper functions
-  function handleCopyMessage(_content: string, _id: string) {
-    // Implementation would go here
+  function handleCopyMessage(content: string, id: string) {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(content).then(() => {
+        _setCopiedMessageId(id);
+        setTimeout(() => _setCopiedMessageId(null), 1500);
+      });
+    }
+  }
+
+  // Render Memory Panel
+  
+  async function handleWatchlist() {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      const response = await fetch('/api/grok4', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Create a concise ${baseAsset}-relative outperform watchlist for the next ${horizon}.
+Rules: Focus on assets likely to outperform ${baseAsset} on a risk-adjusted basis. Include ticker/symbol, quick thesis, high-level risk, a stop below key ${baseAsset}-relative level (e.g., ratio < 0.024), and a target ratio or catalyst.
+Keep it brief and in markdown list format. If live data is unavailable, ${useCachedFallback ? 'use cached or last-known prices' : 'do not use cached data'}.`,
+          systemPrompt: `You are a Bitcoin-first analyst. Default lens is performance relative to BTC.
+- Avoid hype, no hashtags, no memes.
+- Use professional tone consistent with LiveTheLifeTV.
+- Prioritize BTC-relative rotation logic: scale-in above strength thresholds (e.g., ratio > 0.03), cut under weakness (e.g., ratio < 0.024).
+- Include some stocks like MSTR if compelling.
+- End with a one-line risk summary.`,
+          temperature: 0.6,
+          stream: false,
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      const text = response.ok ? await response.text() : 'Unable to generate watchlist right now.';
+
+      // Post to chat
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: text,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+
+      // Try to parse minimal structure
+      const list = {
+        type: 'watchlist',
+        base: baseAsset,
+        horizon,
+        methodology: 'BTC-relative momentum and rotation rules',
+        raw: text,
+      } as const;
+      try {
+        await storeOutperformWatchlist(list as any);
+      } catch {
+        // ignore storage failure
+      }
+
+      // Optionally surface prior lists
+      try {
+        const prior = await getOutperformWatchlists();
+        if (prior.total > 0) {
+          const priorMsg: Message = {
+            id: (Date.now() + 2).toString(),
+            role: 'assistant',
+            content: `Loaded ${prior.total} prior watchlist snapshots from Supermemory. Open the Brain panel to review.`,
+            timestamp: new Date(),
+          };
+          setMessages(prev => [...prev, priorMsg]);
+        }
+      } catch {}
+    } catch (e) {
+      const errMsg: Message = {
+        id: (Date.now() + 3).toString(),
+        role: 'assistant',
+        content: 'Failed to generate or store the watchlist. Please try again.',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errMsg]);
+    } finally {
+      setIsLoading(false);
+    }
   }
 } 
