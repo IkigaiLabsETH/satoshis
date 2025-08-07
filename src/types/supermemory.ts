@@ -83,7 +83,7 @@ export interface OutperformWatchlistPick {
 
 export interface OutperformWatchlist {
   type: 'watchlist';
-  base: 'BTC';
+  base: 'BTC' | 'ETH';
   horizon: string; // e.g., '1-3 months'
   methodology?: string;
   picks?: OutperformWatchlistPick[];

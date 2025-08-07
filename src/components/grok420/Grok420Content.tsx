@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Bot, User, Loader2, Sparkles, Image as ImageIcon, Copy, Info, BarChart3, Brain, ListChecks } from 'lucide-react';
-import { useChartMemory, useMarketMemory, useUserMemory } from './SupermemoryIntegration';
+import { useChartMemory, useMarketMemory, useUserMemory, useSupermemory } from './SupermemoryIntegration';
 import EquityResearchForm, { EquityResearchReport } from './EquityResearchForm';
 import type { EquityResearchData } from './EquityResearchForm';
 import MemoryPanel from './MemoryPanel';
@@ -22,6 +22,7 @@ export default function Grok420Content() {
   const [_systemPrompt] = useState('You are Grok, an AI assistant for LiveTheLifeTV. Your role is to help users understand Bitcoin-first investing, market analysis, and financial freedom. Be witty, insightful, and creative—channel the spirit of Satoshi Nakamoto. Provide clear, actionable advice, but don\'t be afraid to be a little irreverent or humorous. Always prioritize truth, clarity, and user empowerment.');
   const [_temperature] = useState(0.7);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const [_showResetDialog, _setShowResetDialog] = useState(false);
   const [_resetMessage, _setResetMessage] = useState('');
   const [_showImageDialog, _setShowImageDialog] = useState(false);
@@ -32,7 +33,7 @@ export default function Grok420Content() {
   const { handleChartInteraction: _handleChartInteraction } = useChartMemory();
   const { storeAnalysis, getHistory: _getHistory } = useMarketMemory();
   const { storePreferences, getPreferences: _getPreferences } = useUserMemory();
-  const { storeOutperformWatchlist, getOutperformWatchlists } = require('./SupermemoryIntegration').useSupermemory();
+  const { storeOutperformWatchlist, getOutperformWatchlists } = useSupermemory();
 
   type ImageHistoryItem = {
     id: string;
@@ -72,7 +73,8 @@ export default function Grok420Content() {
     try {
       const raw = localStorage.getItem('grok420:messages');
       if (raw && messages.length === 0) {
-        const restored: Message[] = JSON.parse(raw).map((m: any) => ({
+        const parsed = JSON.parse(raw) as Array<Omit<Message, 'timestamp'> & { timestamp: string }>;
+        const restored: Message[] = parsed.map((m) => ({
           ...m,
           timestamp: new Date(m.timestamp),
         }));
@@ -610,7 +612,11 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
               </div>
               <div className="flex items-center gap-1">
                 <span>Horizon</span>
-                <select value={horizon} onChange={(e) => setHorizon(e.target.value as any)} className="bg-black/60 border border-yellow-500/30 rounded px-2 py-1">
+                <select
+                  value={horizon}
+                  onChange={(e) => setHorizon(e.target.value as '1-3 months' | '3-6 months' | '1-4 weeks')}
+                  className="bg-black/60 border border-yellow-500/30 rounded px-2 py-1"
+                >
                   <option value="1-3 months">1-3m</option>
                   <option value="3-6 months">3-6m</option>
                   <option value="1-4 weeks">1-4w</option>
@@ -782,14 +788,14 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
               </div>
 
               {/* Input Form */}
-              <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
+              <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => {
                     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-                      handleSubmit(e as any);
+                      handleSubmit(e);
                     }
                   }}
                   placeholder="Try: 'TSLA analysis' or 'gm' for market overview..."
@@ -898,7 +904,7 @@ Keep it brief and in markdown list format. If live data is unavailable, ${useCac
         raw: text,
       } as const;
       try {
-        await storeOutperformWatchlist(list as any);
+        await storeOutperformWatchlist(list);
       } catch {
         // ignore storage failure
       }
@@ -916,7 +922,7 @@ Keep it brief and in markdown list format. If live data is unavailable, ${useCac
           setMessages(prev => [...prev, priorMsg]);
         }
       } catch {}
-    } catch (e) {
+    } catch {
       const errMsg: Message = {
         id: (Date.now() + 3).toString(),
         role: 'assistant',
