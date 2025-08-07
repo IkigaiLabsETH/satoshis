@@ -106,8 +106,8 @@ Your mission is to transform content into LLM-friendly formats that maximize vis
       targetAudience,
       contentType = 'blog',
       brandName,
-      includeData = true,
-      includeUseCases = true
+      _includeData = true,
+      _includeUseCases = true
     } = options;
 
     const optimizationPrompt = XMLPromptBuilder.buildContentOptimizationPrompt(
