@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import { formatEthPrice } from '@/lib/utils';
 
 interface NFTCardProps {
@@ -51,13 +52,13 @@ export function NFTCard({ nft, href, priority = false, blurhash }: NFTCardProps)
   const imageUrl = nft.image_url;
   const isUnoptimized = imageUrl?.includes('ipfs') || imageUrl?.includes('arweave');
 
-  const cardVariants = {
+  const cardVariants: Variants = {
     initial: { scale: 1 },
     hover: { 
       scale: 1.02,
       transition: {
         duration: 0.3,
-        ease: [0.4, 0, 0.2, 1]
+        ease: [0.4, 0, 0.2, 1] as [number, number, number, number]
       }
     }
   };
