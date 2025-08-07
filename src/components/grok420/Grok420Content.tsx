@@ -346,8 +346,8 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasInitialized, messages.length]);
 
-  const handleSubmit = async (e: React.FormEvent, retryMessage?: string) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent, retryMessage?: string) => {
+    if (e) e.preventDefault();
     const messageToSend = retryMessage || input;
     if (!messageToSend.trim() || isLoading) return;
 
@@ -795,7 +795,8 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => {
                     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-                      handleSubmit(e);
+                      e.preventDefault();
+                      handleSubmit(undefined);
                     }
                   }}
                   placeholder="Try: 'TSLA analysis' or 'gm' for market overview..."
@@ -820,7 +821,7 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSubmit({ preventDefault: () => {} } as React.FormEvent, 'gm')}
+                  onClick={() => handleSubmit(undefined, 'gm')}
                   disabled={isLoading}
                   className="w-full sm:w-auto bg-green-500/20 hover:bg-green-400/30 text-green-400 font-bold px-4 py-3 rounded-lg border border-green-500/30 transition-colors disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base"
                   title="Quick market overview"

@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       const snapshot = await getMarketData(symbols);
 
       // Enrich snapshot with ETHBTC ratio and SPY/QQQ and MAG7 daily change
-      async function getEthBtcRatio(): Promise<string> {
+      const getEthBtcRatio = async (): Promise<string> => {
         try {
           const res = await fetch(
             'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=btc&include_24hr_change=true',
@@ -56,24 +56,26 @@ export async function POST(request: NextRequest) {
         } catch {
           return '';
         }
-      }
+      };
 
-      async function getYahooSnapshot(): Promise<string> {
+      const getYahooSnapshot = async (): Promise<string> => {
         try {
           const tickers = ['SPY','QQQ','AAPL','MSFT','NVDA','GOOGL','AMZN','META','TSLA'];
           const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${tickers.join(',')}`;
           const res = await fetch(url);
           if (!res.ok) return '';
-          const data = await res.json();
-          const results: any[] = data?.quoteResponse?.result || [];
+          const data = (await res.json()) as { quoteResponse?: { result?: Array<{ symbol: string; regularMarketChangePercent?: number }> } };
+          const results = data?.quoteResponse?.result ?? [];
           if (!results.length) return '';
-          const by = Object.fromEntries(results.map(q => [q.symbol, q]));
+          const by: Record<string, { regularMarketChangePercent?: number }> = Object.fromEntries(
+            results.map((q) => [q.symbol, q])
+          );
           const spy = by['SPY']?.regularMarketChangePercent;
           const qqq = by['QQQ']?.regularMarketChangePercent;
           const mag7Syms = ['AAPL','MSFT','NVDA','GOOGL','AMZN','META','TSLA'];
           const mag7 = mag7Syms
-            .map(s => by[s]?.regularMarketChangePercent)
-            .filter((v: number | undefined) => typeof v === 'number') as number[];
+            .map((s) => by[s]?.regularMarketChangePercent)
+            .filter((v): v is number => typeof v === 'number');
           const mag7Avg = mag7.length ? mag7.reduce((a,b)=>a+b,0)/mag7.length : undefined;
           const fmt = (n?: number) => typeof n === 'number' ? `${n>=0?'+':''}${n.toFixed(2)}%` : 'N/A';
           const lines: string[] = [];
@@ -83,16 +85,22 @@ export async function POST(request: NextRequest) {
         } catch {
           return '';
         }
-      }
+      };
 
       // Compute weekly outperformers vs BTC (top 5)
-      async function getWeeklyOutperformers(limit = 5): Promise<string> {
+      const getWeeklyOutperformers = async (limit = 5): Promise<string> => {
         try {
           const url =
             'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=200&page=1&price_change_percentage=7d_in_currency&sparkline=false';
           const res = await fetch(url, { headers: { Accept: 'application/json' } });
           if (!res.ok) throw new Error(`CoinGecko error ${res.status}`);
-          const data: any[] = await res.json();
+          const data = (await res.json()) as Array<{
+            id: string;
+            name: string;
+            symbol: string;
+            price_change_percentage_7d_in_currency?: number;
+            market_cap_rank?: number;
+          }>;
           const btc = data.find((c) => c.id === 'bitcoin');
           if (!btc || typeof btc.price_change_percentage_7d_in_currency !== 'number') return '';
           const btc7d = btc.price_change_percentage_7d_in_currency;
@@ -106,7 +114,7 @@ export async function POST(request: NextRequest) {
             .map((c) => ({
               name: c.name,
               symbol: (c.symbol || '').toUpperCase(),
-              rel: c.price_change_percentage_7d_in_currency - btc7d,
+              rel: (c.price_change_percentage_7d_in_currency || 0) - btc7d,
             }))
             .sort((a, b) => b.rel - a.rel)
             .slice(0, limit);
@@ -117,7 +125,7 @@ export async function POST(request: NextRequest) {
         } catch {
           return '';
         }
-      }
+      };
 
       const [outperformers, ethbtc, equities] = await Promise.all([
         getWeeklyOutperformers(5),
