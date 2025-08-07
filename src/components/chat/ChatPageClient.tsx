@@ -46,6 +46,23 @@ export default function ChatPageClient() {
             <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
               Your Bitcoin-first AI assistant powered by Grok4. Ask complex questions, get detailed insights, and shape the AI&apos;s personality with your vibes.
             </p>
+
+            {/* Quick Launch Prompts */}
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              {[
+                { label: 'gm market check', prompt: 'gm' },
+                { label: 'BTC price now', prompt: 'btc price now' },
+                { label: 'Top outperformers vs BTC (7d)', prompt: 'who is outperforming btc this week?' },
+              ].map((q) => (
+                <Link
+                  key={q.label}
+                  href={`/chat?prompt=${encodeURIComponent(q.prompt)}`}
+                  className="text-sm bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 px-3 py-1.5 rounded hover:bg-yellow-500/20 transition-colors"
+                >
+                  {q.label}
+                </Link>
+              ))}
+            </div>
           </motion.div>
 
           {/* Enhanced divider */}

@@ -3,12 +3,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
 import { XMLPromptBuilder } from '@/services/ai/xml-prompt-template';
+import ReactMarkdown from 'react-markdown';
+import { Copy } from 'lucide-react';
 
 interface ChatMessage {
   id: string;
@@ -49,9 +52,12 @@ export default function VibesChatFooter() {
   const [vibesInput, setVibesInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isAddingVibes, setIsAddingVibes] = useState(false);
+  const [persona, setPersona] = useState<'Neutral' | 'Maximalist' | 'Educator'>('Neutral');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const promptHandledRef = useRef(false);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -67,7 +73,7 @@ export default function VibesChatFooter() {
     }
   }, [isOpen]);
 
-    // Load existing vibes on mount
+    // Load history and vibes on mount
   useEffect(() => {
     const loadVibes = async () => {
       try {
@@ -112,20 +118,43 @@ export default function VibesChatFooter() {
     };
 
     loadVibes();
+
+    // Restore chat history
+    try {
+      const stored = localStorage.getItem('vibes-chat-history');
+      if (stored) {
+        const parsed: ChatMessage[] = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed.map(m => ({ ...m, timestamp: new Date(m.timestamp) })));
+        }
+      }
+    } catch {
+      // ignore
+    }
   }, []);
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+  // Persist history
+  useEffect(() => {
+    try {
+      localStorage.setItem('vibes-chat-history', JSON.stringify(messages));
+    } catch {
+      // ignore
+    }
+  }, [messages]);
+
+  const handleSendMessage = async (overrideMessage?: string) => {
+    const textToSend = (overrideMessage ?? inputValue).trim();
+    if (!textToSend) return;
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       type: 'user',
-      content: inputValue,
+      content: textToSend,
       timestamp: new Date(),
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
+    if (!overrideMessage) setInputValue('');
     setIsLoading(true);
 
     try {
@@ -138,16 +167,21 @@ export default function VibesChatFooter() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          message: inputValue,
+          body: JSON.stringify({
+          message: textToSend,
           systemPrompt: XMLPromptBuilder.buildPrompt({
             task: 'Respond to user message as a Bitcoin-first AI assistant',
             topic: 'Bitcoin and cryptocurrency',
             format: 'Response',
             tone: 'Conversational',
-            persona: 'Bitcoin-first AI assistant',
+            persona:
+              persona === 'Maximalist'
+                ? 'Bitcoin maximalist analyst who speaks with conviction and prioritizes BTC-first framing'
+                : persona === 'Educator'
+                ? 'Patient Bitcoin educator who explains clearly with simple language'
+                : 'Neutral Bitcoin-first AI assistant',
             audience: 'User seeking Bitcoin and crypto insights',
-            input: inputValue,
+            input: textToSend,
             constraints: `Incorporate ${vibes.length} vibes naturally into responses. Keep responses concise and engaging.`
           }),
           temperature: 0.8,
@@ -190,7 +224,7 @@ export default function VibesChatFooter() {
       setMessages(prev => [...prev, agentMessage]);
       
       // Show success toast for short messages
-      if (inputValue.length < 50) {
+      if (textToSend.length < 50) {
         toast({
           title: "Message Sent",
           description: "AI response received successfully!",
@@ -455,6 +489,24 @@ export default function VibesChatFooter() {
                 </Button>
               </div>
 
+              {/* Persona toggles */}
+              <div className="px-4 py-2 border-b border-yellow-500/10 bg-[#1c1f26]">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-white/60">Persona:</span>
+                  {(['Neutral','Maximalist','Educator'] as const).map(p => (
+                    <Button
+                      key={p}
+                      size="sm"
+                      variant={persona === p ? 'default' : 'ghost'}
+                      className={persona === p ? 'bg-yellow-500 text-black h-7 px-3' : 'h-7 px-3 text-white/70'}
+                      onClick={() => setPersona(p)}
+                    >
+                      {p}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
               {/* Vibes Display */}
               {vibes.length > 0 && (
                 <div className="p-4 border-b border-yellow-500/20 bg-[#1c1f26]">
@@ -485,7 +537,7 @@ export default function VibesChatFooter() {
               {/* Chat Messages */}
               <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
                 <div className="space-y-4">
-                  {messages.map((message) => (
+                  {messages.map((message, idx) => (
                     <motion.div
                       key={message.id}
                       initial={{ opacity: 0, y: 10 }}
@@ -499,10 +551,48 @@ export default function VibesChatFooter() {
                           ? 'bg-green-500/20 border-green-500/30 text-green-400'
                           : 'bg-white/10 text-white'
                       }`}>
-                        <p className="text-sm">{message.content}</p>
+                        <div className="flex items-start gap-2">
+                          <div className="flex-1 text-sm overflow-hidden">
+                            <ReactMarkdown>{message.content}</ReactMarkdown>
+                          </div>
+                          <button
+                            aria-label="Copy message"
+                            className={`shrink-0 opacity-70 hover:opacity-100 ${message.type === 'user' ? 'text-black' : 'text-white'}`}
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(message.content);
+                                toast({ title: 'Copied', description: 'Message copied to clipboard.' });
+                              } catch {
+                                toast({ title: 'Copy failed', description: 'Unable to copy', variant: 'destructive' });
+                              }
+                            }}
+                          >
+                            <Copy size={14} />
+                          </button>
+                        </div>
                         <p className="text-xs opacity-60 mt-1">
                           {message.timestamp.toLocaleTimeString()}
                         </p>
+                        {/* Follow-up suggestions under last agent reply */}
+                        {message.type === 'agent' && idx === messages.length - 1 && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {[
+                              { t: 'Show top outperformers vs BTC (7d)', q: 'who is outperforming btc this week?' },
+                              { t: 'BTC dominance today?', q: 'What is BTC dominance today?' },
+                              { t: 'ETHBTC view?', q: 'Share a quick ETHBTC view and hedge idea' },
+                            ].map((s) => (
+                              <Button
+                                key={s.t}
+                                size="sm"
+                                className="h-7 px-2 bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20"
+                                variant="default"
+                                onClick={() => handleSendMessage(s.q)}
+                              >
+                                {s.t}
+                              </Button>
+                            ))}
+                          </div>
+                        )}
                       </Card>
                     </motion.div>
                   ))}
@@ -585,7 +675,7 @@ export default function VibesChatFooter() {
                     disabled={isLoading}
                   />
                   <Button
-                    onClick={handleSendMessage}
+                    onClick={() => handleSendMessage()}
                     disabled={!inputValue.trim() || isLoading}
                     className="bg-yellow-500 hover:bg-yellow-400 text-black px-4"
                   >
@@ -597,6 +687,21 @@ export default function VibesChatFooter() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Auto-open and auto-send from query param */}
+      {(() => {
+        const prompt = searchParams.get('prompt');
+        if (prompt && !promptHandledRef.current) {
+          promptHandledRef.current = true;
+          // Defer to next tick to avoid state updates during render
+          setTimeout(() => {
+            setIsOpen(true);
+            setInputValue(prompt);
+            handleSendMessage(prompt);
+          }, 0);
+        }
+        return null;
+      })()}
     </>
   );
 } 

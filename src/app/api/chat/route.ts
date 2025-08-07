@@ -1,4 +1,4 @@
-import { Grok4Service } from '../grok4/grok4';
+import { Grok4Service, getMarketData } from '../grok4/grok4';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const maxDuration = 45; // 45 seconds timeout for complex questions
@@ -6,13 +6,139 @@ export const maxDuration = 45; // 45 seconds timeout for complex questions
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { message, systemPrompt = "You are a Bitcoin-first AI assistant.", temperature = 0.8 } = body;
+    const {
+      message,
+      systemPrompt = 'You are a Bitcoin-first AI assistant.',
+      temperature = 0.8,
+    } = body;
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json(
         { error: 'Message is required and must be a string' },
         { status: 400 }
       );
+    }
+
+    // Handle fast-path intents without calling Grok when possible
+    const text = String(message).trim();
+    const lower = text.toLowerCase();
+
+    // Detect a "gm" vibe check or quick market snapshot intent
+    const isGm = /^(gm|gm gm|gm\s*!|gm\s+gm\s*!?)$/.test(lower);
+    const isPriceQuery = /(btc|bitcoin|eth|ethereum|sol|solana).*\b(price|quote|now|current)/i.test(text);
+    const wantsOutperformers = /(outperform|relative).*btc|vs\s*btc|beat\s*btc/i.test(lower);
+
+    if (isGm || isPriceQuery || wantsOutperformers) {
+      // Build a curated market snapshot using CoinGecko with fallback logic
+      const header = isGm
+        ? `gm • ${new Date().toLocaleString()}`
+        : `Market Snapshot • ${new Date().toLocaleString()}`;
+
+      // Core market set; BTC-centric by default
+      const symbols = ['BTC', 'ETH', 'SOL'];
+      const snapshot = await getMarketData(symbols);
+
+      // Enrich snapshot with ETHBTC ratio and SPY/QQQ and MAG7 daily change
+      async function getEthBtcRatio(): Promise<string> {
+        try {
+          const res = await fetch(
+            'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=btc&include_24hr_change=true',
+            { headers: { Accept: 'application/json' } }
+          );
+          if (!res.ok) return '';
+          const data = await res.json();
+          const ratio = data?.ethereum?.btc as number | undefined;
+          const change = data?.ethereum?.btc_24h_change as number | undefined;
+          if (!ratio) return '';
+          const r = ratio.toFixed(5);
+          const ch = change ? `${change >= 0 ? '+' : ''}${change.toFixed(2)}%` : 'N/A';
+          return `ETHBTC: ${r} (${ch} 24h)`;
+        } catch {
+          return '';
+        }
+      }
+
+      async function getYahooSnapshot(): Promise<string> {
+        try {
+          const tickers = ['SPY','QQQ','AAPL','MSFT','NVDA','GOOGL','AMZN','META','TSLA'];
+          const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${tickers.join(',')}`;
+          const res = await fetch(url);
+          if (!res.ok) return '';
+          const data = await res.json();
+          const results: any[] = data?.quoteResponse?.result || [];
+          if (!results.length) return '';
+          const by = Object.fromEntries(results.map(q => [q.symbol, q]));
+          const spy = by['SPY']?.regularMarketChangePercent;
+          const qqq = by['QQQ']?.regularMarketChangePercent;
+          const mag7Syms = ['AAPL','MSFT','NVDA','GOOGL','AMZN','META','TSLA'];
+          const mag7 = mag7Syms
+            .map(s => by[s]?.regularMarketChangePercent)
+            .filter((v: number | undefined) => typeof v === 'number') as number[];
+          const mag7Avg = mag7.length ? mag7.reduce((a,b)=>a+b,0)/mag7.length : undefined;
+          const fmt = (n?: number) => typeof n === 'number' ? `${n>=0?'+':''}${n.toFixed(2)}%` : 'N/A';
+          const lines: string[] = [];
+          lines.push(`SPY: ${fmt(spy)}  •  QQQ: ${fmt(qqq)}`);
+          if (mag7Avg !== undefined) lines.push(`MAG7 (avg): ${fmt(mag7Avg)}`);
+          return lines.join('\n');
+        } catch {
+          return '';
+        }
+      }
+
+      // Compute weekly outperformers vs BTC (top 5)
+      async function getWeeklyOutperformers(limit = 5): Promise<string> {
+        try {
+          const url =
+            'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=200&page=1&price_change_percentage=7d_in_currency&sparkline=false';
+          const res = await fetch(url, { headers: { Accept: 'application/json' } });
+          if (!res.ok) throw new Error(`CoinGecko error ${res.status}`);
+          const data: any[] = await res.json();
+          const btc = data.find((c) => c.id === 'bitcoin');
+          if (!btc || typeof btc.price_change_percentage_7d_in_currency !== 'number') return '';
+          const btc7d = btc.price_change_percentage_7d_in_currency;
+          const ranked = data
+            .filter(
+              (c) =>
+                c.id !== 'bitcoin' &&
+                typeof c.price_change_percentage_7d_in_currency === 'number' &&
+                c.market_cap_rank && c.market_cap_rank <= 200
+            )
+            .map((c) => ({
+              name: c.name,
+              symbol: (c.symbol || '').toUpperCase(),
+              rel: c.price_change_percentage_7d_in_currency - btc7d,
+            }))
+            .sort((a, b) => b.rel - a.rel)
+            .slice(0, limit);
+          if (!ranked.length) return '';
+          return ranked
+            .map((r) => `• ${r.symbol.padEnd(5, ' ')} ${r.rel >= 0 ? '+' : ''}${r.rel.toFixed(2)}% vs BTC (7d)`)
+            .join('\n');
+        } catch {
+          return '';
+        }
+      }
+
+      const [outperformers, ethbtc, equities] = await Promise.all([
+        getWeeklyOutperformers(5),
+        getEthBtcRatio(),
+        getYahooSnapshot(),
+      ]);
+
+      const lines = [header, '', snapshot];
+      if (outperformers) {
+        lines.push('', 'Top outperformers vs BTC (7d):', outperformers);
+        lines.push('', 'Hedge Hint: If alts run vs BTC, consider ETHBTC call-spread hedges to manage basis risk.');
+      }
+      if (ethbtc) {
+        lines.push('', ethbtc);
+      }
+      if (equities) {
+        lines.push('', 'Equities snapshot:', equities);
+      }
+      lines.push('', 'Note: Educational info only. Not financial advice.');
+
+      return NextResponse.json({ content: lines.join('\n'), success: true });
     }
 
     // Use Grok4 for complex questions with longer timeout
