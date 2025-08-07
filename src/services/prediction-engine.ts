@@ -14,6 +14,7 @@ import {
   ASSET_CATEGORIES,
   STOCK_CATEGORIES
 } from '@/config/watchlist';
+import { XMLPromptBuilder } from './ai/xml-prompt-template';
 
 interface MarketContext {
   bitcoin: {
@@ -314,9 +315,8 @@ export class PredictionEngine {
         marketContext.categorizedAssets.memeViral.reduce((sum, asset) => sum + asset.price_change_percentage_24h, 0) / marketContext.categorizedAssets.memeViral.length : 0
     };
 
-    return `You are GROK420, an expert crypto market analyst focused on identifying assets that will outperform Bitcoin (BTC).
-
-CURRENT MARKET CONTEXT:
+    // Build market context string
+    const marketContextString = `CURRENT MARKET CONTEXT:
 Bitcoin: $${marketContext.bitcoin.currentPrice.toLocaleString()} (${marketContext.bitcoin.change24h > 0 ? '+' : ''}${marketContext.bitcoin.change24h.toFixed(2)}% 24h)
 Market Cap: $${(marketContext.bitcoin.marketCap / 1e12).toFixed(2)}T
 Volume: $${(marketContext.bitcoin.volume / 1e9).toFixed(2)}B
@@ -340,8 +340,6 @@ MARKET PHILOSOPHY:
 - 2-Year MA: $${marketContext.marketPhilosophy.twoYearMA.toLocaleString()}
 - Exponential Age: ${marketContext.marketPhilosophy.exponentialAge}
 - Wealth Transfer: ${marketContext.marketPhilosophy.wealthTransfer}
-
-TASK: Generate ${timeframeLabel} predictions (${multiplier} days) for assets likely to outperform Bitcoin.
 
 STRATEGIC FOCUS:
 1. **Layer 1 Rotation**: Monitor ETH, SOL, SUI for institutional flows
@@ -380,6 +378,11 @@ RETURN ONLY THIS JSON:
 }
 
 Focus on actionable insights and specific catalysts that will drive outperformance.`;
+
+    return XMLPromptBuilder.buildMarketPredictionPrompt(
+      `${timeframeLabel} (${multiplier} days)`,
+      marketContextString
+    );
   }
 
   /**

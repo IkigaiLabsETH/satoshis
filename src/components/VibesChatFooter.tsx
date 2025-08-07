@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
+import { XMLPromptBuilder } from '@/services/ai/xml-prompt-template';
 
 interface ChatMessage {
   id: string;
@@ -128,11 +129,6 @@ export default function VibesChatFooter() {
     setIsLoading(true);
 
     try {
-      // Build context from vibes - keep it minimal to prevent timeout
-      const vibesContext = vibes.length > 0 
-        ? `\n\nYou have ${vibes.length} vibes influencing your personality. Incorporate them naturally into your responses.`
-        : '';
-
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
@@ -144,7 +140,16 @@ export default function VibesChatFooter() {
         },
         body: JSON.stringify({
           message: inputValue,
-          systemPrompt: `You are a Bitcoin-first AI assistant.${vibesContext}`,
+          systemPrompt: XMLPromptBuilder.buildPrompt({
+            task: 'Respond to user message as a Bitcoin-first AI assistant',
+            topic: 'Bitcoin and cryptocurrency',
+            format: 'Response',
+            tone: 'Conversational',
+            persona: 'Bitcoin-first AI assistant',
+            audience: 'User seeking Bitcoin and crypto insights',
+            input: inputValue,
+            constraints: `Incorporate ${vibes.length} vibes naturally into responses. Keep responses concise and engaging.`
+          }),
           temperature: 0.8,
         }),
         signal: controller.signal,
