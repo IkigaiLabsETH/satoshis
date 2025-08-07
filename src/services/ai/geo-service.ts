@@ -1,4 +1,5 @@
 import { Grok4Service } from '../../app/api/grok4/grok4';
+import { XMLPromptBuilder } from './xml-prompt-template';
 
 export interface GEOOptimizationOptions {
   targetLLMs?: string[];
@@ -109,30 +110,16 @@ Your mission is to transform content into LLM-friendly formats that maximize vis
       includeUseCases = true
     } = options;
 
-    const optimizationPrompt = `${this.GEO_PROMPT}
-
-## Optimization Context
-- **Target LLMs**: ${targetLLMs.join(', ')}
-- **Industry**: ${industry || 'General'}
-- **Target Audience**: ${targetAudience || 'General users'}
-- **Content Type**: ${contentType}
-- **Brand Integration**: ${brandName ? `Include ${brandName} naturally` : 'No specific brand'}
-- **Data Requirements**: ${includeData ? 'Include relevant data points' : 'Focus on concepts'}
-- **Use Cases**: ${includeUseCases ? 'Include practical applications' : 'Focus on theory'}
-
-## Content to Optimize
-${content}
-
-## Optimization Instructions
-Transform this content into an LLM-optimized version that:
-1. Answers common user questions about this topic
-2. Uses natural language patterns that match user queries
-3. Provides clear, extractable information
-4. Builds authority and trust
-5. Integrates brand naturally (if applicable)
-6. Includes relevant data and use cases (as specified)
-
-Output only the optimized content, ready for immediate publication and LLM citation.`;
+    const optimizationPrompt = XMLPromptBuilder.buildContentOptimizationPrompt(
+      content,
+      targetLLMs,
+      {
+        industry,
+        targetAudience,
+        contentType,
+        brandName
+      }
+    );
 
     try {
       const completion = await this.generateResponseWithTools(
@@ -258,25 +245,11 @@ Output only the optimized content, ready for immediate publication and LLM citat
       ...geoOptions
     } = options;
 
-    const generationPrompt = `${this.GEO_PROMPT}
-
-## Content Generation Request
-- **Topic**: ${topic}
-- **Target Length**: ${wordCount} words
-- **Include FAQ**: ${includeFAQ ? 'Yes' : 'No'}
-- **Target LLMs**: ${geoOptions.targetLLMs?.join(', ') || 'ChatGPT, Claude, Gemini, Perplexity'}
-
-## Generation Instructions
-Create comprehensive, LLM-optimized content about "${topic}" that:
-1. Answers common questions users ask about this topic
-2. Uses natural language patterns that match search queries
-3. Provides clear, actionable information
-4. Builds authority through data and expertise
-5. Integrates brand naturally (if specified)
-6. Includes FAQ section (if requested)
-7. Uses proper formatting for LLM extraction
-
-Generate content that's immediately publishable and optimized for LLM citation.`;
+    const generationPrompt = XMLPromptBuilder.buildContentGenerationPrompt(
+      'blog',
+      topic,
+      `LLM-optimized content with ${wordCount} words${includeFAQ ? ' including FAQ section' : ''}`
+    );
 
     try {
       const completion = await this.generateResponseWithTools(

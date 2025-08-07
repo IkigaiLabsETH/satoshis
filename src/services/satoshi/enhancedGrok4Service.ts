@@ -2,6 +2,7 @@ import { Grok4Service, enhancedWebSearch, getXSentiment } from '@/app/api/grok4/
 import type { ChatCompletionTool } from "openai/resources/chat/completions";
 import { getCryptoPriceWithSatoshiContext } from './enhancedCryptoPrice';
 import { logger } from '@/lib/logger';
+import { XMLPromptBuilder } from '../ai/xml-prompt-template';
 
 // --- In-memory cache with TTL ---
 type CacheValue = unknown;
@@ -753,12 +754,11 @@ function getBitcoinCycleStatus(): string {
 export class EnhancedGrok4Service extends Grok4Service {
   // Satoshi Validator Mode
   static async validateCryptoProject(project: string, focus: string = 'decentralization'): Promise<string> {
-    const validatorPrompt = `${enhancedSatoshiPromptPatterns.validator}
-
-For this project: ${project}
-Focus on: ${focus}
-
-Provide your analysis with cryptographic honesty.`;
+    const validatorPrompt = XMLPromptBuilder.buildBitcoinAnalysisPrompt(
+      'project',
+      `Project: ${project}\nFocus: ${focus}`,
+      'current'
+    );
 
     const completion = await this.generateResponseWithTools(
       `Validate this crypto project: ${project}`,
@@ -771,10 +771,11 @@ Provide your analysis with cryptographic honesty.`;
 
   // Satoshi Analyst Mode
   static async analyzeStock(symbol: string, timeframe: string = '7d'): Promise<string> {
-    const analystPrompt = `${enhancedSatoshiPromptPatterns.analyst}
-
-Analyze ${symbol} for the ${timeframe} timeframe.
-Focus on Bitcoin-first perspective and decentralization metrics.`;
+    const analystPrompt = XMLPromptBuilder.buildBitcoinAnalysisPrompt(
+      'investment',
+      `Stock: ${symbol}\nTimeframe: ${timeframe}`,
+      timeframe
+    );
 
     const completion = await this.generateResponseWithTools(
       `Analyze ${symbol} for the ${timeframe} timeframe`,
@@ -787,10 +788,10 @@ Focus on Bitcoin-first perspective and decentralization metrics.`;
 
   // Satoshi Educator Mode
   static async simplifyConcept(topic: string, audience: string = 'beginner'): Promise<string> {
-    const educatorPrompt = `${enhancedSatoshiPromptPatterns.educator}
-
-Explain ${topic} for a ${audience} audience.
-Use analogies and metaphors that connect to Bitcoin principles.`;
+    const educatorPrompt = XMLPromptBuilder.buildSatoshiPrompt(
+      `Topic: ${topic}\nAudience: ${audience}`,
+      'education'
+    );
 
     const completion = await this.generateResponseWithTools(
       `Explain ${topic} simply for ${audience}`,
@@ -894,20 +895,10 @@ Focus on Bitcoin-first solutions and sovereign living principles.`;
     // Synchronous
     const cycleStatus = getBitcoinCycleStatus();
 
-    const researchPrompt = `
-${enhancedSatoshiPromptPatterns.researcher}
-
-Research topic: ${topic}
-
-${cycleStatus}
-
-Web Results:\n${webResults}
-
-X Sentiment:\n${xSentiment}
-
-LiveTheLifeTV Insights:\n${ltlResults}
-
-Provide a Bitcoin-first, narrative-driven research summary.`;
+    const researchPrompt = XMLPromptBuilder.buildResearchPrompt(
+      `${topic}\n\n${cycleStatus}\n\nWeb Results:\n${webResults}\n\nX Sentiment:\n${xSentiment}\n\nLiveTheLifeTV Insights:\n${ltlResults}`,
+      'comprehensive'
+    );
 
     const completion = await this.generateResponseWithTools(
       `Conduct research on ${topic}`,
