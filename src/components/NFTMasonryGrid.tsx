@@ -5,6 +5,7 @@ import { NFTCard } from './NFTCard';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import { logger } from '@/lib/logger';
 
 interface NFTGridProps {
@@ -38,14 +39,14 @@ function LazyNFTCard({ nft, idx, onPriorityLoad }: { nft: NFTGridProps['nfts'][n
     threshold: 0.1
   });
 
-  const cardVariants = {
+  const cardVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: { 
       opacity: 1, 
       y: 0,
       transition: {
         duration: 0.6,
-        ease: [0.4, 0, 0.2, 1]
+        ease: [0.4, 0, 0.2, 1] as [number, number, number, number]
       }
     }
   };
