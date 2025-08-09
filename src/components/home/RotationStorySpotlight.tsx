@@ -121,6 +121,18 @@ export default function RotationStorySpotlight() {
     };
   }, [ratio, allocationPct, scenario]);
 
+  // Reference scenarios (street theses)
+  const refScenarios = useMemo(() => {
+    const items = [
+      { ratio: 0.055, btcUsdTarget: 150_000, label: "0.055 @ $150k" },
+      { ratio: 0.1, btcUsdTarget: 250_000, label: "0.100 @ $250k" },
+    ] as const;
+    return items.map((s) => ({
+      ...s,
+      ethUsd: Math.round(s.btcUsdTarget * s.ratio),
+    }));
+  }, []);
+
   // Rail domain for ratio visualization
   const RAIL_MIN = 0.02;
   const RAIL_MAX = 0.15;
@@ -310,6 +322,12 @@ export default function RotationStorySpotlight() {
                 <Chip label="Stop" value={`${metrics.stop.toFixed(3)} (${metrics.drawdownToStop.toFixed(1)}%)`} tone="negative" />
                 <Chip label="Alloc @T1" value={`${metrics.allocatedImpactAtT1.toFixed(1)}%`} tone="neutral" />
                 <Chip label="Gain → ATH" value={`${metrics.gainToTarget4.toFixed(1)}%`} tone="positive" />
+              </div>
+              {/* Street reference scenarios (USD implications) */}
+              <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {refScenarios.map((s) => (
+                  <Chip key={s.label} label={`ETH ${s.label}`} value={`$${s.ethUsd.toLocaleString()}`} tone="neutral" />
+                ))}
               </div>
               <div className="mt-2">
                 <Chip label="Preset" value={scenario} tone="neutral" />
