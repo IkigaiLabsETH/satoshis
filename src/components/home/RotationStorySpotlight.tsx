@@ -345,9 +345,7 @@ export default function RotationStorySpotlight() {
                   Applied: set ratio to <span className="text-yellow-300 font-semibold">{ratio.toFixed(3)}</span> via <span className="text-yellow-300">{appliedRefScenario}</span>
                 </div>
               )}
-              <div className="mt-2">
-                <Chip label="Preset" value={scenario} tone="neutral" />
-              </div>
+              {/* Removed Preset scenario chip for cleaner UI */}
             </div>
 
             {/* Allocation & Steps */}
