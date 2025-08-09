@@ -451,6 +451,14 @@ export default function RotationStorySpotlight() {
                         <li>Ignoring invalidation; hoping through stops.</li>
                       </ul>
                     </div>
+                    <div className="bg-black/25 border border-yellow-500/30 p-4 md:col-span-2">
+                      <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Creative Capital (Art Portfolio)</h5>
+                      <ul className="list-disc list-inside space-y-1 mt-2 text-white/85">
+                        <li>2022–2025: LiveTheLifeTV curated the top 69 Art Blocks, fine art, and iconic JPGs.</li>
+                        <li>The curated collection materially outperformed both BTC and ETH over the same period.</li>
+                        <li>Lesson: disciplined curation and time‑horizon can beat beta; treat art as a satellite sleeve, never the vault.</li>
+                      </ul>
+                    </div>
                   </div>
 
                   {/* Featured Lore */}
