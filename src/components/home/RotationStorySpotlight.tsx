@@ -159,7 +159,7 @@ export default function RotationStorySpotlight() {
               ETH/BTC Rotation
             </h2>
             <p className="text-white/75 max-w-2xl mx-auto text-sm md:text-base">
-              Keep the BTC core untouchable while scenario presets fine‑tune targets, stops, and position size to harvest the ETH/BTC rotation.
+              Fine‑tune targets, stops, and position size to harvest the ETH/BTC rotation.
             </p>
           </div>
 
