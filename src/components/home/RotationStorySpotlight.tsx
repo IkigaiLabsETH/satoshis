@@ -119,9 +119,12 @@ export default function RotationStorySpotlight() {
     };
   }, [ratio, allocationPct, scenario]);
 
+  // Rail domain for ratio visualization
+  const RAIL_MIN = 0.02;
+  const RAIL_MAX = 0.15;
   const markerPerc = (value: number) => {
-    const min = 0.02;
-    const max = 0.16; // extend to include ATH marker
+    const min = RAIL_MIN;
+    const max = RAIL_MAX;
     return `${Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100))}%`;
   };
 
@@ -199,6 +202,7 @@ export default function RotationStorySpotlight() {
                   <span>ETH/BTC ratio</span>
                   <span aria-live="polite" className="font-semibold text-yellow-300 tabular-nums flex items-center gap-2">
                     {ratio.toFixed(3)}
+                    <span className="text-[10px] text-white/50">(Δ to T1 {((metrics.target1/ratio-1)*100).toFixed(1)}%)</span>
                     {isLive && (
                       <span className="inline-flex items-center gap-1 px-1.5 py-[2px] rounded bg-green-500/20 text-green-300 border border-green-400/30 text-[10px]">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
@@ -210,8 +214,8 @@ export default function RotationStorySpotlight() {
                 <input
                   aria-label="ETH to BTC ratio"
                   type="range"
-                  min={0.02}
-                  max={0.16}
+                  min={RAIL_MIN}
+                  max={RAIL_MAX}
                   step={0.001}
                   value={ratio}
                   onChange={(e) => setRatio(parseFloat(e.target.value))}
@@ -219,8 +223,18 @@ export default function RotationStorySpotlight() {
                 />
 
                 {/* Compact rail with subtle markers and risk band */}
-                <div className="relative mt-3 h-10">
+                <div className="relative mt-3 h-12">
                   <div className="absolute inset-0 rounded bg-black/20 border border-yellow-500/10" />
+                  {/* Edge labels */}
+                  <div className="absolute -top-4 left-0 text-[10px] text-white/50">{RAIL_MIN.toFixed(2)}</div>
+                  <div className="absolute -top-4 right-0 text-[10px] text-white/50">{RAIL_MAX.toFixed(2)}</div>
+                  {/* Major ticks */}
+                  {[0.03, 0.04, 0.05, 0.06, 0.08, 0.10, 0.12, 0.14].map((t) => (
+                    <div key={t} className="absolute -top-2 text-[9px] text-white/40 -translate-x-1/2" style={{ left: markerPerc(t) }}>
+                      <div className="w-[1px] h-2 bg-white/20 mx-auto" />
+                      <div className="mt-1">{t.toFixed(2)}</div>
+                    </div>
+                  ))}
                   {/* Risk band (stop → T1) */}
                   <div
                     className="absolute top-1/2 -translate-y-1/2 h-4 bg-yellow-500/10 border border-yellow-500/20"
@@ -239,6 +253,7 @@ export default function RotationStorySpotlight() {
                   {[{ v: metrics.stop, l: "SL", c: "bg-red-500" }, { v: metrics.target1, l: "T1", c: "bg-green-400" }, { v: metrics.target2, l: "T2", c: "bg-green-400" }, { v: metrics.target3, l: "T3", c: "bg-green-400" }, { v: metrics.target4, l: "T4", c: "bg-green-400" }].map(({ v, l, c }, idx) => {
                     const topPositions: Record<number, boolean> = { 1: true, 3: true }; // stagger: T1 & T3 labels on top
                     const isTop = !!topPositions[idx];
+                    const delta = ratio > 0 ? (v / ratio - 1) * 100 : 0;
                     return (
                       <div
                         key={l}
@@ -247,14 +262,20 @@ export default function RotationStorySpotlight() {
                       >
                         {/* Top label */}
                         {isTop && (
-                          <div className="mb-1 px-1.5 py-0.5 rounded bg-black/60 border border-yellow-500/30 text-[10px] leading-none text-white/75 whitespace-nowrap">
+                          <div
+                            className="mb-1 px-1.5 py-0.5 rounded bg-black/60 border border-yellow-500/30 text-[10px] leading-none text-white/75 whitespace-nowrap"
+                            title={`${l} @ ${v.toFixed(3)} — Δ ${delta >= 0 ? '+' : ''}${delta.toFixed(1)}% from current`}
+                          >
                             {l} {v.toFixed(3)}
                           </div>
                         )}
                         <div className={`w-[2px] ${isTop ? "h-6" : "h-6"} ${c}`} />
                         {/* Bottom label */}
                         {!isTop && (
-                          <div className="mt-1 px-1.5 py-0.5 rounded bg-black/60 border border-yellow-500/30 text-[10px] leading-none text-white/75 whitespace-nowrap">
+                          <div
+                            className="mt-1 px-1.5 py-0.5 rounded bg-black/60 border border-yellow-500/30 text-[10px] leading-none text-white/75 whitespace-nowrap"
+                            title={`${l} @ ${v.toFixed(3)} — Δ ${delta >= 0 ? '+' : ''}${delta.toFixed(1)}% from current`}
+                          >
                             {l} {v.toFixed(3)}
                           </div>
                         )}
@@ -265,10 +286,11 @@ export default function RotationStorySpotlight() {
 
                 {/* Sparkline */}
                 <div className="mt-4">
-                  <Sparkline values={sparkValues} color="#F7B500" />
-                  <div className="mt-1 text-[10px] text-white/50">
-                    {lastSparkUpdatedMs ? `Updated ${fmtTime(lastSparkUpdatedMs)}` : ""}
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="text-[11px] text-white/60">30‑day trend</div>
+                    <div className="text-[10px] text-white/50">{lastSparkUpdatedMs ? `Updated ${fmtTime(lastSparkUpdatedMs)}` : ""}</div>
                   </div>
+                  <Sparkline values={sparkValues} color="#F7B500" />
                 </div>
               </div>
 
@@ -305,7 +327,7 @@ export default function RotationStorySpotlight() {
               </div>
 
               <ol className="space-y-2 text-sm leading-relaxed">
-                <li><span className="text-yellow-400">1.</span> Swap <strong>{allocationPct}%</strong> BTC → ETH; tranche over 24–48h above 0.034.</li>
+                <li><span className="text-yellow-400">1.</span> Swap <strong>{allocationPct}%</strong> BTC → ETH; tranche 48h above 0.034.</li>
                 <li><span className="text-yellow-400">2.</span> Take profits at <strong>0.045</strong> (40%), <strong>0.050</strong> (25%), <strong>0.060</strong> (25%), and <strong>ATH ~0.157</strong> (10%).</li>
                 <li><span className="text-yellow-400">3.</span> Stop at <strong>0.032</strong>. Rotate back to BTC on violation.</li>
               </ol>
@@ -369,7 +391,7 @@ export default function RotationStorySpotlight() {
                 <div className="text-[11px] text-white/60 md:col-span-4">
                   Capacity (implied by 69% core): {inferredCapacity.toFixed(2)} BTC available
                 </div>
-                <LabeledNumber label="Ratio (ETH/BTC)" value={ratio} min={0.02} max={0.16} step={0.001} onChange={setRatio} />
+                <LabeledNumber label="Ratio (ETH/BTC)" value={ratio} min={RAIL_MIN} max={RAIL_MAX} step={0.001} onChange={setRatio} />
 
                 <div className="md:col-span-4 text-sm leading-relaxed text-white/85 bg-black/30 border border-yellow-500/30 p-4">
                   {/* Narrative Intro */}
@@ -633,8 +655,8 @@ function Chip({ label, value, tone = "neutral" }: { label: string; value: string
 }
 
 function Sparkline({ values, color = "#F7B500" }: { values: number[]; color?: string }) {
-  const width = 320;
-  const height = 56;
+  const width = 360;
+  const height = 72;
   const min = Math.min(...values);
   const max = Math.max(...values);
   const dx = width / (values.length - 1 || 1);
@@ -644,12 +666,33 @@ function Sparkline({ values, color = "#F7B500" }: { values: number[]; color?: st
     return height - t * height;
   };
   const d = values.map((v, i) => `${i === 0 ? "M" : "L"}${i * dx},${scaleY(v)}`).join(" ");
+  const dArea = `${d} L ${width},${height} L 0,${height} Z`;
+  const last = values[values.length - 1] ?? 0;
+  const lastY = scaleY(last);
   return (
-    <svg width={width} height={height} role="img" aria-label="Sparkline ratio trend">
+    <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} role="img" aria-label="30d ratio sparkline">
+      <defs>
+        <linearGradient id="sparkfill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.28} />
+          <stop offset="100%" stopColor={color} stopOpacity={0.02} />
+        </linearGradient>
+      </defs>
+      {/* background grid (time) */}
+      {values.map((_, i) => (
+        i % 5 === 0 ? <line key={`g-${i}`} x1={i * dx} y1={0} x2={i * dx} y2={height} stroke="rgba(255,255,255,0.07)" strokeWidth={1} /> : null
+      ))}
+      <path d={dArea} fill="url(#sparkfill)" stroke="none" />
       <path d={d} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" />
+      {/* current value guide */}
+      <line x1={0} y1={lastY} x2={width} y2={lastY} stroke="rgba(255,255,255,0.2)" strokeDasharray="4 3" />
       {values.map((v, i) => (
         <circle key={i} cx={i * dx} cy={scaleY(v)} r={i === values.length - 1 ? 2.5 : 1.5} fill={color} />
       ))}
+      {/* labels */}
+      <text x={2} y={10} fontSize={10} fill="rgba(255,255,255,0.65)">H {max.toFixed(3)}</text>
+      <text x={2} y={height - 2} fontSize={10} fill="rgba(255,255,255,0.65)">L {min.toFixed(3)}</text>
+      <text x={width - 36} y={12} fontSize={10} fill="rgba(255,255,255,0.55)">30d</text>
+      <text x={width - 60} y={lastY - 4} fontSize={10} fill="rgba(255,255,255,0.85)">{last.toFixed(3)}</text>
     </svg>
   );
 }
