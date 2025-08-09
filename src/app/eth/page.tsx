@@ -170,6 +170,36 @@ export default function EthHonestTake() {
             </div>
           </div>
 
+          {/* Seasonality & Rotation Outlook */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
+              Seasonality & Rotation Outlook
+            </h3>
+            <div className="space-y-4 text-gray-300">
+              <p className="text-lg">
+                Near term, the base case is ALT/BTC strength into late August while ALT/ETH bleeds; then a rotation back to BTC in Sep/Oct as seasonals historically favor BTC over ALTs.
+              </p>
+              <div className="grid md:grid-cols-2 gap-8 mt-4">
+                <div>
+                  <h4 className="text-xl font-bold text-yellow-500 mb-3">Implications</h4>
+                  <ul className="list-disc list-inside space-y-2">
+                    <li>Favor conservative ETH swing sizing through August; keep BTC core intact.</li>
+                    <li>Expect relative underperformance of ALT/ETH pairs; avoid chasing strength.</li>
+                    <li>Plan trims on ETH strength into resistance; redeploy on confirmed supports.</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-yellow-500 mb-3">Sep/Oct Playbook</h4>
+                  <ul className="list-disc list-inside space-y-2">
+                    <li>Rotate a portion of ALT/ETH profits back to BTC if BTC dominance turns up.</li>
+                    <li>Increase BTC bias on weekly confirmation; keep ETH as the fintech rails.</li>
+                    <li>Re-assess ETH/BTC at 0.040/0.045 zones; respect invalidations.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Live Market Data */}
           <PriceTicker />
 
