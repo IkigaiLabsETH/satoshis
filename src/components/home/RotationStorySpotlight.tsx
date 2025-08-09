@@ -393,6 +393,45 @@ export default function RotationStorySpotlight() {
                     . Momentum favors ETH; primary risk is BTC dominance rebounding.
                   </p>
 
+                  {/* Market Note: trade partially played, profit-taking observed */}
+                  <div className="mt-3 border border-yellow-500/50 bg-black/30 p-3">
+                    <div className="flex items-start gap-3">
+                      <span className="mt-1 w-2 h-2 rounded-full bg-yellow-400" aria-hidden />
+                      <div className="text-sm text-white/85">
+                        <p>
+                          Market note: a large portion of the rotation has played out. BTC may make a
+                          near‑term move, and early ETH OGs are taking profits (e.g., notable sales around
+                          the $4k area). Treat this as a signal to tighten execution.
+                        </p>
+                        <ul className="list-disc list-inside mt-2 space-y-1 text-white/75">
+                          <li>Reduce swing allocation by 5–10% and favor the conservative preset.</li>
+                          <li>Raise trailing stop to −3% to −5% from local highs on remaining tranches.</li>
+                          <li>Lock in T1/T2 fills; leave moonshot only with house money.</li>
+                        </ul>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            onClick={() => {
+                              setScenario("conservative");
+                              setAllocationPct((p) => Math.max(15, Math.min(p - 5, 30)));
+                            }}
+                            className="px-3 py-1.5 text-xs uppercase tracking-wider border-2 rounded-none shadow-[3px_3px_0px_0px_rgba(234,179,8,1)] bg-black/40 text-yellow-300 border-yellow-500/70 hover:bg-black/60"
+                          >
+                            Tilt Defensive
+                          </button>
+                          <button
+                            onClick={() => {
+                              setScenario("base");
+                              setAllocationPct(25);
+                            }}
+                            className="px-3 py-1.5 text-xs uppercase tracking-wider border-2 rounded-none shadow-[3px_3px_0px_0px_rgba(234,179,8,1)] bg-black/40 text-yellow-300 border-yellow-500/70 hover:bg-black/60"
+                          >
+                            Revert to Base
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Landscape & Context */}
                   <h4 className="mt-4 text-yellow-300 font-semibold">Landscape & Context</h4>
                   <ul className="list-disc list-inside space-y-1 mt-1">
