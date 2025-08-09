@@ -101,6 +101,7 @@ export default function RotationStorySpotlight() {
 
     const allocatedImpactAtT1 = (allocationPct / 100) * Math.max(gainToTarget1, 0);
     const allocatedImpactAtSL = (allocationPct / 100) * Math.abs(Math.min(drawdownToStop, 0));
+    const rewardRisk = gainToTarget1 > 0 && drawdownToStop < 0 ? (gainToTarget1 / Math.abs(drawdownToStop)) : null;
 
     return {
       target1,
@@ -116,6 +117,7 @@ export default function RotationStorySpotlight() {
       suggestedAlloc: alloc,
       target4,
       gainToTarget4,
+      rewardRisk,
     };
   }, [ratio, allocationPct, scenario]);
 
@@ -162,7 +164,7 @@ export default function RotationStorySpotlight() {
               ETH/BTC Rotation
             </h2>
             <p className="text-white/75 max-w-2xl mx-auto text-sm md:text-base">
-              Fine‑tune targets, stops, and position size to harvest the ETH/BTC rotation.
+              Calibrate targets, stops, and sizing to execute the ETH/BTC rotation with discipline.
             </p>
           </div>
 
@@ -210,6 +212,14 @@ export default function RotationStorySpotlight() {
                       </span>
                     )}
                   </span>
+                </div>
+                <div className="mb-2 text-[11px] text-white/65 flex flex-wrap items-center gap-2">
+                  <span className="uppercase tracking-wider text-white/50">Why now</span>
+                  <span>Δ→T1 <span className="text-green-300">{metrics.gainToTarget1.toFixed(1)}%</span></span>
+                  <span>Δ→SL <span className="text-red-300">{Math.abs(Math.min(metrics.drawdownToStop, 0)).toFixed(1)}%</span></span>
+                  {Number.isFinite(metrics.rewardRisk as number) && (
+                    <span>R:R <span className="text-yellow-300">{(metrics.rewardRisk as number).toFixed(2)}</span>:1</span>
+                  )}
                 </div>
                 <input
                   aria-label="ETH to BTC ratio"
@@ -327,9 +337,9 @@ export default function RotationStorySpotlight() {
               </div>
 
               <ol className="space-y-2 text-sm leading-relaxed">
-                <li><span className="text-yellow-400">1.</span> Swap <strong>{allocationPct}%</strong> BTC → ETH; tranche 48h above 0.034.</li>
-                <li><span className="text-yellow-400">2.</span> Take profits at <strong>0.045</strong> (40%), <strong>0.050</strong> (25%), <strong>0.060</strong> (25%), and <strong>ATH ~0.157</strong> (10%).</li>
-                <li><span className="text-yellow-400">3.</span> Stop at <strong>0.032</strong>. Rotate back to BTC on violation.</li>
+                <li><span className="text-yellow-400">1.</span> Deploy <strong>{allocationPct}%</strong> of the BTC sleeve into ETH. Scale only after ≥24h hold above <strong>0.034</strong>.</li>
+                <li><span className="text-yellow-400">2.</span> Ladder trims at <strong>0.045</strong> (40%), <strong>0.050</strong> (25%), <strong>0.060</strong> (25%), and <strong>ATH ~0.157</strong> (10%).</li>
+                <li><span className="text-yellow-400">3.</span> Hard invalidation at <strong>0.032</strong>. On breach, rotate back to BTC—no exceptions.</li>
               </ol>
 
               {/* CTAs */}
@@ -355,7 +365,7 @@ export default function RotationStorySpotlight() {
               </div>
 
               <p className="text-[11px] text-white/55">
-                BTC is the vault; ETH is the swing. No leverage. Liquidity first. Discipline always.
+                BTC is the vault. ETH is the swing. No leverage. Liquidity first. Discipline always.
               </p>
             </div>
           </div>
@@ -393,14 +403,24 @@ export default function RotationStorySpotlight() {
                 </div>
                 <LabeledNumber label="Ratio (ETH/BTC)" value={ratio} min={RAIL_MIN} max={RAIL_MAX} step={0.001} onChange={setRatio} />
 
+                {/* TL;DR Plan Summary */}
+                <div className="md:col-span-4 bg-black/30 border border-yellow-500/50 p-3">
+                  <div className="text-[11px] uppercase tracking-wider text-white/60">Plan TL;DR</div>
+                  <div className="mt-1 text-sm text-white/90">
+                    Swap <span className="text-yellow-300 font-semibold">{clampedTradeBtc.toFixed(2)} BTC</span>
+                    {" "}→ ~<span className="text-yellow-300 font-semibold">{ethReceived.toFixed(2)} ETH</span> @ {ratio.toFixed(4)}.
+                    Trim 40/25/25/10 at T1/T2/T3/ATH; stop {metrics.stop.toFixed(3)}. Core stays <span className="text-yellow-300 font-semibold">{coreBtc.toFixed(2)} BTC</span>.
+                  </div>
+                </div>
+
                 <div className="md:col-span-4 text-sm leading-relaxed text-white/85 bg-black/30 border border-yellow-500/30 p-4">
                   {/* Narrative Intro */}
-                  <p className="italic text-white/80">
-                    Ah, fellow traveler in the crypto trenches—we ride the same rollercoaster. The play is conviction with caution: protect the vault, swing for alpha.
-                  </p>
-
                   <p>
-                    Alright, got it—let&apos;s turn this into a concrete, actionable plan tailored to your stack anchored by <span className="text-yellow-300 font-semibold">{coreBtc.toFixed(2)} BTC</span> as the untouchable core. With the 69% rule, your implied tradable capacity is <span className="text-yellow-300 font-semibold">{inferredCapacity.toFixed(2)} BTC</span>—offense without risking the base.
+                    Principle: protect the vault and swing a measured sleeve for alpha. Your untouchable core is
+                    {" "}
+                    <span className="text-yellow-300 font-semibold">{coreBtc.toFixed(2)} BTC</span>. Under the 69% rule, tradable capacity is
+                    {" "}
+                    <span className="text-yellow-300 font-semibold">{inferredCapacity.toFixed(2)} BTC</span>—offense without compromising the base.
                   </p>
 
                   <h4 className="mt-4 text-yellow-300 font-semibold">Market Snapshot</h4>
@@ -412,7 +432,7 @@ export default function RotationStorySpotlight() {
                     {sparkDailyChange !== null ? (
                       <> · 24h ≈ <span className={sparkDailyChange >= 0 ? "text-green-300" : "text-red-300"}>{sparkDailyChange.toFixed(1)}%</span></>
                     ) : null}
-                    . Momentum favors ETH; primary risk is BTC dominance rebounding.
+                    . Momentum tilts to ETH; key risk: BTC dominance reasserts.
                   </p>
 
                   {/* Market Note: trade partially played, profit-taking observed */}
@@ -420,15 +440,11 @@ export default function RotationStorySpotlight() {
                     <div className="flex items-start gap-3">
                       <span className="mt-1 w-2 h-2 rounded-full bg-yellow-400" aria-hidden />
                       <div className="text-sm text-white/85">
-                        <p>
-                          Market note: a large portion of the rotation has played out. BTC may make a
-                          near‑term move, and early ETH OGs are taking profits (e.g., notable sales around
-                          the $4k area). Treat this as a signal to tighten execution.
-                        </p>
+                        <p>Market note: much of the move has played. BTC strength is plausible; profit‑taking is visible around round numbers. Tighten execution.</p>
                         <ul className="list-disc list-inside mt-2 space-y-1 text-white/75">
-                          <li>Reduce swing allocation by 5–10% and favor the conservative preset.</li>
-                          <li>Raise trailing stop to −3% to −5% from local highs on remaining tranches.</li>
-                          <li>Lock in T1/T2 fills; leave moonshot only with house money.</li>
+                          <li>Reduce swing allocation by 5–10%; prefer the conservative preset.</li>
+                          <li>Trail stops 3–5% below local highs on remaining tranches.</li>
+                          <li>Lock T1/T2; keep moonshot only with house money.</li>
                         </ul>
                         <div className="mt-3 flex flex-wrap gap-2">
                           <button
@@ -457,24 +473,22 @@ export default function RotationStorySpotlight() {
                   {/* Seasonality & Rotation Outlook */}
                   <div className="mt-3 border border-yellow-500/50 bg-black/20 p-3">
                     <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Seasonality & Rotation Outlook</h5>
-                    <p className="mt-2 text-sm text-white/85">
-                      Base case: ALT/BTC strength through late August (ALT/ETH bleeds), then rotation back to BTC in Sep/Oct as seasonals favor BTC.
-                    </p>
+                    <p className="mt-2 text-sm text-white/85">Base case: ALT/BTC strength into late Aug; rotation back to BTC in Sep/Oct on seasonal tailwinds.</p>
                     <div className="grid md:grid-cols-2 gap-4 mt-3 text-sm">
                       <div>
                         <div className="text-yellow-300 font-semibold mb-1">Implications</div>
                         <ul className="list-disc list-inside space-y-1 text-white/80">
-                          <li>Favor conservative ETH swing sizing through August; protect BTC core.</li>
-                          <li>Avoid chasing ALT/ETH relative bounces; sell strength into plans.</li>
-                          <li>Keep alerts at 0.040 / 0.045 for ETH/BTC; respect invalidation.</li>
+                          <li>Favor conservative ETH sizing through Aug; protect BTC core.</li>
+                          <li>Don’t chase ALT/ETH bounces; sell into strength per plan.</li>
+                          <li>Keep alerts at 0.040 / 0.045; respect invalidation.</li>
                         </ul>
                       </div>
                       <div>
                         <div className="text-yellow-300 font-semibold mb-1">Sep/Oct Playbook</div>
                         <ul className="list-disc list-inside space-y-1 text-white/80">
                           <li>Rotate a slice of ALT/ETH profits back to BTC if dominance turns up.</li>
-                          <li>Re‑bias to BTC on weekly confirmation; maintain ETH as rails sleeve.</li>
-                          <li>Reassess sizing weekly; keep trailing stops tight on remaining ETH.</li>
+                          <li>Re‑bias to BTC on weekly confirmation; keep ETH as rails sleeve.</li>
+                          <li>Reassess weekly; keep trailing stops tight.</li>
                         </ul>
                       </div>
                     </div>
@@ -483,9 +497,9 @@ export default function RotationStorySpotlight() {
                   {/* Landscape & Context */}
                   <h4 className="mt-4 text-yellow-300 font-semibold">Landscape & Context</h4>
                   <ul className="list-disc list-inside space-y-1 mt-1">
-                    <li>Ratio reclaimed trend from 0.018 lows; eyes on 0.039 breakout → 0.05+</li>
-                    <li>Rotation narratives: ETFs, L2 growth, DeFi revival; watch for policy shocks</li>
-                    <li>Complacency trap avoided: we work within guardrails, not perfection</li>
+                    <li>Ratio reclaimed trend from 0.018 lows; watch 0.039 → 0.05+.</li>
+                    <li>Narratives: ETFs, L2 growth, DeFi breadth; monitor policy shocks.</li>
+                    <li>Guardrails over guesses: execute the plan, not opinions.</li>
                   </ul>
 
                   {/* Narrative Deep‑Dive (replaces timeline) */}
@@ -551,20 +565,11 @@ export default function RotationStorySpotlight() {
                   {/* Featured Lore */}
                   <div id="lore-content" className="mt-6 border-2 border-yellow-500/80 bg-black/25 p-4 sm:p-6 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
                     <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Investor Lore</h5>
-                    <p className="mt-2 italic text-white/85">
-                      Imagine you&apos;re the world&apos;s best crypto investor: stacking sats since 2013 with medium conviction, riding the 2017 FOMO,
-                      then enduring 2018–2020—three brutal years.
-                    </p>
                     <p className="mt-2 text-white/85">
-                      In 2021 you hit mid 7‑figs. In 2023 you swapped ETH → SOL; in 2024 SOL → BTC. Clean 2×—yet 10–30× low‑caps ran without you.
-                      Liquidity and sizing kept you anchored to blue chips, NFTs, and a BTC‑first posture.
-                    </p>
-                    <p className="mt-2 text-white/85">
-                      You watched ETH/BTC like a hawk—wanted all‑in below 0.025, hesitated under 0.02, planned profits at 0.04–0.05, then grew complacent when the sat target hit.
-                      Today is about fixing that with rules: keep the core untouchable, swing the rest with discipline, and pre‑commit to laddered exits.
+                      Veteran playbook: stack the vault, let rotations add BTC. You don’t need every runner—just repeatable edges and strict rules.
                     </p>
                     <p className="mt-2 text-white/90">
-                      Answer: yes—swap a measured slice of BTC → ETH now and take profit at 0.045 and beyond per preset. Size by conservative/base/aggressive, never breach the 69% core, and let execution—not emotions—carry the trade.
+                      Action: size a measured BTC → ETH slice, trim at 0.045/0.050/0.060/ATH, and never breach the 69% core. Execution over emotion.
                     </p>
                   </div>
 
