@@ -589,16 +589,7 @@ function _Stat({ label, value, highlight, danger }: { label: string; value: stri
   );
 }
 
-function TimelineItem({ year, text, accent = "default" }: { year: string; text: string; accent?: "default" | "success" }) {
-  const dotClass = accent === "success" ? "bg-green-400" : "bg-yellow-400";
-  return (
-    <li className="relative flex gap-3 py-2 pl-4">
-      <span className={`absolute -left-4 mt-1 w-2 h-2 rounded-full ${dotClass}`} />
-      <span className="min-w-[64px] text-white/70 font-semibold">{year}</span>
-      <span className="text-white/85">{text}</span>
-    </li>
-  );
-}
+// (removed) TimelineItem helper was used by the previous timeline section
 
 function Chip({ label, value, tone = "neutral" }: { label: string; value: string; tone?: "positive" | "negative" | "neutral" }) {
   const toneClasses =
