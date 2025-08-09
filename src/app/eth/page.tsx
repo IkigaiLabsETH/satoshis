@@ -5,6 +5,145 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import PriceTicker from '@/components/AltCoinsBeta';
+import useSWR from 'swr';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  LogarithmicScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  type ChartOptions,
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  LogarithmicScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+interface LiveChartData {
+  date: string;
+  price: number;
+  twoYearMA: number | null;
+  twoYearMAx5: number | null;
+}
+
+interface ErrorData {
+  error: string;
+  details?: string;
+}
+
+function EthTwoYearMAMultiplierChart() {
+  const { data: chartData, error } = useSWR<LiveChartData[] | ErrorData>('/api/cryptocompare/eth-price-history', fetcher);
+
+  if (error) return <div>Failed to load chart data. Please try again later.</div>;
+  if (!chartData) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-yellow-500">Loading Real-Time Data...</p>
+      </div>
+    );
+  }
+
+  if (!Array.isArray(chartData)) {
+    const errorPayload = chartData as ErrorData;
+    const errorMessage = errorPayload.details || errorPayload.error || 'An unknown error occurred.';
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <p className="text-red-500 font-bold">Failed to load chart data.</p>
+        <p className="text-sm text-gray-400 mt-2">Error: {errorMessage}</p>
+      </div>
+    );
+  }
+
+  const labels = chartData.map(d => d.date);
+
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: 'Ethereum Price',
+        data: chartData.map(d => d.price),
+        borderColor: 'white',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        pointRadius: 0,
+        tension: 0.1,
+        borderWidth: 1.5,
+      },
+      {
+        label: '2-Year MA x 5 (Sell Target)',
+        data: chartData.map(d => d.twoYearMAx5),
+        borderColor: '#ef4444',
+        backgroundColor: 'transparent',
+        pointRadius: 0,
+        tension: 0.4,
+        borderWidth: 2,
+      },
+      {
+        label: '2-Year MA (Buy Zone)',
+        data: chartData.map(d => d.twoYearMA),
+        borderColor: '#22c55e',
+        backgroundColor: 'transparent',
+        pointRadius: 0,
+        tension: 0.4,
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const options: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          color: 'white',
+          padding: 20,
+          font: { size: 14 },
+        },
+      },
+      title: { display: false },
+    },
+    scales: {
+      y: {
+        type: 'logarithmic',
+        title: { display: true, text: 'Price (USD)', color: 'white' },
+        ticks: {
+          color: 'white',
+          callback: function (value: string | number) {
+            if (typeof value !== 'number') return String(value);
+            if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
+            if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}k`;
+            return `$${value}`;
+          },
+        },
+        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+      },
+      x: {
+        ticks: { color: 'white', maxRotation: 0, autoSkip: true, maxTicksLimit: 10 },
+        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+      },
+    },
+    interaction: { intersect: false, mode: 'index' },
+  };
+
+  return <Line options={options} data={data} />;
+}
 
 export default function EthHonestTake() {
   return (
@@ -45,6 +184,19 @@ export default function EthHonestTake() {
               </p>
               <p className="text-lg">
                 Investors and builders often call ETH &quot;digital oil&quot;, since every transaction and smart contract execution is paid for with gas fees in Ether – analogous to how oil fuels an economy. These metaphors capture Ethereum&apos;s evolving identity: a global trust network and computational backplane whose security and utility give Ether intrinsic value.
+              </p>
+            </div>
+          </div>
+
+          {/* 2-Year MA Multiplier (ETH) */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6 text-center">The 2-Year Moving Average Multiplier (ETH)</h3>
+            <div className="w-full h-[60vh]">
+              <EthTwoYearMAMultiplierChart />
+            </div>
+            <div className="mt-6 text-gray-300 text-sm leading-relaxed text-center">
+              <p>
+                Red line (2Y MA × 5) historically aligns with take-profit conditions in prior cycles; Green line (2Y MA) has marked high-probability accumulation zones during bear markets.
               </p>
             </div>
           </div>
@@ -345,12 +497,19 @@ export default function EthHonestTake() {
           </div>
 
           {/* CTA Section */}
-          <div className="text-center space-y-8">
-            <Link href="https://ethereum.org/en/" target="_blank">
-              <Button className="bg-yellow-500 text-black font-bold px-12 py-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] hover:bg-yellow-400 transition-all duration-300 font-satoshi tracking-tight text-2xl">
-                ETH Docs <ArrowRight className="ml-4 w-7 h-7" />
-              </Button>
-            </Link>
+          <div className="text-center">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+              <Link href="https://ethereum.org/en/" target="_blank" rel="noopener noreferrer">
+                <Button className="bg-yellow-500 text-black font-bold px-12 py-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] hover:bg-yellow-400 transition-all duration-300 font-satoshi tracking-tight text-2xl">
+                  ETH Docs <ArrowRight className="ml-4 w-7 h-7" />
+                </Button>
+              </Link>
+              <Link href="https://www.strategicethreserve.xyz/" target="_blank" rel="noopener noreferrer">
+                <Button className="bg-yellow-500 text-black font-bold px-12 py-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] hover:bg-yellow-400 transition-all duration-300 font-satoshi tracking-tight text-2xl">
+                  Strategic ETH Reserve <ArrowRight className="ml-4 w-7 h-7" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
