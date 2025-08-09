@@ -1,3 +1,25 @@
+
+
+# 15 Rules of Vibe Coding
+
+	1.	Start from a template: Begin your project by cloning a template from GitHub or another source to provide a solid foundation. (On cursor, Start from Repo, and paste this link to build a nextjs app that is prebuilt with AI features, database and authorization https://github.com/ansh/template-2)
+	2.	Use agent mode: Utilize Cursor’s agent mode (not normal mode) to create, edit, and manage files through natural language commands.
+	3.	Use Perplexity: Use perplexity to find new designs and api’s from the web. Say that you are creating a nextjs project, and that you want to create x feature, and to give you instructions AND code examples.
+	4.	Create new chats in Composer: Open a new Composer chat for each distinct task. Keep agent chats short.
+	5.	Run locally, test frequently: Use built-in servers to run your app locally and test often to catch issues early.
+	6.	Iterate and refine: Embrace rapid iteration—don’t worry about perfect designs initially; improve them step by step.
+	7.	Utilize voice-to-text: Use tools like Whispr Flow for faster input, and just vibe.
+	8.	Clone and fork wisely: Use GitHub repos as starting templates to accelerate development, or to find inspiration, then customize them to fit your vision.
+	9.	Copy errors and paste into Composer agent: When errors occur, copy error messages from your console and paste them into the Composer agent, and more times than not, it will be fixed. When dealing with errors, over explain the issue if it’s not fixed the first time.
+	10.	Don’t forget you can restore previous Composer chats: Save your work frequently so you can revert to an earlier state if needed.
+	11.	Secure your secrets: Always store API keys and sensitive data in environment files rather than hard-coding them.
+	12.	Commit often: Push your progress to GitHub regularly to track changes and safeguard your work. Cursor can do this for you, just ask the agent.
+	13.	Deploy early: Use platforms like Vercel to deploy your app early, to make sure there are no errors on deployment.
+	14.	Keep a record of the prompts that work best; reuse them often: Document your most effective prompts to make future development and debugging easier.
+	15.	Enjoy the process—just vibe: Embrace the creative journey of vibe coding, experiment, learn, and have fun along the way. Just vibe.
+
+⸻
+
 # Cursor Best Practices
 
 This guide outlines best practices for effectively using Cursor to manage project complexity and maximize productivity.

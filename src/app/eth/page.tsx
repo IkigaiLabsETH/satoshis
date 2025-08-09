@@ -345,12 +345,19 @@ export default function EthHonestTake() {
           </div>
 
           {/* CTA Section */}
-          <div className="text-center space-y-8">
-            <Link href="https://ethereum.org/en/" target="_blank">
-              <Button className="bg-yellow-500 text-black font-bold px-12 py-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] hover:bg-yellow-400 transition-all duration-300 font-satoshi tracking-tight text-2xl">
-                ETH Docs <ArrowRight className="ml-4 w-7 h-7" />
-              </Button>
-            </Link>
+          <div className="text-center">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+              <Link href="https://ethereum.org/en/" target="_blank" rel="noopener noreferrer">
+                <Button className="bg-yellow-500 text-black font-bold px-12 py-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] hover:bg-yellow-400 transition-all duration-300 font-satoshi tracking-tight text-2xl">
+                  ETH Docs <ArrowRight className="ml-4 w-7 h-7" />
+                </Button>
+              </Link>
+              <Link href="https://www.strategicethreserve.xyz/" target="_blank" rel="noopener noreferrer">
+                <Button className="bg-yellow-500 text-black font-bold px-12 py-6 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] hover:bg-yellow-400 transition-all duration-300 font-satoshi tracking-tight text-2xl">
+                  Strategic ETH Reserve <ArrowRight className="ml-4 w-7 h-7" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
