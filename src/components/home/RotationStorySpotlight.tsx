@@ -19,6 +19,7 @@ export default function RotationStorySpotlight() {
   const [coreBtc, setCoreBtc] = useState<number>(21);
   const [tradeBtc, setTradeBtc] = useState<number>(2);
   const [showStory, setShowStory] = useState<boolean>(false);
+  const [appliedRefScenario, setAppliedRefScenario] = useState<string | null>(null);
 
   const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json());
   // Live prices (ETH in BTC & USD, BTC in USD)
@@ -326,9 +327,24 @@ export default function RotationStorySpotlight() {
               {/* Street reference scenarios (USD implications) */}
               <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {refScenarios.map((s) => (
-                  <Chip key={s.label} label={`ETH ${s.label}`} value={`$${s.ethUsd.toLocaleString()}`} tone="neutral" />
+                  <Chip
+                    key={s.label}
+                    label={`ETH ${s.label}`}
+                    value={`$${s.ethUsd.toLocaleString()}`}
+                    tone="neutral"
+                    active={appliedRefScenario === s.label}
+                    onClick={() => {
+                      setRatio(parseFloat(s.ratio.toFixed(3)));
+                      setAppliedRefScenario(s.label);
+                    }}
+                  />
                 ))}
               </div>
+              {appliedRefScenario && (
+                <div className="mt-1 text-[11px] text-white/60">
+                  Applied: set ratio to <span className="text-yellow-300 font-semibold">{ratio.toFixed(3)}</span> via <span className="text-yellow-300">{appliedRefScenario}</span>
+                </div>
+              )}
               <div className="mt-2">
                 <Chip label="Preset" value={scenario} tone="neutral" />
               </div>
@@ -662,7 +678,7 @@ function _Stat({ label, value, highlight, danger }: { label: string; value: stri
 
 // (removed) TimelineItem helper was used by the previous timeline section
 
-function Chip({ label, value, tone = "neutral" }: { label: string; value: string; tone?: "positive" | "negative" | "neutral" }) {
+function Chip({ label, value, tone = "neutral", active = false, onClick }: { label: string; value: string; tone?: "positive" | "negative" | "neutral"; active?: boolean; onClick?: () => void }) {
   const toneClasses =
     tone === "positive"
       ? "border-green-400/50 text-green-300"
@@ -670,10 +686,15 @@ function Chip({ label, value, tone = "neutral" }: { label: string; value: string
       ? "border-red-400/50 text-red-300"
       : "border-yellow-500/40 text-white/85";
   return (
-    <div className={`p-3 border rounded bg-black/30 ${toneClasses}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`p-3 border rounded bg-black/30 ${toneClasses} ${onClick ? "hover:bg-black/50 transition-colors" : ""} ${active ? "ring-2 ring-yellow-500/60" : ""}`}
+      aria-pressed={active || undefined}
+    >
       <div className="text-[11px] uppercase tracking-wider text-white/60">{label}</div>
       <div className="text-base font-semibold">{value}</div>
-    </div>
+    </button>
   );
 }
 
