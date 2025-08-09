@@ -432,6 +432,32 @@ export default function RotationStorySpotlight() {
                     </div>
                   </div>
 
+                  {/* Seasonality & Rotation Outlook */}
+                  <div className="mt-3 border border-yellow-500/50 bg-black/20 p-3">
+                    <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Seasonality & Rotation Outlook</h5>
+                    <p className="mt-2 text-sm text-white/85">
+                      Base case: ALT/BTC strength through late August (ALT/ETH bleeds), then rotation back to BTC in Sep/Oct as seasonals favor BTC.
+                    </p>
+                    <div className="grid md:grid-cols-2 gap-4 mt-3 text-sm">
+                      <div>
+                        <div className="text-yellow-300 font-semibold mb-1">Implications</div>
+                        <ul className="list-disc list-inside space-y-1 text-white/80">
+                          <li>Favor conservative ETH swing sizing through August; protect BTC core.</li>
+                          <li>Avoid chasing ALT/ETH relative bounces; sell strength into plans.</li>
+                          <li>Keep alerts at 0.040 / 0.045 for ETH/BTC; respect invalidation.</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <div className="text-yellow-300 font-semibold mb-1">Sep/Oct Playbook</div>
+                        <ul className="list-disc list-inside space-y-1 text-white/80">
+                          <li>Rotate a slice of ALT/ETH profits back to BTC if dominance turns up.</li>
+                          <li>Re‑bias to BTC on weekly confirmation; maintain ETH as rails sleeve.</li>
+                          <li>Reassess sizing weekly; keep trailing stops tight on remaining ETH.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Landscape & Context */}
                   <h4 className="mt-4 text-yellow-300 font-semibold">Landscape & Context</h4>
                   <ul className="list-disc list-inside space-y-1 mt-1">
