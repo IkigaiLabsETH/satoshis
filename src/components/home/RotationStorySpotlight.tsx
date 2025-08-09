@@ -401,20 +401,56 @@ export default function RotationStorySpotlight() {
                     <li>Complacency trap avoided: we work within guardrails, not perfection</li>
                   </ul>
 
-                  {/* Timeline */}
-                  <div className="mt-6">
-                    <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Key Moments</h5>
-                    <ul className="relative mt-3 pl-6 text-white/85 text-sm">
-                      {/* vertical rail */}
-                      <div className="absolute left-2 top-0 bottom-0 w-px bg-yellow-500/25" aria-hidden />
-                      <TimelineItem year="2013" text="Started stacking sats (medium conviction)" />
-                      <TimelineItem year="2017" text="FOMO era with a small stack" />
-                      <TimelineItem year="2018–2020" text="Brutal consolidation; discipline forged" />
-                      <TimelineItem year="2021" text="Mid 7‑figs achieved" />
-                      <TimelineItem year="2023" text="ETH → SOL rotation" />
-                      <TimelineItem year="2024" text="SOL → BTC rotation (clean 2×)" />
-                      <TimelineItem year="Now" text="Guard 69% core; swing the rest with preset plan and laddered exits" accent="success" />
-                    </ul>
+                  {/* Narrative Deep‑Dive (replaces timeline) */}
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-black/25 border border-yellow-500/30 p-4">
+                      <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Core Doctrine</h5>
+                      <ul className="list-disc list-inside space-y-1 mt-2 text-white/85">
+                        <li>BTC is the vault; never breach the 69% core allocation.</li>
+                        <li>ETH is the swing; rotations are rules‑based, never narrative‑only.</li>
+                        <li>Execution beats opinions: pre‑commit entries, trims, and invalidations.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-black/25 border border-yellow-500/30 p-4">
+                      <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Mental Models</h5>
+                      <ul className="list-disc list-inside space-y-1 mt-2 text-white/85">
+                        <li>Ratio thinking: price ETH in BTC to avoid USD noise.</li>
+                        <li>Tranches reduce regret: scale in/out across time and levels.</li>
+                        <li>Asymmetric risk: small, repeatable edges compound.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-black/25 border border-yellow-500/30 p-4">
+                      <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Execution Checklist</h5>
+                      <ul className="list-disc list-inside space-y-1 mt-2 text-white/85">
+                        <li>Enter above confirmation; avoid knife‑catching under 0.034.</li>
+                        <li>Size to plan: {allocationPct}% allocation implies {clampedTradeBtc.toFixed(2)} BTC risked.</li>
+                        <li>Automate trims at T1/T2/T3/ATH; no discretionary overrides.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-black/25 border border-yellow-500/30 p-4">
+                      <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Contingencies</h5>
+                      <ul className="list-disc list-inside space-y-1 mt-2 text-white/85">
+                        <li>Violation of stop {metrics.stop.toFixed(3)}: rotate back to BTC immediately.</li>
+                        <li>Volatility spike: halve position and re‑establish on stability.</li>
+                        <li>Dominance &gt; 60%: pause new adds; defend core.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-black/25 border border-yellow-500/30 p-4">
+                      <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Signals To Watch</h5>
+                      <ul className="list-disc list-inside space-y-1 mt-2 text-white/85">
+                        <li>Trend: ETH/BTC holds higher lows above 0.034–0.039.</li>
+                        <li>Flows: ETF net inflows, L2 activity, DeFi TVL breadth.</li>
+                        <li>Macro: USD liquidity, policy shocks, miner sell‑pressure.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-black/25 border border-yellow-500/30 p-4">
+                      <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Failure Modes</h5>
+                      <ul className="list-disc list-inside space-y-1 mt-2 text-white/85">
+                        <li>Chasing green candles; abandoning tranche discipline.</li>
+                        <li>Over‑sizing the swing book; breaching BTC core.</li>
+                        <li>Ignoring invalidation; hoping through stops.</li>
+                      </ul>
+                    </div>
                   </div>
 
                   {/* Featured Lore */}
