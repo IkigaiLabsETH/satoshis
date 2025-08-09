@@ -393,6 +393,45 @@ export default function RotationStorySpotlight() {
                     . Momentum favors ETH; primary risk is BTC dominance rebounding.
                   </p>
 
+                  {/* Market Note: trade partially played, profit-taking observed */}
+                  <div className="mt-3 border border-yellow-500/50 bg-black/30 p-3">
+                    <div className="flex items-start gap-3">
+                      <span className="mt-1 w-2 h-2 rounded-full bg-yellow-400" aria-hidden />
+                      <div className="text-sm text-white/85">
+                        <p>
+                          Market note: a large portion of the rotation has played out. BTC may make a
+                          near‑term move, and early ETH OGs are taking profits (e.g., notable sales around
+                          the $4k area). Treat this as a signal to tighten execution.
+                        </p>
+                        <ul className="list-disc list-inside mt-2 space-y-1 text-white/75">
+                          <li>Reduce swing allocation by 5–10% and favor the conservative preset.</li>
+                          <li>Raise trailing stop to −3% to −5% from local highs on remaining tranches.</li>
+                          <li>Lock in T1/T2 fills; leave moonshot only with house money.</li>
+                        </ul>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            onClick={() => {
+                              setScenario("conservative");
+                              setAllocationPct((p) => Math.max(15, Math.min(p - 5, 30)));
+                            }}
+                            className="px-3 py-1.5 text-xs uppercase tracking-wider border-2 rounded-none shadow-[3px_3px_0px_0px_rgba(234,179,8,1)] bg-black/40 text-yellow-300 border-yellow-500/70 hover:bg-black/60"
+                          >
+                            Tilt Defensive
+                          </button>
+                          <button
+                            onClick={() => {
+                              setScenario("base");
+                              setAllocationPct(25);
+                            }}
+                            className="px-3 py-1.5 text-xs uppercase tracking-wider border-2 rounded-none shadow-[3px_3px_0px_0px_rgba(234,179,8,1)] bg-black/40 text-yellow-300 border-yellow-500/70 hover:bg-black/60"
+                          >
+                            Revert to Base
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Landscape & Context */}
                   <h4 className="mt-4 text-yellow-300 font-semibold">Landscape & Context</h4>
                   <ul className="list-disc list-inside space-y-1 mt-1">
@@ -401,20 +440,64 @@ export default function RotationStorySpotlight() {
                     <li>Complacency trap avoided: we work within guardrails, not perfection</li>
                   </ul>
 
-                  {/* Timeline */}
-                  <div className="mt-6">
-                    <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Key Moments</h5>
-                    <ul className="relative mt-3 pl-6 text-white/85 text-sm">
-                      {/* vertical rail */}
-                      <div className="absolute left-2 top-0 bottom-0 w-px bg-yellow-500/25" aria-hidden />
-                      <TimelineItem year="2013" text="Started stacking sats (medium conviction)" />
-                      <TimelineItem year="2017" text="FOMO era with a small stack" />
-                      <TimelineItem year="2018–2020" text="Brutal consolidation; discipline forged" />
-                      <TimelineItem year="2021" text="Mid 7‑figs achieved" />
-                      <TimelineItem year="2023" text="ETH → SOL rotation" />
-                      <TimelineItem year="2024" text="SOL → BTC rotation (clean 2×)" />
-                      <TimelineItem year="Now" text="Guard 69% core; swing the rest with preset plan and laddered exits" accent="success" />
-                    </ul>
+                  {/* Narrative Deep‑Dive (replaces timeline) */}
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-black/25 border border-yellow-500/30 p-4">
+                      <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Core Doctrine</h5>
+                      <ul className="list-disc list-inside space-y-1 mt-2 text-white/85">
+                        <li>BTC is the vault; never breach the 69% core allocation.</li>
+                        <li>ETH is the swing; rotations are rules‑based, never narrative‑only.</li>
+                        <li>Execution beats opinions: pre‑commit entries, trims, and invalidations.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-black/25 border border-yellow-500/30 p-4">
+                      <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Mental Models</h5>
+                      <ul className="list-disc list-inside space-y-1 mt-2 text-white/85">
+                        <li>Ratio thinking: price ETH in BTC to avoid USD noise.</li>
+                        <li>Tranches reduce regret: scale in/out across time and levels.</li>
+                        <li>Asymmetric risk: small, repeatable edges compound.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-black/25 border border-yellow-500/30 p-4">
+                      <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Execution Checklist</h5>
+                      <ul className="list-disc list-inside space-y-1 mt-2 text-white/85">
+                        <li>Enter above confirmation; avoid knife‑catching under 0.034.</li>
+                        <li>Size to plan: {allocationPct}% allocation implies {clampedTradeBtc.toFixed(2)} BTC risked.</li>
+                        <li>Automate trims at T1/T2/T3/ATH; no discretionary overrides.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-black/25 border border-yellow-500/30 p-4">
+                      <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Contingencies</h5>
+                      <ul className="list-disc list-inside space-y-1 mt-2 text-white/85">
+                        <li>Violation of stop {metrics.stop.toFixed(3)}: rotate back to BTC immediately.</li>
+                        <li>Volatility spike: halve position and re‑establish on stability.</li>
+                        <li>Dominance &gt; 60%: pause new adds; defend core.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-black/25 border border-yellow-500/30 p-4">
+                      <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Signals To Watch</h5>
+                      <ul className="list-disc list-inside space-y-1 mt-2 text-white/85">
+                        <li>Trend: ETH/BTC holds higher lows above 0.034–0.039.</li>
+                        <li>Flows: ETF net inflows, L2 activity, DeFi TVL breadth.</li>
+                        <li>Macro: USD liquidity, policy shocks, miner sell‑pressure.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-black/25 border border-yellow-500/30 p-4">
+                      <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Failure Modes</h5>
+                      <ul className="list-disc list-inside space-y-1 mt-2 text-white/85">
+                        <li>Chasing green candles; abandoning tranche discipline.</li>
+                        <li>Over‑sizing the swing book; breaching BTC core.</li>
+                        <li>Ignoring invalidation; hoping through stops.</li>
+                      </ul>
+                    </div>
+                    <div className="bg-black/25 border border-yellow-500/30 p-4 md:col-span-2">
+                      <h5 className="text-yellow-300 font-semibold uppercase tracking-wider text-sm">Creative Capital (Art Portfolio)</h5>
+                      <ul className="list-disc list-inside space-y-1 mt-2 text-white/85">
+                        <li>2022–2025: LiveTheLifeTV curated the top 69 Art Blocks, fine art, and iconic JPGs.</li>
+                        <li>The curated collection materially outperformed both BTC and ETH over the same period.</li>
+                        <li>Lesson: disciplined curation and time‑horizon can beat beta; treat art as a satellite sleeve, never the vault.</li>
+                      </ul>
+                    </div>
                   </div>
 
                   {/* Featured Lore */}
@@ -506,16 +589,7 @@ function _Stat({ label, value, highlight, danger }: { label: string; value: stri
   );
 }
 
-function TimelineItem({ year, text, accent = "default" }: { year: string; text: string; accent?: "default" | "success" }) {
-  const dotClass = accent === "success" ? "bg-green-400" : "bg-yellow-400";
-  return (
-    <li className="relative flex gap-3 py-2 pl-4">
-      <span className={`absolute -left-4 mt-1 w-2 h-2 rounded-full ${dotClass}`} />
-      <span className="min-w-[64px] text-white/70 font-semibold">{year}</span>
-      <span className="text-white/85">{text}</span>
-    </li>
-  );
-}
+// (removed) TimelineItem helper was used by the previous timeline section
 
 function Chip({ label, value, tone = "neutral" }: { label: string; value: string; tone?: "positive" | "negative" | "neutral" }) {
   const toneClasses =
