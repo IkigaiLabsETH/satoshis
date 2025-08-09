@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import PriceTicker from '@/components/PriceTicker';
 import Modal from '@/components/Modal';
+import RotationStorySpotlight from '@/components/home/RotationStorySpotlight';
 import BullPeakSignals from '@/components/BullPeakSignals';
 import MandoMinutes from '@/components/MandoMinutes';
 import Mindshare from '@/components/Mindshare';
@@ -138,6 +139,8 @@ export default function HomePageClient() {
       </Modal>
 
       <div className="container mx-auto px-4 py-16 space-y-24">
+        {/* ETH/BTC Rotation Story Spotlight */}
+        <RotationStorySpotlight />
         {/* Core Strategy section stays the same */}
 
 
