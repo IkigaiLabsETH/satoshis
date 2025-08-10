@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 
@@ -20,6 +20,11 @@ export default function RotationStorySpotlight() {
   const [tradeBtc, setTradeBtc] = useState<number>(2);
   const [showStory, setShowStory] = useState<boolean>(false);
   const [appliedRefScenario, setAppliedRefScenario] = useState<string | null>(null);
+  const [showLongTerm, setShowLongTerm] = useState<boolean>(false);
+  const ratioCardRef = useRef<HTMLDivElement | null>(null);
+  const allocationCardRef = useRef<HTMLDivElement | null>(null);
+  const gridRef = useRef<HTMLDivElement | null>(null);
+  const scenarioBarRef = useRef<HTMLDivElement | null>(null);
 
   const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json());
   // Live prices (ETH in BTC & USD, BTC in USD)
@@ -61,6 +66,23 @@ export default function RotationStorySpotlight() {
 
   const isLive = lastUpdatedMs ? Date.now() - lastUpdatedMs < 90_000 : false;
   // removed sparkline timestamp UI
+
+  // Removed height syncing to avoid making the allocation frame too tall
+
+  // Align allocation frame top with the left ratio frame by mirroring the scenario bar offset
+  useEffect(() => {
+    const applyTopOffset = () => {
+      if (!allocationCardRef.current) return;
+      const barH = scenarioBarRef.current?.offsetHeight ?? 0;
+      // Tailwind mb-4 on scenario bar adds ~16px margin after the bar
+      const tailwindMb4 = 16;
+      const fudge = 8; // small additional offset to visually center
+      allocationCardRef.current.style.marginTop = `${barH + tailwindMb4 + fudge}px`;
+    };
+    applyTopOffset();
+    window.addEventListener('resize', applyTopOffset);
+    return () => window.removeEventListener('resize', applyTopOffset);
+  }, [scenario]);
 
   // Scenario-driven auto-suggestion (recompute Trade when core or scenario changes)
   const roundStep = (v: number, step = 0.01) => Math.round(v / step) * step;
@@ -175,11 +197,11 @@ export default function RotationStorySpotlight() {
           </div>
 
           {/* Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div ref={gridRef} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Ratio & Stats */}
             <div className="lg:col-span-2">
               {/* Scenario Selector */}
-              <div className="mb-4 flex items-center justify-between gap-3">
+              <div ref={scenarioBarRef} className="mb-4 flex items-center justify-between gap-3">
                 <div className="flex gap-2" role="tablist" aria-label="Scenario">
                   {(["conservative", "base", "aggressive"] as Scenario[]).map((s) => (
                     <button
@@ -205,7 +227,7 @@ export default function RotationStorySpotlight() {
               </div>
 
               {/* Ratio Control */}
-              <div className="rounded-md border border-yellow-500/30 bg-black/30 p-4">
+              <div ref={ratioCardRef} className="rounded-md border border-yellow-500/30 bg-black/30 p-4">
                 <div className="mb-3 flex items-center justify-between text-xs md:text-sm text-white/70">
                   <span>ETH/BTC ratio</span>
                   <span aria-live="polite" className="font-semibold text-yellow-300 tabular-nums flex items-center gap-2">
@@ -235,7 +257,7 @@ export default function RotationStorySpotlight() {
                   step={0.001}
                   value={ratio}
                   onChange={(e) => setRatio(parseFloat(e.target.value))}
-                  className="w-full h-2 rounded appearance-none bg-yellow-500/20 accent-yellow-500"
+                  className="w-full h-2 rounded appearance-none bg-yellow-500/20 accent-yellow-500 touch-pan-x"
                 />
 
                 {/* Compact rail with subtle markers and risk band */}
@@ -304,14 +326,14 @@ export default function RotationStorySpotlight() {
               </div>
 
               {/* Stats */}
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 <Chip label={`Gain → ${metrics.target1.toFixed(3)}`} value={`${metrics.gainToTarget1.toFixed(1)}%`} tone="positive" />
                 <Chip label="Stop" value={`${metrics.stop.toFixed(3)} (${metrics.drawdownToStop.toFixed(1)}%)`} tone="negative" />
                 <Chip label="Alloc @T1" value={`${metrics.allocatedImpactAtT1.toFixed(1)}%`} tone="neutral" />
                 <Chip label="Gain → ATH" value={`${metrics.gainToTarget4.toFixed(1)}%`} tone="positive" />
               </div>
               {/* Street reference scenarios (USD implications) */}
-              <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4">
                 {refScenarios.map((s) => (
                   <Chip
                     key={s.label}
@@ -333,15 +355,19 @@ export default function RotationStorySpotlight() {
               )}
 
               {/* Long‑Term Lens (secular thesis) */}
-              <div className="mt-4 rounded-md border border-yellow-500/20 bg-black/20 p-3">
-                <div className="text-[11px] uppercase tracking-wider text-white/60">Long‑Term Lens</div>
-                <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <Chip label="Reserve-asset comps (avg)" value="$85T TAM" tone="neutral" />
-                  <Chip label="Hypothetical potential" value="$706,000 / ETH" tone="positive" />
-                  <Chip label="Role" value="Collateral + settlement" tone="neutral" />
+              <div className="mt-4 rounded-md border border-yellow-500/30 bg-black/30 p-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-yellow-300 font-semibold">Long‑Term Lens</h4>
+                  <button className="text-[11px] uppercase tracking-wider text-yellow-300 border border-yellow-500/40 px-2 py-1 bg-black/30 sm:hidden"
+                          onClick={() => setShowLongTerm((s)=>!s)}>{showLongTerm ? 'Hide' : 'Show'}</button>
                 </div>
-                <p className="mt-2 text-[11px] text-white/60">
-                  Secular view informs sizing bias, not trade timing. We still execute the ETH/BTC rotation with rules; the vault remains BTC‑first.
+                <div className={`mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 ${showLongTerm ? '' : 'hidden sm:grid'}`}>
+                  <Chip label="RESERVE COMPS (AVG)" value="$85T TAM" tone="neutral" />
+                  <Chip label="POTENTIAL" value="$706k / ETH" tone="positive" />
+                  <Chip label="ROLE" value="Collateral + Settlement" tone="neutral" />
+                </div>
+                <p className={`mt-3 text-[11px] text-white/60 ${showLongTerm ? '' : 'hidden sm:block'}`}>
+                  Secular view informs sizing bias—not timing. Execute the rotation with rules; the vault stays BTC‑first.
                 </p>
               </div>
               {/* Removed Preset scenario chip for cleaner UI */}
@@ -349,7 +375,7 @@ export default function RotationStorySpotlight() {
 
             {/* Allocation & Steps */}
             <div className="flex flex-col gap-4">
-              <div className="rounded-md border border-yellow-500/30 bg-black/30 p-4">
+              <div ref={allocationCardRef} className="rounded-md border border-yellow-500/30 bg-black/30 p-4 lg:mt-0 max-h-[220px] overflow-hidden">
                 <div className="mb-2 flex items-center justify-between text-xs md:text-sm text-white/70">
                   <span>Allocation</span>
                   <span aria-live="polite" className="font-semibold text-yellow-300">{allocationPct}%</span>
