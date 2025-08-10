@@ -48,7 +48,6 @@ export default function RotationStorySpotlight() {
   }, [sparkValues]);
   const [prefilled, setPrefilled] = useState(false);
   const [lastUpdatedMs, setLastUpdatedMs] = useState<number | null>(null);
-  const [lastSparkUpdatedMs, setLastSparkUpdatedMs] = useState<number | null>(null);
   useEffect(() => {
     const r = liveRatio?.ethereum?.btc;
     if (!prefilled && typeof r === "number" && r > 0) {
@@ -59,15 +58,9 @@ export default function RotationStorySpotlight() {
       setLastUpdatedMs(Date.now());
     }
   }, [liveRatio, prefilled]);
-  useEffect(() => {
-    if (marketChart?.prices && marketChart.prices.length > 0) {
-      setLastSparkUpdatedMs(Date.now());
-    }
-  }, [marketChart]);
 
   const isLive = lastUpdatedMs ? Date.now() - lastUpdatedMs < 90_000 : false;
-  const fmtTime = (ms: number | null) =>
-    ms ? new Date(ms).toLocaleTimeString(undefined, { hour12: false }) : "";
+  // removed sparkline timestamp UI
 
   // Scenario-driven auto-suggestion (recompute Trade when core or scenario changes)
   const roundStep = (v: number, step = 0.01) => Math.round(v / step) * step;
@@ -307,14 +300,7 @@ export default function RotationStorySpotlight() {
                   })}
                 </div>
 
-                {/* Sparkline */}
-                <div className="mt-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="text-[11px] text-white/60">30‑day trend</div>
-                    <div className="text-[10px] text-white/50">{lastSparkUpdatedMs ? `Updated ${fmtTime(lastSparkUpdatedMs)}` : ""}</div>
-                  </div>
-                  <Sparkline values={sparkValues} color="#F7B500" />
-                </div>
+                {/* Sparkline removed per request */}
               </div>
 
               {/* Stats */}
@@ -352,7 +338,7 @@ export default function RotationStorySpotlight() {
                 <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Chip label="Reserve-asset comps (avg)" value="$85T TAM" tone="neutral" />
                   <Chip label="Hypothetical potential" value="$706,000 / ETH" tone="positive" />
-                  <Chip label="Role" value="Collateral + settlement rails" tone="neutral" />
+                  <Chip label="Role" value="Collateral + settlement" tone="neutral" />
                 </div>
                 <p className="mt-2 text-[11px] text-white/60">
                   Secular view informs sizing bias, not trade timing. We still execute the ETH/BTC rotation with rules; the vault remains BTC‑first.
@@ -709,48 +695,7 @@ function Chip({ label, value, tone = "neutral", active = false, onClick }: { lab
   );
 }
 
-function Sparkline({ values, color = "#F7B500" }: { values: number[]; color?: string }) {
-  const width = 360;
-  const height = 72;
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const dx = width / (values.length - 1 || 1);
-  const scaleY = (v: number) => {
-    if (max === min) return height / 2;
-    const t = (v - min) / (max - min);
-    return height - t * height;
-  };
-  const d = values.map((v, i) => `${i === 0 ? "M" : "L"}${i * dx},${scaleY(v)}`).join(" ");
-  const dArea = `${d} L ${width},${height} L 0,${height} Z`;
-  const last = values[values.length - 1] ?? 0;
-  const lastY = scaleY(last);
-  return (
-    <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} role="img" aria-label="30d ratio sparkline">
-      <defs>
-        <linearGradient id="sparkfill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity={0.28} />
-          <stop offset="100%" stopColor={color} stopOpacity={0.02} />
-        </linearGradient>
-      </defs>
-      {/* background grid (time) */}
-      {values.map((_, i) => (
-        i % 5 === 0 ? <line key={`g-${i}`} x1={i * dx} y1={0} x2={i * dx} y2={height} stroke="rgba(255,255,255,0.07)" strokeWidth={1} /> : null
-      ))}
-      <path d={dArea} fill="url(#sparkfill)" stroke="none" />
-      <path d={d} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" />
-      {/* current value guide */}
-      <line x1={0} y1={lastY} x2={width} y2={lastY} stroke="rgba(255,255,255,0.2)" strokeDasharray="4 3" />
-      {values.map((v, i) => (
-        <circle key={i} cx={i * dx} cy={scaleY(v)} r={i === values.length - 1 ? 2.5 : 1.5} fill={color} />
-      ))}
-      {/* labels */}
-      <text x={2} y={10} fontSize={10} fill="rgba(255,255,255,0.65)">H {max.toFixed(3)}</text>
-      <text x={2} y={height - 2} fontSize={10} fill="rgba(255,255,255,0.65)">L {min.toFixed(3)}</text>
-      <text x={width - 36} y={12} fontSize={10} fill="rgba(255,255,255,0.55)">30d</text>
-      <text x={width - 60} y={lastY - 4} fontSize={10} fill="rgba(255,255,255,0.85)">{last.toFixed(3)}</text>
-    </svg>
-  );
-}
+// Sparkline component removed
 
 function LabeledNumber({
   label,
