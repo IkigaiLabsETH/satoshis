@@ -345,6 +345,19 @@ export default function RotationStorySpotlight() {
                   Applied: set ratio to <span className="text-yellow-300 font-semibold">{ratio.toFixed(3)}</span> via <span className="text-yellow-300">{appliedRefScenario}</span>
                 </div>
               )}
+
+              {/* Long‑Term Lens (secular thesis) */}
+              <div className="mt-4 rounded-md border border-yellow-500/20 bg-black/20 p-3">
+                <div className="text-[11px] uppercase tracking-wider text-white/60">Long‑Term Lens</div>
+                <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <Chip label="Reserve-asset comps (avg)" value="$85T TAM" tone="neutral" />
+                  <Chip label="Hypothetical potential" value="$706,000 / ETH" tone="positive" />
+                  <Chip label="Role" value="Collateral + settlement rails" tone="neutral" />
+                </div>
+                <p className="mt-2 text-[11px] text-white/60">
+                  Secular view informs sizing bias, not trade timing. We still execute the ETH/BTC rotation with rules; the vault remains BTC‑first.
+                </p>
+              </div>
               {/* Removed Preset scenario chip for cleaner UI */}
             </div>
 
