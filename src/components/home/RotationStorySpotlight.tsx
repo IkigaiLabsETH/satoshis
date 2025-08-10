@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 
@@ -20,6 +20,11 @@ export default function RotationStorySpotlight() {
   const [tradeBtc, setTradeBtc] = useState<number>(2);
   const [showStory, setShowStory] = useState<boolean>(false);
   const [appliedRefScenario, setAppliedRefScenario] = useState<string | null>(null);
+  const [showLongTerm, setShowLongTerm] = useState<boolean>(false);
+  const ratioCardRef = useRef<HTMLDivElement | null>(null);
+  const allocationCardRef = useRef<HTMLDivElement | null>(null);
+  const gridRef = useRef<HTMLDivElement | null>(null);
+  const scenarioBarRef = useRef<HTMLDivElement | null>(null);
 
   const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((r) => r.json());
   // Live prices (ETH in BTC & USD, BTC in USD)
@@ -48,7 +53,6 @@ export default function RotationStorySpotlight() {
   }, [sparkValues]);
   const [prefilled, setPrefilled] = useState(false);
   const [lastUpdatedMs, setLastUpdatedMs] = useState<number | null>(null);
-  const [lastSparkUpdatedMs, setLastSparkUpdatedMs] = useState<number | null>(null);
   useEffect(() => {
     const r = liveRatio?.ethereum?.btc;
     if (!prefilled && typeof r === "number" && r > 0) {
@@ -59,15 +63,26 @@ export default function RotationStorySpotlight() {
       setLastUpdatedMs(Date.now());
     }
   }, [liveRatio, prefilled]);
-  useEffect(() => {
-    if (marketChart?.prices && marketChart.prices.length > 0) {
-      setLastSparkUpdatedMs(Date.now());
-    }
-  }, [marketChart]);
 
   const isLive = lastUpdatedMs ? Date.now() - lastUpdatedMs < 90_000 : false;
-  const fmtTime = (ms: number | null) =>
-    ms ? new Date(ms).toLocaleTimeString(undefined, { hour12: false }) : "";
+  // removed sparkline timestamp UI
+
+  // Removed height syncing to avoid making the allocation frame too tall
+
+  // Align allocation frame top with the left ratio frame by mirroring the scenario bar offset
+  useEffect(() => {
+    const applyTopOffset = () => {
+      if (!allocationCardRef.current) return;
+      const barH = scenarioBarRef.current?.offsetHeight ?? 0;
+      // Tailwind mb-4 on scenario bar adds ~16px margin after the bar
+      const tailwindMb4 = 16;
+      const fudge = 8; // small additional offset to visually center
+      allocationCardRef.current.style.marginTop = `${barH + tailwindMb4 + fudge}px`;
+    };
+    applyTopOffset();
+    window.addEventListener('resize', applyTopOffset);
+    return () => window.removeEventListener('resize', applyTopOffset);
+  }, [scenario]);
 
   // Scenario-driven auto-suggestion (recompute Trade when core or scenario changes)
   const roundStep = (v: number, step = 0.01) => Math.round(v / step) * step;
@@ -182,11 +197,11 @@ export default function RotationStorySpotlight() {
           </div>
 
           {/* Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div ref={gridRef} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Ratio & Stats */}
             <div className="lg:col-span-2">
               {/* Scenario Selector */}
-              <div className="mb-4 flex items-center justify-between gap-3">
+              <div ref={scenarioBarRef} className="mb-4 flex items-center justify-between gap-3">
                 <div className="flex gap-2" role="tablist" aria-label="Scenario">
                   {(["conservative", "base", "aggressive"] as Scenario[]).map((s) => (
                     <button
@@ -212,7 +227,7 @@ export default function RotationStorySpotlight() {
               </div>
 
               {/* Ratio Control */}
-              <div className="rounded-md border border-yellow-500/30 bg-black/30 p-4">
+              <div ref={ratioCardRef} className="rounded-md border border-yellow-500/30 bg-black/30 p-4">
                 <div className="mb-3 flex items-center justify-between text-xs md:text-sm text-white/70">
                   <span>ETH/BTC ratio</span>
                   <span aria-live="polite" className="font-semibold text-yellow-300 tabular-nums flex items-center gap-2">
@@ -242,7 +257,7 @@ export default function RotationStorySpotlight() {
                   step={0.001}
                   value={ratio}
                   onChange={(e) => setRatio(parseFloat(e.target.value))}
-                  className="w-full h-2 rounded appearance-none bg-yellow-500/20 accent-yellow-500"
+                  className="w-full h-2 rounded appearance-none bg-yellow-500/20 accent-yellow-500 touch-pan-x"
                 />
 
                 {/* Compact rail with subtle markers and risk band */}
@@ -307,25 +322,18 @@ export default function RotationStorySpotlight() {
                   })}
                 </div>
 
-                {/* Sparkline */}
-                <div className="mt-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="text-[11px] text-white/60">30‑day trend</div>
-                    <div className="text-[10px] text-white/50">{lastSparkUpdatedMs ? `Updated ${fmtTime(lastSparkUpdatedMs)}` : ""}</div>
-                  </div>
-                  <Sparkline values={sparkValues} color="#F7B500" />
-                </div>
+                {/* Sparkline removed per request */}
               </div>
 
               {/* Stats */}
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 <Chip label={`Gain → ${metrics.target1.toFixed(3)}`} value={`${metrics.gainToTarget1.toFixed(1)}%`} tone="positive" />
                 <Chip label="Stop" value={`${metrics.stop.toFixed(3)} (${metrics.drawdownToStop.toFixed(1)}%)`} tone="negative" />
                 <Chip label="Alloc @T1" value={`${metrics.allocatedImpactAtT1.toFixed(1)}%`} tone="neutral" />
                 <Chip label="Gain → ATH" value={`${metrics.gainToTarget4.toFixed(1)}%`} tone="positive" />
               </div>
               {/* Street reference scenarios (USD implications) */}
-              <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4">
                 {refScenarios.map((s) => (
                   <Chip
                     key={s.label}
@@ -345,12 +353,29 @@ export default function RotationStorySpotlight() {
                   Applied: set ratio to <span className="text-yellow-300 font-semibold">{ratio.toFixed(3)}</span> via <span className="text-yellow-300">{appliedRefScenario}</span>
                 </div>
               )}
+
+              {/* Long‑Term Lens (secular thesis) */}
+              <div className="mt-4 rounded-md border border-yellow-500/30 bg-black/30 p-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-yellow-300 font-semibold">Long‑Term Lens</h4>
+                  <button className="text-[11px] uppercase tracking-wider text-yellow-300 border border-yellow-500/40 px-2 py-1 bg-black/30 sm:hidden"
+                          onClick={() => setShowLongTerm((s)=>!s)}>{showLongTerm ? 'Hide' : 'Show'}</button>
+                </div>
+                <div className={`mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 ${showLongTerm ? '' : 'hidden sm:grid'}`}>
+                  <Chip label="RESERVE COMPS (AVG)" value="$85T TAM" tone="neutral" />
+                  <Chip label="POTENTIAL" value="$706k / ETH" tone="positive" />
+                  <Chip label="ROLE" value="Collateral + Settlement" tone="neutral" />
+                </div>
+                <p className={`mt-3 text-[11px] text-white/60 ${showLongTerm ? '' : 'hidden sm:block'}`}>
+                  Secular view informs sizing bias—not timing. Execute the rotation with rules; the vault stays BTC‑first.
+                </p>
+              </div>
               {/* Removed Preset scenario chip for cleaner UI */}
             </div>
 
             {/* Allocation & Steps */}
             <div className="flex flex-col gap-4">
-              <div className="rounded-md border border-yellow-500/30 bg-black/30 p-4">
+              <div ref={allocationCardRef} className="rounded-md border border-yellow-500/30 bg-black/30 p-4 lg:mt-0 max-h-[220px] overflow-hidden">
                 <div className="mb-2 flex items-center justify-between text-xs md:text-sm text-white/70">
                   <span>Allocation</span>
                   <span aria-live="polite" className="font-semibold text-yellow-300">{allocationPct}%</span>
@@ -696,48 +721,7 @@ function Chip({ label, value, tone = "neutral", active = false, onClick }: { lab
   );
 }
 
-function Sparkline({ values, color = "#F7B500" }: { values: number[]; color?: string }) {
-  const width = 360;
-  const height = 72;
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const dx = width / (values.length - 1 || 1);
-  const scaleY = (v: number) => {
-    if (max === min) return height / 2;
-    const t = (v - min) / (max - min);
-    return height - t * height;
-  };
-  const d = values.map((v, i) => `${i === 0 ? "M" : "L"}${i * dx},${scaleY(v)}`).join(" ");
-  const dArea = `${d} L ${width},${height} L 0,${height} Z`;
-  const last = values[values.length - 1] ?? 0;
-  const lastY = scaleY(last);
-  return (
-    <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} role="img" aria-label="30d ratio sparkline">
-      <defs>
-        <linearGradient id="sparkfill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity={0.28} />
-          <stop offset="100%" stopColor={color} stopOpacity={0.02} />
-        </linearGradient>
-      </defs>
-      {/* background grid (time) */}
-      {values.map((_, i) => (
-        i % 5 === 0 ? <line key={`g-${i}`} x1={i * dx} y1={0} x2={i * dx} y2={height} stroke="rgba(255,255,255,0.07)" strokeWidth={1} /> : null
-      ))}
-      <path d={dArea} fill="url(#sparkfill)" stroke="none" />
-      <path d={d} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" />
-      {/* current value guide */}
-      <line x1={0} y1={lastY} x2={width} y2={lastY} stroke="rgba(255,255,255,0.2)" strokeDasharray="4 3" />
-      {values.map((v, i) => (
-        <circle key={i} cx={i * dx} cy={scaleY(v)} r={i === values.length - 1 ? 2.5 : 1.5} fill={color} />
-      ))}
-      {/* labels */}
-      <text x={2} y={10} fontSize={10} fill="rgba(255,255,255,0.65)">H {max.toFixed(3)}</text>
-      <text x={2} y={height - 2} fontSize={10} fill="rgba(255,255,255,0.65)">L {min.toFixed(3)}</text>
-      <text x={width - 36} y={12} fontSize={10} fill="rgba(255,255,255,0.55)">30d</text>
-      <text x={width - 60} y={lastY - 4} fontSize={10} fill="rgba(255,255,255,0.85)">{last.toFixed(3)}</text>
-    </svg>
-  );
-}
+// Sparkline component removed
 
 function LabeledNumber({
   label,
