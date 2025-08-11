@@ -17,6 +17,20 @@ interface Message {
   timestamp: Date;
 }
 
+// Strict type for live BTC advisor meta to avoid explicit any casts
+type LiveMeta = {
+  m30Change?: number;
+  stChange?: number;
+  hrChg?: number;
+  txChg?: number;
+  price?: number;
+  sma200?: number;
+  dxySlope?: number;
+  realSlope?: number;
+  dominanceAdj?: number;
+  fngVal?: number;
+};
+
 export default function Grok420Content() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -594,17 +608,19 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
       // If neutral, show which thresholds weren’t met, using meta from live route if available
       let clarity = '';
       if (stance === 'Neutral' && liveJson?.meta) {
-        const m = liveJson.meta as any;
+        const m = liveJson.meta as LiveMeta;
         const reasons: string[] = [];
         if (Math.abs(m.m30Change ?? 0) <= 0.05) reasons.push('30d price momentum < 5%');
         if (Math.abs(m.stChange ?? 0) <= 0.01) reasons.push('stablecoin growth < 1%');
         if (Math.abs(m.hrChg ?? 0) <= 0.02 || Math.abs(m.txChg ?? 0) <= 0.02) reasons.push('hash-rate/transactions change < 2%');
-        if (m.price <= m.sma200) reasons.push('below 200D MA');
+        if (typeof m.price === 'number' && typeof m.sma200 === 'number' && m.sma200 !== 0) {
+          if (m.price <= m.sma200) reasons.push('below 200D MA');
+        }
         clarity = reasons.length ? `\nWhy neutral: ${reasons.join('; ')}` : '';
       }
 
       // Build a more conversational summary using live meta when available
-      const m = (liveJson?.meta || {}) as any;
+      const m: LiveMeta = (liveJson?.meta || {}) as LiveMeta;
       const pct = (x: number | undefined, digits = 1) =>
         typeof x === 'number' && Number.isFinite(x) ? `${(x * 100).toFixed(digits)}%` : 'n/a';
       const dist200d = ((): string => {
@@ -625,7 +641,7 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
         `On-chain: hash-rate ${pct(m.hrChg, 1)}, tx count ${pct(m.txChg, 1)} (30d).`
       );
       lines.push(
-        `Structure & flows: BTC 30d momentum ${pct(m.m30Change, 1)}, stables (USDT+USDC) ${pct(m.stChange, 1)}; dominance tilt ${m.dominanceAdj > 0 ? '+bullish' : m.dominanceAdj < 0 ? '+alt/rotation' : 'flat'}.`
+        `Structure & flows: BTC 30d momentum ${pct(m.m30Change, 1)}, stables (USDT+USDC) ${pct(m.stChange, 1)}; dominance tilt ${(m.dominanceAdj ?? 0) > 0 ? '+bullish' : (m.dominanceAdj ?? 0) < 0 ? '+alt/rotation' : 'flat'}.`
       );
       if (typeof m.fngVal === 'number') {
         lines.push(`Sentiment: Fear & Greed ${m.fngVal}/100 (${m.fngVal >= 60 ? 'greed' : m.fngVal <= 40 ? 'fear' : 'balanced'}).`);
@@ -649,6 +665,63 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errMsg]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // GM: curated morning brief with BTC-first lens
+  const handleGM = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      const response = await fetch('/api/gm', { method: 'POST', signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      let text = 'GM — brief unavailable right now. Markets remain driven by BTC momentum, liquidity, and macro rates. Try again in a moment.';
+      if (response.ok) {
+        try {
+          const json = await response.json();
+          if (json?.success && typeof json.data === 'string') text = json.data;
+        } catch {
+          // fallback to plain text if needed
+          text = await response.text();
+        }
+      }
+
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: text,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+
+      try {
+        await storeAnalysis({
+          type: 'market_analysis',
+          symbol: 'GM',
+          timeframe: 'daily',
+          analysis: {
+            prediction: text.slice(0, 240),
+            confidence: 0.7,
+            indicators: ['btc', 'alts', 'macro'],
+            reasoning: text,
+          },
+        });
+      } catch {
+        // ignore storage failure
+      }
+    } catch {
+      const errMsg: Message = {
+        id: (Date.now() + 2).toString(),
+        role: 'assistant',
+        content: 'GM — Grok4 is slow right now. Please try again shortly.',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errMsg]);
     } finally {
       setIsLoading(false);
     }
@@ -920,7 +993,7 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSubmit(undefined, 'gm')}
+                  onClick={handleGM}
                   disabled={isLoading}
                   className="w-full sm:w-auto bg-green-500/20 hover:bg-green-400/30 text-green-400 font-bold px-4 py-3 rounded-lg border border-green-500/30 transition-colors disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base"
                   title="Quick market overview"
