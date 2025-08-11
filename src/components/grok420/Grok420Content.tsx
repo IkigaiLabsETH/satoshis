@@ -110,7 +110,7 @@ export default function Grok420Content() {
     } catch {}
   }, [messages]);
 
-  const handleAutoAnalysis = async () => {
+  const _handleAutoAnalysis = async () => {
     setIsLoading(true);
     
     try {
@@ -324,40 +324,15 @@ I couldn't generate the elite equity research analysis for ${ticker} right now.
     scrollToBottom();
   }, [messages]);
 
-  // Auto-initialize with MSTR vs BTC analysis
+  // Auto-initialize with a live GM brief (no static text)
   useEffect(() => {
     if (!hasInitialized && messages.length === 0) {
       setHasInitialized(true);
-      
-      // Auto-generate MSTR vs BTC analysis
-      const autoMessage: Message = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: `🚀 **Welcome to GROK420 - Your Bitcoin-First Investment Intelligence**
 
-I'm automatically analyzing **MSTR (MicroStrategy) vs BTC** for you - the ultimate Bitcoin proxy stock that's been crushing it.
-
-**📊 Quick MSTR vs BTC Check:**
-• MSTR is the OG Bitcoin company - they've been buying BTC since 2020
-• They hold over 214,000 BTC worth ~$13.5B
-• Their strategy: Convert all cash to Bitcoin
-• Performance: MSTR often outperforms BTC due to leverage effect
-
-**🎯 Why MSTR vs BTC matters:**
-- MSTR gives you Bitcoin exposure with stock market benefits
-- They're the purest Bitcoin play in traditional markets
-- Their Bitcoin strategy is legendary - "Buy Bitcoin, hold Bitcoin"
-
-Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis...`,
-        timestamp: new Date(),
-      };
-      
-      setMessages([autoMessage]);
-      
-      // Auto-trigger MSTR analysis
+      // Auto-fetch a small GM brief instead of static text
       setTimeout(() => {
-        handleAutoAnalysis();
-      }, 2000);
+        handleGM();
+      }, 300);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasInitialized, messages.length]);
