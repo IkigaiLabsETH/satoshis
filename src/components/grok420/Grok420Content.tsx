@@ -7,6 +7,8 @@ import { useChartMemory, useMarketMemory, useUserMemory, useSupermemory } from '
 import EquityResearchForm, { EquityResearchReport } from './EquityResearchForm';
 import type { EquityResearchData } from './EquityResearchForm';
 import MemoryPanel from './MemoryPanel';
+import { getBtcAdvisorDecision } from '@/lib/api-client';
+import type { DecisionOutput } from '@/services/advisor/btc/types';
 
 interface Message {
   id: string;
@@ -555,6 +557,103 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
     }
   };
 
+  // BTC Advisor: compute stance and post concise answer to chat
+  const handleBtcAdvisor = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      // Call live stance endpoint (falls back to server-side mapping)
+      const live = await fetch('/api/advisor/btc/live');
+      const liveJson = live.ok ? await live.json() : { success: false };
+      const decision: DecisionOutput = liveJson.success ? liveJson.data : await getBtcAdvisorDecision({});
+      const stance = decision.summary?.stance ?? ((decision.details?.netScore ?? 0) > 0.25 ? 'Bullish' : (decision.details?.netScore ?? 0) < -0.25 ? 'Bearish' : 'Neutral');
+
+      // Build human sentence: "We are bullish/bearish because ..."
+      const labelMap: Record<string, string> = {
+        macro: 'macro/liquidity',
+        onchain: 'on-chain health',
+        structure: 'market structure',
+        stable: 'stablecoin/liquidity',
+        sentiment: 'narrative/sentiment',
+      };
+      const signPhrase = (score: number) => (score > 0 ? 'supportive' : score < 0 ? 'a headwind' : 'neutral');
+      const contribs = decision.details?.contributions
+        ? [...decision.details.contributions].sort((a,b)=>Math.abs(b.contribution)-Math.abs(a.contribution))
+        : [];
+      const r1 = contribs[0];
+      const r2 = contribs[1];
+      const r3 = contribs[2];
+      const because = r1
+        ? `because ${labelMap[r1.key]} is ${signPhrase(r1.score)}${r2 ? ` and ${labelMap[r2.key]} is ${signPhrase(r2.score)}` : ''}${r3 ? `; ${labelMap[r3.key]} is ${signPhrase(r3.score)}` : ''}`
+        : '';
+      const brakesActive = decision.details?.brakesApplied && Object.values(decision.details.brakesApplied).some(Boolean);
+      const brakesText = brakesActive
+        ? `Brakes: ${Object.entries(decision.details!.brakesApplied).filter(([,v])=>v).map(([k])=>k.replaceAll('_',' ')).join(', ')}`
+        : 'Brakes: none';
+
+      // If neutral, show which thresholds weren’t met, using meta from live route if available
+      let clarity = '';
+      if (stance === 'Neutral' && liveJson?.meta) {
+        const m = liveJson.meta as any;
+        const reasons: string[] = [];
+        if (Math.abs(m.m30Change ?? 0) <= 0.05) reasons.push('30d price momentum < 5%');
+        if (Math.abs(m.stChange ?? 0) <= 0.01) reasons.push('stablecoin growth < 1%');
+        if (Math.abs(m.hrChg ?? 0) <= 0.02 || Math.abs(m.txChg ?? 0) <= 0.02) reasons.push('hash-rate/transactions change < 2%');
+        if (m.price <= m.sma200) reasons.push('below 200D MA');
+        clarity = reasons.length ? `\nWhy neutral: ${reasons.join('; ')}` : '';
+      }
+
+      // Build a more conversational summary using live meta when available
+      const m = (liveJson?.meta || {}) as any;
+      const pct = (x: number | undefined, digits = 1) =>
+        typeof x === 'number' && Number.isFinite(x) ? `${(x * 100).toFixed(digits)}%` : 'n/a';
+      const dist200d = ((): string => {
+        if (typeof m.price === 'number' && typeof m.sma200 === 'number' && m.sma200 !== 0) {
+          const d = (m.price - m.sma200) / m.sma200;
+          const sign = d > 0 ? '+' : '';
+          return `${sign}${(d * 100).toFixed(1)}% vs 200D`;
+        }
+        return 'n/a vs 200D';
+      })();
+
+      const lines: string[] = [];
+      lines.push(`🧭 BTC Advisor — we’re ${stance.toLowerCase()} ${because ? because : ''}`.trim());
+      lines.push(
+        `Macro: ${dist200d}, DXY ${pct(m.dxySlope, 1)} over ~1m, real-yields slope ${(m.realSlope ?? 0).toFixed(2)}.`
+      );
+      lines.push(
+        `On-chain: hash-rate ${pct(m.hrChg, 1)}, tx count ${pct(m.txChg, 1)} (30d).`
+      );
+      lines.push(
+        `Structure & flows: BTC 30d momentum ${pct(m.m30Change, 1)}, stables (USDT+USDC) ${pct(m.stChange, 1)}; dominance tilt ${m.dominanceAdj > 0 ? '+bullish' : m.dominanceAdj < 0 ? '+alt/rotation' : 'flat'}.`
+      );
+      if (typeof m.fngVal === 'number') {
+        lines.push(`Sentiment: Fear & Greed ${m.fngVal}/100 (${m.fngVal >= 60 ? 'greed' : m.fngVal <= 40 ? 'fear' : 'balanced'}).`);
+      }
+      lines.push(`${brakesText}`);
+      if (clarity) lines.push(clarity.trim());
+
+      const text = lines.join('\n');
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: text,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch {
+      const errMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'BTC Advisor is unavailable right now. Please try again shortly.',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errMsg]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // ... rest of the component logic would continue here
   // For brevity, I'm showing the key integration points
 
@@ -827,6 +926,15 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
                   title="Quick market overview"
                 >
                   GM
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBtcAdvisor}
+                  disabled={isLoading}
+                  className="w-full sm:w-auto bg-yellow-500/20 hover:bg-yellow-400/30 text-yellow-400 font-bold px-4 py-3 rounded-lg border border-yellow-500/30 transition-colors disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base"
+                  title="BTC Advisor stance"
+                >
+                  BTC Advisor
                 </button>
                 <button
                   type="button"
