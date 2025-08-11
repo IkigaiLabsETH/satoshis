@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, createContext, useContext, ReactNode } from 'react';
-import { supermemoryService } from '../../services/supermemory';
 import { 
   UserPreference, 
   MarketAnalysis, 
@@ -58,6 +57,19 @@ export const SupermemoryProvider = ({ children }: SupermemoryProviderProps) => {
   const [error, setError] = useState<string | null>(null);
   const [lastMemoryId, setLastMemoryId] = useState<string | null>(null);
 
+  // Helper to call our Next.js API route so secrets remain server-side
+  const callApi = async <T,>(action: string, data: Record<string, unknown>): Promise<T> => {
+    const res = await fetch('/api/supermemory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, data }),
+    });
+    if (!res.ok) {
+      throw new Error(`Supermemory API error: ${res.status}`);
+    }
+    return (await res.json()) as T;
+  };
+
   const handleError = (error: unknown) => {
     // Supermemory error
     setError(error instanceof Error ? error.message : 'An error occurred with Supermemory');
@@ -68,7 +80,7 @@ export const SupermemoryProvider = ({ children }: SupermemoryProviderProps) => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await supermemoryService.storeUserPreference(userId, preferences);
+      const result = await callApi<{ id: string }>('storeUserPreference', { userId, preferences });
       setLastMemoryId(result.id);
       // User preference stored
     } catch (err) {
@@ -82,7 +94,7 @@ export const SupermemoryProvider = ({ children }: SupermemoryProviderProps) => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await supermemoryService.getUserPreferences(userId);
+      const result = await callApi<SupermemorySearchResponse>('getUserPreferences', { userId });
       return result;
     } catch (err) {
       handleError(err);
@@ -96,7 +108,7 @@ export const SupermemoryProvider = ({ children }: SupermemoryProviderProps) => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await supermemoryService.storeAnalysisPattern(analysis);
+      const result = await callApi<{ id: string }>('storeAnalysisPattern', { analysis });
       setLastMemoryId(result.id);
       // Analysis pattern stored
     } catch (err) {
@@ -110,7 +122,7 @@ export const SupermemoryProvider = ({ children }: SupermemoryProviderProps) => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await supermemoryService.getAnalysisHistory(symbol);
+      const result = await callApi<SupermemorySearchResponse>('getAnalysisHistory', { symbol });
       return result;
     } catch (err) {
       handleError(err);
@@ -124,7 +136,7 @@ export const SupermemoryProvider = ({ children }: SupermemoryProviderProps) => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await supermemoryService.storeMarketEvent(event);
+      const result = await callApi<{ id: string }>('storeMarketEvent', { event });
       setLastMemoryId(result.id);
       // Market event stored
     } catch (err) {
@@ -138,7 +150,7 @@ export const SupermemoryProvider = ({ children }: SupermemoryProviderProps) => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await supermemoryService.storeChartInteraction(chartData);
+      const result = await callApi<{ id: string }>('storeChartInteraction', { chartData });
       setLastMemoryId(result.id);
       // Chart interaction stored
     } catch (err) {
@@ -152,7 +164,7 @@ export const SupermemoryProvider = ({ children }: SupermemoryProviderProps) => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await supermemoryService.getRelevantContext(query);
+      const result = await callApi<SupermemorySearchResponse>('getRelevantContext', { query });
       return result;
     } catch (err) {
       handleError(err);
@@ -166,7 +178,7 @@ export const SupermemoryProvider = ({ children }: SupermemoryProviderProps) => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await supermemoryService.storeOutperformWatchlist(list);
+      const result = await callApi<{ id: string }>('storeOutperformWatchlist', { list });
       setLastMemoryId(result.id);
     } catch (err) {
       handleError(err);
@@ -179,7 +191,7 @@ export const SupermemoryProvider = ({ children }: SupermemoryProviderProps) => {
     setIsLoading(true);
     setError(null);
     try {
-      return await supermemoryService.getOutperformWatchlists();
+      return await callApi<SupermemorySearchResponse>('getOutperformWatchlists', {});
     } catch (err) {
       handleError(err);
       return { memories: [], total: 0 };

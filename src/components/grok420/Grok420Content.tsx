@@ -17,6 +17,20 @@ interface Message {
   timestamp: Date;
 }
 
+// Strict type for live BTC advisor meta to avoid explicit any casts
+type LiveMeta = {
+  m30Change?: number;
+  stChange?: number;
+  hrChg?: number;
+  txChg?: number;
+  price?: number;
+  sma200?: number;
+  dxySlope?: number;
+  realSlope?: number;
+  dominanceAdj?: number;
+  fngVal?: number;
+};
+
 export default function Grok420Content() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -96,7 +110,7 @@ export default function Grok420Content() {
     } catch {}
   }, [messages]);
 
-  const handleAutoAnalysis = async () => {
+  const _handleAutoAnalysis = async () => {
     setIsLoading(true);
     
     try {
@@ -179,7 +193,7 @@ Try asking me about MSTR again or use the Research button above for detailed equ
     }
   };
 
-  const handleEliteAnalysis = async (ticker: string) => {
+  const _handleEliteAnalysis = async (ticker: string) => {
     setIsLoading(true);
     
     try {
@@ -310,40 +324,15 @@ I couldn't generate the elite equity research analysis for ${ticker} right now.
     scrollToBottom();
   }, [messages]);
 
-  // Auto-initialize with MSTR vs BTC analysis
+  // Auto-initialize with a live GM brief (no static text)
   useEffect(() => {
     if (!hasInitialized && messages.length === 0) {
       setHasInitialized(true);
-      
-      // Auto-generate MSTR vs BTC analysis
-      const autoMessage: Message = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: `🚀 **Welcome to GROK420 - Your Bitcoin-First Investment Intelligence**
 
-I'm automatically analyzing **MSTR (MicroStrategy) vs BTC** for you - the ultimate Bitcoin proxy stock that's been crushing it.
-
-**📊 Quick MSTR vs BTC Check:**
-• MSTR is the OG Bitcoin company - they've been buying BTC since 2020
-• They hold over 214,000 BTC worth ~$13.5B
-• Their strategy: Convert all cash to Bitcoin
-• Performance: MSTR often outperforms BTC due to leverage effect
-
-**🎯 Why MSTR vs BTC matters:**
-- MSTR gives you Bitcoin exposure with stock market benefits
-- They're the purest Bitcoin play in traditional markets
-- Their Bitcoin strategy is legendary - "Buy Bitcoin, hold Bitcoin"
-
-Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis...`,
-        timestamp: new Date(),
-      };
-      
-      setMessages([autoMessage]);
-      
-      // Auto-trigger MSTR analysis
+      // Auto-fetch a small GM brief instead of static text
       setTimeout(() => {
-        handleAutoAnalysis();
-      }, 2000);
+        handleGM();
+      }, 300);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasInitialized, messages.length]);
@@ -594,17 +583,19 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
       // If neutral, show which thresholds weren’t met, using meta from live route if available
       let clarity = '';
       if (stance === 'Neutral' && liveJson?.meta) {
-        const m = liveJson.meta as any;
+        const m = liveJson.meta as LiveMeta;
         const reasons: string[] = [];
         if (Math.abs(m.m30Change ?? 0) <= 0.05) reasons.push('30d price momentum < 5%');
         if (Math.abs(m.stChange ?? 0) <= 0.01) reasons.push('stablecoin growth < 1%');
         if (Math.abs(m.hrChg ?? 0) <= 0.02 || Math.abs(m.txChg ?? 0) <= 0.02) reasons.push('hash-rate/transactions change < 2%');
-        if (m.price <= m.sma200) reasons.push('below 200D MA');
+        if (typeof m.price === 'number' && typeof m.sma200 === 'number' && m.sma200 !== 0) {
+          if (m.price <= m.sma200) reasons.push('below 200D MA');
+        }
         clarity = reasons.length ? `\nWhy neutral: ${reasons.join('; ')}` : '';
       }
 
       // Build a more conversational summary using live meta when available
-      const m = (liveJson?.meta || {}) as any;
+      const m: LiveMeta = (liveJson?.meta || {}) as LiveMeta;
       const pct = (x: number | undefined, digits = 1) =>
         typeof x === 'number' && Number.isFinite(x) ? `${(x * 100).toFixed(digits)}%` : 'n/a';
       const dist200d = ((): string => {
@@ -625,7 +616,7 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
         `On-chain: hash-rate ${pct(m.hrChg, 1)}, tx count ${pct(m.txChg, 1)} (30d).`
       );
       lines.push(
-        `Structure & flows: BTC 30d momentum ${pct(m.m30Change, 1)}, stables (USDT+USDC) ${pct(m.stChange, 1)}; dominance tilt ${m.dominanceAdj > 0 ? '+bullish' : m.dominanceAdj < 0 ? '+alt/rotation' : 'flat'}.`
+        `Structure & flows: BTC 30d momentum ${pct(m.m30Change, 1)}, stables (USDT+USDC) ${pct(m.stChange, 1)}; dominance tilt ${(m.dominanceAdj ?? 0) > 0 ? '+bullish' : (m.dominanceAdj ?? 0) < 0 ? '+alt/rotation' : 'flat'}.`
       );
       if (typeof m.fngVal === 'number') {
         lines.push(`Sentiment: Fear & Greed ${m.fngVal}/100 (${m.fngVal >= 60 ? 'greed' : m.fngVal <= 40 ? 'fear' : 'balanced'}).`);
@@ -651,6 +642,155 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
       setMessages(prev => [...prev, errMsg]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // GM: curated morning brief with BTC-first lens
+  const handleGM = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      const response = await fetch('/api/gm', { method: 'POST', signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      let text = 'GM — brief unavailable right now. Markets remain driven by BTC momentum, liquidity, and macro rates. Try again in a moment.';
+      if (response.ok) {
+        try {
+          const json = await response.json();
+          if (json?.success && typeof json.data === 'string') text = json.data;
+        } catch {
+          // fallback to plain text if needed
+          text = await response.text();
+        }
+      }
+
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: text,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+
+      try {
+        await storeAnalysis({
+          type: 'market_analysis',
+          symbol: 'GM',
+          timeframe: 'daily',
+          analysis: {
+            prediction: text.slice(0, 240),
+            confidence: 0.7,
+            indicators: ['btc', 'alts', 'macro'],
+            reasoning: text,
+          },
+        });
+      } catch {
+        // ignore storage failure
+      }
+    } catch {
+      const errMsg: Message = {
+        id: (Date.now() + 2).toString(),
+        role: 'assistant',
+        content: 'GM — Grok4 is slow right now. Please try again shortly.',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errMsg]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // TSLA: concise one-paragraph brief from free Finnhub data
+  const handleTslaBrief = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      const res = await fetch('/api/stocks/brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol: 'TSLA' }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      let text = 'TSLA brief unavailable right now.';
+      if (res.ok) {
+        try {
+          const json = await res.json();
+          if (json?.success && typeof json.data === 'string') text = json.data;
+        } catch {
+          text = await res.text();
+        }
+      }
+      const msg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: text,
+        timestamp: new Date(),
+      };
+      setMessages((p) => [...p, msg]);
+    } catch {
+      const err: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'TSLA brief failed. Please try again shortly.',
+        timestamp: new Date(),
+      };
+      setMessages((p) => [...p, err]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Art generation via /api/grok4/image using xAI
+  const handleGenerateArt = async () => {
+    if (_isImageLoading) return;
+    _setIsImageLoading(true);
+    try {
+      const prompt = _imagePrompt || `${_systemPrompt} — generate an editorial header image in our brand style`;
+      const res = await fetch('/api/grok4/image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+      const ok = res.ok;
+      type ImageResponse = { imageUrl?: string; revisedPrompt?: string; moderation?: boolean; error?: string };
+      const json: ImageResponse = await res.json().catch(() => ({} as ImageResponse));
+      if (ok && json?.imageUrl) {
+        const item = {
+          id: Date.now().toString(),
+          url: json.imageUrl as string,
+          prompt,
+          revisedPrompt: json.revisedPrompt as string | undefined,
+          size: '1024x1024',
+          moderation: Boolean(json.moderation),
+          timestamp: new Date(),
+        };
+        _setImageHistory((h) => [...h, item]);
+        // Open preview dialog with the latest image
+        _setShowImagePreview(true);
+      } else {
+        const msg: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `Image generation failed${json?.error ? `: ${json.error}` : ''}.`,
+          timestamp: new Date(),
+        };
+        setMessages((p) => [...p, msg]);
+      }
+    } catch {
+      const msg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'Image generation encountered an error.',
+        timestamp: new Date(),
+      };
+      setMessages((p) => [...p, msg]);
+    } finally {
+      _setIsImageLoading(false);
     }
   };
 
@@ -756,9 +896,9 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
               MSTR vs BTC
             </button>
             <button
-              onClick={() => handleEliteAnalysis('TSLA')}
+              onClick={handleTslaBrief}
               className="px-3 py-1 sm:px-4 sm:py-2 bg-blue-500/20 border border-blue-500/40 text-blue-400 rounded-lg font-medium hover:bg-blue-500/30 transition-colors text-xs sm:text-sm flex items-center gap-1"
-              title="Elite TSLA Analysis"
+              title="TSLA Brief"
             >
               <BarChart3 className="h-4 w-4" />
               TSLA
@@ -920,7 +1060,7 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSubmit(undefined, 'gm')}
+                  onClick={handleGM}
                   disabled={isLoading}
                   className="w-full sm:w-auto bg-green-500/20 hover:bg-green-400/30 text-green-400 font-bold px-4 py-3 rounded-lg border border-green-500/30 transition-colors disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base"
                   title="Quick market overview"
@@ -938,10 +1078,10 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleEliteAnalysis('TSLA')}
+                  onClick={handleTslaBrief}
                   disabled={isLoading}
                   className="w-full sm:w-auto bg-blue-500/20 hover:bg-blue-400/30 text-blue-400 font-bold px-4 py-3 rounded-lg border border-blue-500/30 transition-colors disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base"
-                  title="Elite TSLA Analysis"
+                  title="TSLA Brief"
                 >
                   TSLA
                 </button>
@@ -967,6 +1107,49 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
 
   // Render Memory Panel
   
+  // Minimal Image Prompt Dialog + Preview
+  if (_showImageDialog) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+        <div className="bg-[#1c1f26] border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] rounded-lg w-[90vw] max-w-2xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-yellow-500 font-semibold">Generate Image</h3>
+            <button className="text-yellow-400 hover:text-yellow-300" onClick={() => _setShowImageDialog(false)}>✕</button>
+          </div>
+          <textarea
+            value={_imagePrompt}
+            onChange={(e) => _setImagePrompt(e.target.value)}
+            placeholder="Describe the image. Style, subject, mood..."
+            className="w-full h-28 bg-black/60 border border-yellow-500/30 rounded-lg px-3 py-2 text-white placeholder-yellow-400/50 focus:border-yellow-500 focus:outline-none"
+          />
+          <div className="flex items-center justify-end gap-2">
+            <button
+              className="px-3 py-2 bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 rounded-lg hover:bg-yellow-500/30"
+              onClick={() => {
+                _setShowImageDialog(false);
+              }}
+            >Cancel</button>
+            <button
+              className="px-3 py-2 bg-yellow-500 text-black rounded-lg font-bold hover:bg-yellow-400 disabled:bg-yellow-500/50"
+              disabled={_isImageLoading}
+              onClick={() => {
+                _setShowImageDialog(false);
+                handleGenerateArt();
+              }}
+            >Generate</button>
+          </div>
+
+          {_showImagePreview && _imageHistory.length > 0 && (
+            <div className="mt-3">
+              <div className="text-yellow-500 mb-2">Preview</div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={_imageHistory[_imageHistory.length - 1].url} alt="Generated" className="w-full rounded border border-yellow-500/30" />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
   async function handleWatchlist() {
     if (isLoading) return;
     setIsLoading(true);
