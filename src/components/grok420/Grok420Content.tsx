@@ -193,7 +193,7 @@ Try asking me about MSTR again or use the Research button above for detailed equ
     }
   };
 
-  const handleEliteAnalysis = async (ticker: string) => {
+  const _handleEliteAnalysis = async (ticker: string) => {
     setIsLoading(true);
     
     try {
@@ -727,6 +727,49 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
     }
   };
 
+  // TSLA: concise one-paragraph brief from free Finnhub data
+  const handleTslaBrief = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      const res = await fetch('/api/stocks/brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol: 'TSLA' }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      let text = 'TSLA brief unavailable right now.';
+      if (res.ok) {
+        try {
+          const json = await res.json();
+          if (json?.success && typeof json.data === 'string') text = json.data;
+        } catch {
+          text = await res.text();
+        }
+      }
+      const msg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: text,
+        timestamp: new Date(),
+      };
+      setMessages((p) => [...p, msg]);
+    } catch {
+      const err: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'TSLA brief failed. Please try again shortly.',
+        timestamp: new Date(),
+      };
+      setMessages((p) => [...p, err]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // ... rest of the component logic would continue here
   // For brevity, I'm showing the key integration points
 
@@ -829,9 +872,9 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
               MSTR vs BTC
             </button>
             <button
-              onClick={() => handleEliteAnalysis('TSLA')}
+              onClick={handleTslaBrief}
               className="px-3 py-1 sm:px-4 sm:py-2 bg-blue-500/20 border border-blue-500/40 text-blue-400 rounded-lg font-medium hover:bg-blue-500/30 transition-colors text-xs sm:text-sm flex items-center gap-1"
-              title="Elite TSLA Analysis"
+              title="TSLA Brief"
             >
               <BarChart3 className="h-4 w-4" />
               TSLA
@@ -1011,10 +1054,10 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleEliteAnalysis('TSLA')}
+                  onClick={handleTslaBrief}
                   disabled={isLoading}
                   className="w-full sm:w-auto bg-blue-500/20 hover:bg-blue-400/30 text-blue-400 font-bold px-4 py-3 rounded-lg border border-blue-500/30 transition-colors disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base"
-                  title="Elite TSLA Analysis"
+                  title="TSLA Brief"
                 >
                   TSLA
                 </button>
