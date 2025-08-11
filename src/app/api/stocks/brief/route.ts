@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     const from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
     const newsP = getFinnhubCompanyNews(ticker, from, to);
 
-    const [quote, earningsRaw, insiderRaw, recRaw, ptRaw, newsRaw] = await Promise.all([
+    const [quoteRes, earningsRes, insiderRes, recRes, ptRes, newsRes] = await Promise.allSettled([
       quoteP,
       earningsP,
       insiderP,
@@ -64,6 +64,14 @@ export async function POST(req: NextRequest) {
       ptP,
       newsP,
     ]);
+
+    // Safe unwraps with fallbacks
+    const quote = quoteRes.status === 'fulfilled' ? quoteRes.value : { c: 0, pc: 0 };
+    const earningsRaw = earningsRes.status === 'fulfilled' ? earningsRes.value : [];
+    const insiderRaw = insiderRes.status === 'fulfilled' ? insiderRes.value : [];
+    const recRaw = recRes.status === 'fulfilled' ? recRes.value : [];
+    const ptRaw = ptRes.status === 'fulfilled' ? ptRes.value : {};
+    const newsRaw = newsRes.status === 'fulfilled' ? newsRes.value : [];
 
     // Quote
     const price = Number(quote.c || 0);
@@ -89,12 +97,14 @@ export async function POST(req: NextRequest) {
     const insiderTone = typeof lastInsider?.score === 'number' ? (lastInsider.score > 0 ? 'supportive' : lastInsider.score < 0 ? 'cautious' : 'neutral') : 'neutral';
 
     // Analyst recommendations (take latest period)
-    const recArr = Array.isArray(recRaw) ? recRaw as RecommendationItem[] : [];
+    const recArr = Array.isArray(recRaw) ? (recRaw as RecommendationItem[]) : [];
     const rec = recArr[0];
     const buys = (rec?.strongBuy ?? 0) + (rec?.buy ?? 0);
     const holds = rec?.hold ?? 0;
     const sells = (rec?.sell ?? 0) + (rec?.strongSell ?? 0);
-    const recLine = buys || holds || sells ? `${buys} buy / ${holds} hold / ${sells} sell` : 'consensus mixed';
+    const recLine = Number.isFinite(buys + holds + sells) && (buys || holds || sells)
+      ? `${buys} buy / ${holds} hold / ${sells} sell`
+      : 'consensus mixed';
 
     // Price targets
     const pt = (ptRaw as PriceTarget) || {};
@@ -104,7 +114,7 @@ export async function POST(req: NextRequest) {
 
     // News one-liner
     const news = Array.isArray(newsRaw) ? newsRaw : [];
-    const headline = news.find((n: { headline?: string }) => n?.headline)?.headline as string | undefined;
+    const headline = news.find((n: { headline?: string }) => typeof n?.headline === 'string')?.headline as string | undefined;
     const newsLine = headline ? `Latest: ${headline}` : 'No major headlines this week.';
 
     // Compose single paragraph

@@ -770,6 +770,60 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
     }
   };
 
+  // Art generation via /api/grok4/image using xAI
+  const handleGenerateArt = async () => {
+    if (_isImageLoading) return;
+    _setIsImageLoading(true);
+    try {
+      const prompt = _imagePrompt || `${_systemPrompt} — generate an editorial header image in our brand style`;
+      const res = await fetch('/api/grok4/image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+      const ok = res.ok;
+      type ImageResponse = { imageUrl?: string; revisedPrompt?: string; moderation?: boolean; error?: string };
+      const json: ImageResponse = await res.json().catch(() => ({} as ImageResponse));
+      if (ok && json?.imageUrl) {
+        const item = {
+          id: Date.now().toString(),
+          url: json.imageUrl as string,
+          prompt,
+          revisedPrompt: json.revisedPrompt as string | undefined,
+          size: '1024x1024',
+          moderation: Boolean(json.moderation),
+          timestamp: new Date(),
+        };
+        _setImageHistory((h) => [...h, item]);
+        const msg: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `Generated image: ${item.url}`,
+          timestamp: new Date(),
+        };
+        setMessages((p) => [...p, msg]);
+      } else {
+        const msg: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `Image generation failed${json?.error ? `: ${json.error}` : ''}.`,
+          timestamp: new Date(),
+        };
+        setMessages((p) => [...p, msg]);
+      }
+    } catch {
+      const msg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'Image generation encountered an error.',
+        timestamp: new Date(),
+      };
+      setMessages((p) => [...p, msg]);
+    } finally {
+      _setIsImageLoading(false);
+    }
+  };
+
   // ... rest of the component logic would continue here
   // For brevity, I'm showing the key integration points
 
@@ -1027,7 +1081,7 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
                 </button>
                 <button
                   type="button"
-                  onClick={() => _setShowImageDialog(true)}
+                  onClick={handleGenerateArt}
                   disabled={_isImageLoading}
                   className="w-full sm:w-auto bg-yellow-500/20 hover:bg-yellow-400/30 text-yellow-500 font-bold px-4 py-3 rounded-lg border border-yellow-500/30 transition-colors disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base"
                   title="Generate image with art direction prompt"
