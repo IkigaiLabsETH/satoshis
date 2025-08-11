@@ -133,8 +133,10 @@ export async function GET() {
     let sentimentScore = 0;
     let fngVal = 50;
     try {
-      const fng = await fetchJson<any>('https://api.alternative.me/fng/?limit=2&format=json');
-      const val = Number((fng?.data?.[0]?.value as string) ?? '50');
+      type FngItem = { value?: string | number };
+      type FngResponse = { data?: FngItem[] };
+      const fng = await fetchJson<FngResponse>('https://api.alternative.me/fng/?limit=2&format=json');
+      const val = Number(((fng?.data?.[0]?.value) as string | number | undefined) ?? '50');
       if (Number.isFinite(val)) {
         fngVal = val;
         sentimentScore = val >= 60 ? 1 : val <= 40 ? -1 : 0;
