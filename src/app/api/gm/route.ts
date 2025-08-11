@@ -80,7 +80,9 @@ export async function POST(req: NextRequest) {
     const btc: CgBtcSimple = btcRes.status === 'fulfilled' && btcRes.value.ok ? (await btcRes.value.json()) as CgBtcSimple : { bitcoin: { usd: 0, usd_24h_change: 0 } };
     const majors: CgMarketsItem[] = majorsRes.status === 'fulfilled' && majorsRes.value.ok ? (await majorsRes.value.json()) as CgMarketsItem[] : [];
     const global: { data?: { market_cap_change_percentage_24h_usd?: number; market_cap_percentage?: { btc?: number } } } =
-      majorsRes.status === 'fulfilled' && globalRes.value.ok ? await globalRes.value.json() : { data: { market_cap_change_percentage_24h_usd: 0, market_cap_percentage: { btc: 0 } } };
+      globalRes.status === 'fulfilled' && globalRes.value.ok
+        ? (await globalRes.value.json()) as { data?: { market_cap_change_percentage_24h_usd?: number; market_cap_percentage?: { btc?: number } } }
+        : { data: { market_cap_change_percentage_24h_usd: 0, market_cap_percentage: { btc: 0 } } };
 
     // Parse BTC Advisor
     let advisor: AdvisorResponse = { success: false };
