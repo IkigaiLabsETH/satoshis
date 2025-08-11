@@ -3,6 +3,12 @@ import supermemoryService from '@/services/supermemory';
 
 export async function POST(request: NextRequest) {
   try {
+    if (!process.env.SUPERMEMORY_API_KEY) {
+      return NextResponse.json(
+        { error: 'Supermemory not configured (missing SUPERMEMORY_API_KEY)' },
+        { status: 503 }
+      );
+    }
     const body = await request.json();
     const { action, data } = body;
 
@@ -43,6 +49,14 @@ export async function POST(request: NextRequest) {
         const historyResult = await supermemoryService.getAnalysisHistory(data.symbol);
         return NextResponse.json(historyResult);
 
+      case 'storeOutperformWatchlist':
+        const watchlistResult = await supermemoryService.storeOutperformWatchlist(data.list);
+        return NextResponse.json(watchlistResult);
+
+      case 'getOutperformWatchlists':
+        const watchlists = await supermemoryService.getOutperformWatchlists();
+        return NextResponse.json(watchlists);
+
       default:
         return NextResponse.json(
           { error: 'Invalid action' },
@@ -60,6 +74,12 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    if (!process.env.SUPERMEMORY_API_KEY) {
+      return NextResponse.json(
+        { error: 'Supermemory not configured (missing SUPERMEMORY_API_KEY)' },
+        { status: 503 }
+      );
+    }
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
     const query = searchParams.get('query');
