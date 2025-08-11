@@ -1,6 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFinnhubQuote } from '@/services/market/finnhub';
 
+// Types for external responses
+type CgBtcSimple = { bitcoin: { usd: number; usd_24h_change: number } };
+type CgMarketsItem = {
+  id: string;
+  symbol: string;
+  name: string;
+  price_change_percentage_24h_in_currency?: number;
+};
+type CgEthSolBtc = {
+  ethereum?: { btc_24h_change?: number };
+  solana?: { btc_24h_change?: number };
+};
+type AdvisorContribution = { key: string; contribution: number };
+type AdvisorResponse = {
+  success: boolean;
+  data?: {
+    summary?: { stance?: string };
+    details?: { contributions?: AdvisorContribution[] };
+  };
+};
+type OutperformItem = {
+  symbol: string;
+  price_change_percentage_24h: number;
+  id?: string;
+  name?: string;
+};
+
 // Simple fetch with timeout
 async function fetchWithTimeout(url: string, ms = 7000): Promise<Response> {
   const controller = new AbortController();
@@ -50,15 +77,16 @@ export async function POST(req: NextRequest) {
     ]);
 
     // Parse CoinGecko
-    const btc = btcRes.status === 'fulfilled' && btcRes.value.ok ? await btcRes.value.json() : { bitcoin: { usd: 0, usd_24h_change: 0 } };
-    const majors = majorsRes.status === 'fulfilled' && majorsRes.value.ok ? await majorsRes.value.json() : [];
-    const global = globalRes.status === 'fulfilled' && globalRes.value.ok ? await globalRes.value.json() : { data: { market_cap_change_percentage_24h_usd: 0, market_cap_percentage: { btc: 0 } } };
+    const btc: CgBtcSimple = btcRes.status === 'fulfilled' && btcRes.value.ok ? (await btcRes.value.json()) as CgBtcSimple : { bitcoin: { usd: 0, usd_24h_change: 0 } };
+    const majors: CgMarketsItem[] = majorsRes.status === 'fulfilled' && majorsRes.value.ok ? (await majorsRes.value.json()) as CgMarketsItem[] : [];
+    const global: { data?: { market_cap_change_percentage_24h_usd?: number; market_cap_percentage?: { btc?: number } } } =
+      majorsRes.status === 'fulfilled' && globalRes.value.ok ? await globalRes.value.json() : { data: { market_cap_change_percentage_24h_usd: 0, market_cap_percentage: { btc: 0 } } };
 
     // Parse BTC Advisor
-    let advisor: any = { success: false };
+    let advisor: AdvisorResponse = { success: false };
     if (advisorRes.status === 'fulfilled') {
       try {
-        advisor = await advisorRes.value.json();
+        advisor = (await advisorRes.value.json()) as AdvisorResponse;
       } catch {}
     }
 
@@ -77,30 +105,28 @@ export async function POST(req: NextRequest) {
 
     const btcUsd = btc.bitcoin?.usd ?? 0;
     const btcChg = btc.bitcoin?.usd_24h_change ?? 0;
-    const ethSolBtc = ethSolBtcRes.status === 'fulfilled' && ethSolBtcRes.value.ok ? await ethSolBtcRes.value.json() : { ethereum: { btc_24h_change: 0 }, solana: { btc_24h_change: 0 } };
+    const ethSolBtc: CgEthSolBtc = ethSolBtcRes.status === 'fulfilled' && ethSolBtcRes.value.ok ? (await ethSolBtcRes.value.json()) as CgEthSolBtc : { ethereum: { btc_24h_change: 0 }, solana: { btc_24h_change: 0 } };
     const ethBtcChg = Number(ethSolBtc?.ethereum?.btc_24h_change ?? 0);
     const solBtcChg = Number(ethSolBtc?.solana?.btc_24h_change ?? 0);
     const dom = global.data?.market_cap_percentage?.btc ?? 0;
-    const outperformData =
+    const outperformData: OutperformItem[] =
       outperform24hRes.status === 'fulfilled' && outperform24hRes.value.ok
-        ? await outperform24hRes.value.json()
+        ? (await outperform24hRes.value.json()) as OutperformItem[]
         : [];
 
     // Outperformers vs BTC (simple: 24h change vs BTC's 24h)
-    const outperform = Array.isArray(majors)
-      ? majors
-          .map((c: any) => ({ id: c.id, symbol: c.symbol?.toUpperCase(), name: c.name, chg24h: c.price_change_percentage_24h_in_currency }))
-          .filter((c: any) => typeof c.chg24h === 'number')
-          .filter((c: any) => c.chg24h - btcChg > 1.0) // threshold 1% above BTC
-          .sort((a: any, b: any) => b.chg24h - a.chg24h)
-          .slice(0, 3)
-      : [];
+    const outperform = majors
+      .map((c) => ({ id: c.id, symbol: (c.symbol || '').toUpperCase(), name: c.name, chg24h: c.price_change_percentage_24h_in_currency ?? 0 }))
+      .filter((c) => Number.isFinite(c.chg24h))
+      .filter((c) => (c.chg24h as number) - btcChg > 1.0) // threshold 1% above BTC
+      .sort((a, b) => (b.chg24h as number) - (a.chg24h as number))
+      .slice(0, 3);
 
     // BTC Advisor stance line
     let stanceLine = '';
     if (advisor?.success && advisor?.data) {
       const st = advisor.data.summary?.stance ?? 'Neutral';
-      const c = advisor.data.details?.contributions ?? [];
+      const c: AdvisorContribution[] = advisor.data.details?.contributions ?? [];
       const labelMap: Record<string, string> = {
         macro: 'macro/liquidity',
         onchain: 'on-chain health',
@@ -110,9 +136,9 @@ export async function POST(req: NextRequest) {
       };
       const top = c
         .slice(0)
-        .sort((a: any, b: any) => Math.abs(b.contribution) - Math.abs(a.contribution))
+        .sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution))
         .slice(0, 2)
-        .map((r: any) => labelMap[r.key] ?? r.key)
+        .map((r) => labelMap[r.key] ?? r.key)
         .join(' & ');
       stanceLine = `BTC Advisor: ${st}${top ? ` — driven by ${top}` : ''}`;
     }
@@ -130,11 +156,11 @@ export async function POST(req: NextRequest) {
     if (Array.isArray(outperformData) && outperformData.length > 0) {
       const top = outperformData
         .slice(0, 3)
-        .map((c: any) => `${String(c.symbol).toUpperCase()} ${pct(c.price_change_percentage_24h, 1)} vs BTC`)
+        .map((c) => `${String(c.symbol).toUpperCase()} ${pct(c.price_change_percentage_24h, 1)} vs BTC`)
         .join(', ');
       lines.push(`Alts outperforming BTC (24h): ${relPairs}; also: ${top}.`);
     } else if (outperform.length > 0) {
-      const list = outperform.map((c: any) => `${c.symbol} ${pct(c.chg24h - btcChg, 1)} vs BTC`).join(', ');
+      const list = outperform.map((c) => `${c.symbol} ${pct((c.chg24h as number) - btcChg, 1)} vs BTC`).join(', ');
       lines.push(`Alts outperforming BTC: ${relPairs}; also: ${list}.`);
     } else {
       lines.push(`Alts: ${relPairs}; rotation selective.`);

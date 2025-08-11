@@ -16,7 +16,7 @@ export async function fetchFromAPI<T>(path: string, params: Record<string, strin
 }
 
 // Generic JSON POST helper
-export async function apiPost<T>(url: string, body?: any, init?: RequestInit): Promise<T> {
+export async function apiPost<T>(url: string, body?: Record<string, unknown>, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -27,11 +27,11 @@ export async function apiPost<T>(url: string, body?: any, init?: RequestInit): P
   return res.json();
 }
 
-export async function getBtcAdvisorDecision(payload: any) {
-  const json = await apiPost<{ success: boolean; data?: any; error?: string }>(
+export async function getBtcAdvisorDecision(payload: Record<string, unknown>) {
+  const json = await apiPost<{ success: boolean; data?: unknown; error?: string }>(
     '/api/advisor/btc',
     payload,
   );
   if (!json.success) throw new Error(json.error || 'advisor failure');
-  return json.data;
+  return json.data as unknown;
 }

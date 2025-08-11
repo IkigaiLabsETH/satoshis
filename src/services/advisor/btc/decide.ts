@@ -7,7 +7,7 @@ function roundToHalfPercent(value: number) {
 }
 
 export function decideBtcTargetAllocation(input: DecisionInput, cfg = BTC_ADVISOR_CONFIG): DecisionOutput {
-  const { currentPct, basePct, user, scores, ctx } = input;
+  const { /* currentPct, */ basePct, user, scores, ctx } = input;
 
   const w = cfg.weights[ctx.regime];
   let net = w.macro * scores.macro
