@@ -8,7 +8,14 @@ async function fetchJson<T>(url: string, timeoutMs = 8000): Promise<T> {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(url, { next: { revalidate: 60 }, signal: controller.signal, headers: { 'accept': 'application/json' } });
+    const res = await fetch(url, {
+      next: { revalidate: 60 },
+      signal: controller.signal,
+      headers: {
+        'accept': 'application/json',
+        'user-agent': 'btc-advisor/1.0 (+cheeseburger)'
+      }
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return (await res.json()) as T;
   } finally {

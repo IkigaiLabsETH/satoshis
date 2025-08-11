@@ -563,7 +563,7 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
     setIsLoading(true);
     try {
       // Call live stance endpoint (falls back to server-side mapping)
-      const live = await fetch('/api/advisor/btc/live');
+      const live = await fetch('/api/advisor/btc/live', { cache: 'no-store' });
       const liveJson = live.ok ? await live.json() : { success: false };
       const decision: DecisionOutput = liveJson.success ? liveJson.data : await getBtcAdvisorDecision({});
       const stance = decision.summary?.stance ?? ((decision.details?.netScore ?? 0) > 0.25 ? 'Bullish' : (decision.details?.netScore ?? 0) < -0.25 ? 'Bearish' : 'Neutral');
