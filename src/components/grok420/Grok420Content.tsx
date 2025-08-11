@@ -795,13 +795,8 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
           timestamp: new Date(),
         };
         _setImageHistory((h) => [...h, item]);
-        const msg: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: `Generated image: ${item.url}`,
-          timestamp: new Date(),
-        };
-        setMessages((p) => [...p, msg]);
+        // Open preview dialog with the latest image
+        _setShowImagePreview(true);
       } else {
         const msg: Message = {
           id: (Date.now() + 1).toString(),
@@ -1081,7 +1076,7 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
                 </button>
                 <button
                   type="button"
-                  onClick={handleGenerateArt}
+                  onClick={() => _setShowImageDialog(true)}
                   disabled={_isImageLoading}
                   className="w-full sm:w-auto bg-yellow-500/20 hover:bg-yellow-400/30 text-yellow-500 font-bold px-4 py-3 rounded-lg border border-yellow-500/30 transition-colors disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base"
                   title="Generate image with art direction prompt"
@@ -1137,6 +1132,49 @@ Let me fetch the latest data and give you a comprehensive MSTR vs BTC analysis..
 
   // Render Memory Panel
   
+  // Minimal Image Prompt Dialog + Preview
+  if (_showImageDialog) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+        <div className="bg-[#1c1f26] border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] rounded-lg w-[90vw] max-w-2xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-yellow-500 font-semibold">Generate Image</h3>
+            <button className="text-yellow-400 hover:text-yellow-300" onClick={() => _setShowImageDialog(false)}>✕</button>
+          </div>
+          <textarea
+            value={_imagePrompt}
+            onChange={(e) => _setImagePrompt(e.target.value)}
+            placeholder="Describe the image. Style, subject, mood..."
+            className="w-full h-28 bg-black/60 border border-yellow-500/30 rounded-lg px-3 py-2 text-white placeholder-yellow-400/50 focus:border-yellow-500 focus:outline-none"
+          />
+          <div className="flex items-center justify-end gap-2">
+            <button
+              className="px-3 py-2 bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 rounded-lg hover:bg-yellow-500/30"
+              onClick={() => {
+                _setShowImageDialog(false);
+              }}
+            >Cancel</button>
+            <button
+              className="px-3 py-2 bg-yellow-500 text-black rounded-lg font-bold hover:bg-yellow-400 disabled:bg-yellow-500/50"
+              disabled={_isImageLoading}
+              onClick={() => {
+                _setShowImageDialog(false);
+                handleGenerateArt();
+              }}
+            >Generate</button>
+          </div>
+
+          {_showImagePreview && _imageHistory.length > 0 && (
+            <div className="mt-3">
+              <div className="text-yellow-500 mb-2">Preview</div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={_imageHistory[_imageHistory.length - 1].url} alt="Generated" className="w-full rounded border border-yellow-500/30" />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
   async function handleWatchlist() {
     if (isLoading) return;
     setIsLoading(true);
