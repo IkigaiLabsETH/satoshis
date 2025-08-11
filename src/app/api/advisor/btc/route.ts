@@ -27,8 +27,9 @@ export async function POST(req: NextRequest) {
 
     const decision = decideBtcTargetAllocation(input);
     return NextResponse.json({ success: true, data: decision });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err?.message ?? 'Unknown error' }, { status: 400 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    return NextResponse.json({ success: false, error: message }, { status: 400 });
   }
 }
 

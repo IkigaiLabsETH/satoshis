@@ -58,7 +58,7 @@ export async function GET() {
     // 3) BTC dominance (current level as coarse proxy)
     let dominanceAdj = 0;
     try {
-      const global = await fetchJson<any>(`${CG_BASE}/global`);
+      const global = await fetchJson<{ data?: { market_cap_percentage?: { btc?: number } } }>(`${CG_BASE}/global`);
       const btcDom = global?.data?.market_cap_percentage?.btc ?? 0;
       if (btcDom > 55) dominanceAdj = 1; else if (btcDom < 45) dominanceAdj = -1; else dominanceAdj = 0;
     } catch {}
@@ -69,14 +69,18 @@ export async function GET() {
     let dxySlope = 0;
     if (FH) {
       const base = 'https://finnhub.io/api/v1/economic?token=' + FH + '&indicator=';
+      type EconPoint = { date?: string; time?: string; datetime?: string; t?: number; value?: number; v?: number };
+      type EconResponse = { data?: EconPoint[] } | EconPoint[];
       const [dgs10, cpi, dxy] = await Promise.allSettled([
-        fetchJson<any>(base + 'DGS10'),
-        fetchJson<any>(base + 'CPIAUCSL'),
-        fetchJson<any>(base + 'DTWEXBGS'),
+        fetchJson<EconResponse>(base + 'DGS10'),
+        fetchJson<EconResponse>(base + 'CPIAUCSL'),
+        fetchJson<EconResponse>(base + 'DTWEXBGS'),
       ]);
-      const norm = (x: any): { t: number; v: number }[] => {
-        const arr = (x as any)?.data ?? (Array.isArray(x) ? x : []);
-        return arr.map((p: any) => ({ t: +new Date(p?.date || p?.time || p?.datetime || p?.t || 0), v: Number(p?.value ?? p?.v) })).filter((p: any) => Number.isFinite(p.v));
+      const norm = (x: EconResponse): { t: number; v: number }[] => {
+        const arr = (x as { data?: EconPoint[] })?.data ?? (Array.isArray(x) ? (x as EconPoint[]) : []);
+        return arr
+          .map((p) => ({ t: +new Date((p?.date || p?.time || p?.datetime || (p?.t as number)) ?? 0), v: Number(p?.value ?? p?.v) }))
+          .filter((p) => Number.isFinite(p.v));
       };
       const s10 = dgs10.status === 'fulfilled' ? norm(dgs10.value) : [];
       const scpi = cpi.status === 'fulfilled' ? norm(cpi.value) : [];
@@ -109,12 +113,13 @@ export async function GET() {
     let onchainScore = 0;
     let hrChg = 0, txChg = 0;
     try {
+      type ChainSeries = { values?: Array<{ x?: number; y?: number }> };
       const [hr, ntx] = await Promise.all([
-        fetchJson<any>('https://api.blockchain.info/charts/hash-rate?timespan=30days&rollingAverage=7days&format=json'),
-        fetchJson<any>('https://api.blockchain.info/charts/n-transactions?timespan=30days&rollingAverage=7days&format=json'),
+        fetchJson<ChainSeries>('https://api.blockchain.info/charts/hash-rate?timespan=30days&rollingAverage=7days&format=json'),
+        fetchJson<ChainSeries>('https://api.blockchain.info/charts/n-transactions?timespan=30days&rollingAverage=7days&format=json'),
       ]);
-      const hrVals: number[] = (hr?.values ?? []).map((v: any) => Number(v?.y)).filter((n: any) => Number.isFinite(n));
-      const txVals: number[] = (ntx?.values ?? []).map((v: any) => Number(v?.y)).filter((n: any) => Number.isFinite(n));
+      const hrVals: number[] = (hr?.values ?? []).map((v) => Number(v?.y)).filter((n) => Number.isFinite(n));
+      const txVals: number[] = (ntx?.values ?? []).map((v) => Number(v?.y)).filter((n) => Number.isFinite(n));
       if (hrVals.length > 5 && txVals.length > 5) {
         hrChg = percentChange(hrVals[0], hrVals[hrVals.length - 1]);
         txChg = percentChange(txVals[0], txVals[txVals.length - 1]);
@@ -168,8 +173,9 @@ export async function GET() {
 
     const decision = decideBtcTargetAllocation(input);
     return NextResponse.json({ success: true, data: decision, meta: { price: lastPrice, sma200, m30Change, stChange, dominanceAdj, realSlope, dxySlope, onchainScore, sentimentScore, hrChg, txChg, fngVal } });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err?.message ?? 'Failed to compute live decision' }, { status: 500 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to compute live decision';
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
 
