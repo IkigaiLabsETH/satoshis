@@ -1,19 +1,85 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLiveCryptoPrices } from '@/hooks/useLiveCryptoPrices';
 
 export default function TradingStrategy() {
+  const { BTC, ETH, isLoading, error } = useLiveCryptoPrices();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
   };
+
+  // Portfolio constraints
+  const totalPortfolio = 521.95; // Total account equity
+  const maxPositionSize = totalPortfolio * 0.10; // 10% maximum per position
+
+  // Calculate optimal position sizes based on live prices and 10% limit
+  const calculateOptimalPositionSize = (asset: 'BTC' | 'ETH') => {
+    const currentPrice = asset === 'BTC' ? BTC.price : ETH.price;
+    if (!currentPrice || currentPrice <= 0) return { size: 0, notional: 0, leverage: 0 };
+    
+    // Calculate maximum position size in USD (10% of portfolio)
+    const maxPositionUSD = maxPositionSize;
+    
+    // Calculate position size in asset units
+    const positionSize = maxPositionUSD / currentPrice;
+    
+    // Calculate notional value
+    const notionalValue = positionSize * currentPrice;
+    
+    // Calculate safe leverage (ensure margin requirements are met)
+    const safeLeverage = Math.min(10, Math.max(5, totalPortfolio / notionalValue));
+    
+    return {
+      size: positionSize,
+      notional: notionalValue,
+      leverage: safeLeverage
+    };
+  };
+
+  const btcPosition = calculateOptimalPositionSize('BTC');
+  const ethPosition = calculateOptimalPositionSize('ETH');
 
   return (
     <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
       <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
         Perpetuals Trading Strategy
       </h3>
+
+      {/* Live Price Status */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-none">
+          <div className="flex items-center space-x-3">
+            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+            <span className="text-red-400">Error fetching live prices: {error}</span>
+          </div>
+        </div>
+      )}
+
+      <div className="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-none">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-green-400">
+              {isLoading ? 'Loading live prices from CoinGecko...' : 'Live prices from CoinGecko API'}
+            </span>
+          </div>
+          <div className="text-sm text-gray-400">
+            {isClient && !isLoading && (
+              <>
+                BTC: ${BTC.price.toLocaleString()} | ETH: ${ETH.price.toLocaleString()}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
       
       <div className="space-y-6">
         {/* Entry Strategy */}
@@ -31,11 +97,17 @@ export default function TradingStrategy() {
             <div className="mt-4 space-y-3 text-gray-300">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span>Wait for BTC to clear $119,425 (yellow liquidation level)</span>
+                <span>
+                  Wait for BTC to clear ${isLoading ? '--' : BTC.price ? Math.floor(BTC.price * 0.995).toLocaleString() : '119,425'} 
+                  (yellow liquidation level)
+                </span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span>Wait for ETH to clear $3,200 (yellow liquidation level)</span>
+                <span>
+                  Wait for ETH to clear ${isLoading ? '--' : ETH.price ? Math.floor(ETH.price * 0.995).toLocaleString() : '3,200'} 
+                  (yellow liquidation level)
+                </span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-red-500 rounded-full"></div>
@@ -65,27 +137,51 @@ export default function TradingStrategy() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <h5 className="text-yellow-400 font-semibold mb-2">Bitcoin (BTC)</h5>
-                  <ul className="space-y-1 text-sm">
-                    <li>• Position Size: 0.018403 BTC</li>
-                    <li>• Entry Price: $119,425</li>
-                    <li>• Notional Value: ~$2,197</li>
-                    <li>• Leverage: 5-10x</li>
-                  </ul>
+                  {isLoading ? (
+                    <div className="animate-pulse space-y-1">
+                      <div className="h-4 bg-gray-700 rounded"></div>
+                      <div className="h-4 bg-gray-700 rounded"></div>
+                      <div className="h-4 bg-gray-700 rounded"></div>
+                      <div className="h-4 bg-gray-700 rounded"></div>
+                    </div>
+                  ) : (
+                    <ul className="space-y-1 text-sm">
+                      <li>• Position Size: {btcPosition.size.toFixed(6)} BTC</li>
+                      <li>• Entry Price: ${BTC.price ? BTC.price.toLocaleString() : '--'}</li>
+                      <li>• Notional Value: ~${btcPosition.notional.toFixed(0)}</li>
+                      <li>• Leverage: {btcPosition.leverage.toFixed(1)}x</li>
+                      <li>• Portfolio Allocation: {((btcPosition.notional / totalPortfolio) * 100).toFixed(1)}%</li>
+                    </ul>
+                  )}
                 </div>
                 <div>
                   <h5 className="text-yellow-400 font-semibold mb-2">Ethereum (ETH)</h5>
-                  <ul className="space-y-1 text-sm">
-                    <li>• Position Size: 0.5 ETH</li>
-                    <li>• Entry Price: $3,200</li>
-                    <li>• Notional Value: ~$1,600</li>
-                    <li>• Leverage: 5-10x</li>
-                  </ul>
+                  {isLoading ? (
+                    <div className="animate-pulse space-y-1">
+                      <div className="h-4 bg-gray-700 rounded"></div>
+                      <div className="h-4 bg-gray-700 rounded"></div>
+                      <div className="h-4 bg-gray-700 rounded"></div>
+                      <div className="h-4 bg-gray-700 rounded"></div>
+                    </div>
+                  ) : (
+                    <ul className="space-y-1 text-sm">
+                      <li>• Position Size: {ethPosition.size.toFixed(4)} ETH</li>
+                      <li>• Entry Price: ${ETH.price ? ETH.price.toLocaleString() : '--'}</li>
+                      <li>• Notional Value: ~${ethPosition.notional.toFixed(0)}</li>
+                      <li>• Leverage: {ethPosition.leverage.toFixed(1)}x</li>
+                      <li>• Portfolio Allocation: {((ethPosition.notional / totalPortfolio) * 100).toFixed(1)}%</li>
+                    </ul>
+                  )}
                 </div>
               </div>
               <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded">
                 <p className="text-sm text-yellow-400">
-                  <strong>Note:</strong> Position sizes are calculated to maintain margin above $211.95 
-                  with current account equity of $521.95
+                  <strong>Portfolio Constraint:</strong> Maximum 10% allocation per position 
+                  (${maxPositionSize.toFixed(0)}) to maintain proper risk management
+                </p>
+                <p className="text-sm text-gray-300 mt-2">
+                  <strong>Total Portfolio:</strong> ${totalPortfolio.toFixed(2)} | 
+                  <strong>Available Margin:</strong> ${(totalPortfolio - btcPosition.notional - ethPosition.notional).toFixed(2)}
                 </p>
               </div>
             </div>
