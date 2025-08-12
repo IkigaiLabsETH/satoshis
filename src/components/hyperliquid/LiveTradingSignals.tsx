@@ -1,9 +1,29 @@
 "use client";
 
 import { useLiveCryptoPrices } from '@/hooks/useLiveCryptoPrices';
+import { useEffect, useState } from 'react';
 
 export default function LiveTradingSignals() {
+  const [isClient, setIsClient] = useState(false);
   const { BTC, ETH, isLoading, error, retry } = useLiveCryptoPrices();
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Don't render anything until client-side hydration is complete
+  if (!isClient) {
+    return (
+      <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_rgba(234,179,8,1)] mb-16">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-yellow-500 mb-4">Live Trading Signals</h2>
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            Initializing...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Show loading state while data is being fetched
   if (isLoading) {
@@ -26,13 +46,13 @@ export default function LiveTradingSignals() {
   // Determine entry signals
   const getBTCEntrySignal = () => {
     if (isLoading) return 'LOADING...';
-    if (error || !BTC.price) return 'ERROR';
+    if (error || !BTC?.price) return 'ERROR';
     return BTC.price > BTC_ENTRY_THRESHOLD ? 'READY' : 'WAITING';
   };
 
   const getETHEntrySignal = () => {
     if (isLoading) return 'LOADING...';
-    if (error || !ETH.price) return 'ERROR';
+    if (error || !ETH?.price) return 'ERROR';
     return ETH.price > ETH_ENTRY_THRESHOLD ? 'READY' : 'WAITING';
   };
 
@@ -88,17 +108,16 @@ export default function LiveTradingSignals() {
             <p className="text-sm text-white">
               Target: ${BTC_ENTRY_THRESHOLD.toLocaleString()}
             </p>
-            {BTC.price && (
+            {BTC?.price && (
               <p className="text-xs text-gray-400 mt-2">
                 Current: ${BTC.price.toLocaleString()}
               </p>
             )}
-            {BTC.change24h !== undefined && (
+            {BTC?.change24h !== undefined && (
               <p className={`text-xs mt-1 ${BTC.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 24h: {BTC.change24h >= 0 ? '+' : ''}{BTC.change24h.toFixed(2)}%
               </p>
             )}
-
           </div>
         </div>
 
@@ -113,17 +132,16 @@ export default function LiveTradingSignals() {
             <p className="text-sm text-white">
               Target: ${ETH_ENTRY_THRESHOLD.toLocaleString()}
             </p>
-            {ETH.price && (
+            {ETH?.price && (
               <p className="text-xs text-gray-400 mt-2">
                 Current: ${ETH.price.toLocaleString()}
               </p>
             )}
-            {ETH.change24h !== undefined && (
+            {ETH?.change24h !== undefined && (
               <p className={`text-xs mt-1 ${ETH.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 24h: {ETH.change24h >= 0 ? '+' : ''}{ETH.change24h.toFixed(2)}%
               </p>
             )}
-
           </div>
         </div>
 
@@ -137,7 +155,7 @@ export default function LiveTradingSignals() {
             </div>
             <p className="text-sm text-white">Liquidation levels</p>
             <p className="text-xs text-gray-400 mt-2">Strategy active</p>
-            {BTC.lastUpdated && (
+            {BTC?.lastUpdated && (
               <p className="text-xs text-gray-500 mt-2">
                 Updated: {BTC.lastUpdated}
               </p>
@@ -204,7 +222,6 @@ export default function LiveTradingSignals() {
                 Refreshing prices every 30s...
               </div>
             )}
-
           </div>
         </div>
       </div>
