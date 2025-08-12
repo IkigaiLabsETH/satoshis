@@ -47,6 +47,28 @@ export default function HyperliquidTradePage() {
               </p>
             </div>
 
+            {/* Core Strategy Statement */}
+            <div className="bg-gradient-to-r from-yellow-500/20 to-red-500/20 border-2 border-yellow-500 rounded-2xl p-8 mb-8">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-yellow-400 mb-6">🎯 Core Trading Strategy</h2>
+                <div className="bg-black/50 p-6 rounded-xl border border-yellow-500/30">
+                  <p className="text-xl text-white leading-relaxed mb-4">
+                    <span className="text-yellow-400 font-bold">Follow liquidation levels long when the red and yellow lines are cleared.</span> 
+                    Set stop losses (don&apos;t be me) and take profit at 25%. 
+                    <span className="text-green-400 font-bold"> Rinse-repeat and put the 25% profit into spot on the dip.</span>
+                  </p>
+                  <div className="flex items-center justify-center space-x-2 text-sm text-gray-300">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <span>Liquidation Level Breakouts</span>
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span>Risk Management</span>
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Profit Recycling</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Strategy Overview Card */}
             <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] mb-16">
               <div className="grid md:grid-cols-2 gap-8 items-center">
