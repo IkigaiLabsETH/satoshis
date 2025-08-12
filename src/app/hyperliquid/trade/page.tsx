@@ -5,8 +5,22 @@ import LiquidationTracker from '@/components/hyperliquid/LiquidationTracker';
 import PositionManager from '@/components/hyperliquid/PositionManager';
 import TradingChart from '@/components/hyperliquid/TradingChart';
 import LiveMetrics from '@/components/hyperliquid/LiveMetrics';
+import LiveTradingSignals from '@/components/hyperliquid/LiveTradingSignals';
+
+import Modal from '@/components/Modal';
+import { useState } from 'react';
 
 export default function HyperliquidTradePage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openLiquidationModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Hero Section */}
@@ -48,70 +62,59 @@ export default function HyperliquidTradePage() {
             </div>
 
             {/* Core Strategy Statement */}
-            <div className="bg-gradient-to-r from-yellow-500/20 to-red-500/20 border-2 border-yellow-500 rounded-2xl p-8 mb-8">
-              <div className="text-center">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6">🎯 Core Trading Strategy</h2>
-                <div className="bg-black/50 p-6 rounded-xl border border-yellow-500/30">
-                  <p className="text-xl text-white leading-relaxed mb-4">
-                    <span className="text-yellow-400 font-bold">Follow liquidation levels long when the red and yellow lines are cleared.</span> 
-                    Set stop losses (don&apos;t be me) and take profit at 25%. 
-                    <span className="text-green-400 font-bold"> Rinse-repeat and put the 25% profit into spot on the dip.</span>
-                  </p>
-                  <div className="flex items-center justify-center space-x-2 text-sm text-gray-300">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <span>Liquidation Level Breakouts</span>
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span>Risk Management</span>
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span>Profit Recycling</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Strategy Overview Card */}
             <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] mb-16">
-              <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div>
-                  <h2 className="text-3xl font-bold text-yellow-500 mb-4">Trading Strategy Overview</h2>
-                  <div className="space-y-4 text-gray-300">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <div>
-                        <span className="font-semibold text-white">Entry Strategy:</span> Wait for BTC &gt; $119,425 and ETH &gt; $3,200
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <div>
-                        <span className="font-semibold text-white">Risk Management:</span> 5-10x leverage, 2-3% stop loss
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <div>
-                        <span className="font-semibold text-white">Profit Strategy:</span> 25% take profit, 25% to spot on dips
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <div>
-                        <span className="font-semibold text-white">Position Sizing:</span> BTC (0.018403), ETH (0.5) with margin management
-                      </div>
-                    </div>
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-bold text-white mb-4">🎯 Core Trading Strategy</h2>
+                <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                  Professional perpetuals trading approach with liquidation level analysis,
+                  risk management, and profit optimization strategies
+                </p>
+              </div>
+              
+              <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                <p className="text-xl text-white leading-relaxed mb-6">
+                  <span className="text-yellow-400 font-bold">Follow liquidation levels long when the red and yellow lines are cleared.</span> 
+                  Set stop losses (don&apos;t be me) and take profit at 25%. 
+                  <span className="text-green-400 font-bold"> Rinse-repeat and put the 25% profit into spot on the dip.</span>
+                </p>
+                
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                  <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                    <p className="text-blue-300 text-sm leading-relaxed">
+                      <span className="font-semibold">Personal Philosophy:</span> I&apos;m of the same camp as Marty and the only long rn. The market is too hot and I&apos;m also trading SOL and SUI. I know they are destined for higher ATH (when, idk). So when the high leveraged longs get liquidated as they come down (follow Marty&apos;s liquidation chart), and the reds, yellow and sometimes blue lines get cleared- that&apos;s when Binance seems to allow the price to pump again.
+                    </p>
                   </div>
-                </div>
-                <div className="text-center">
-                  <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
-                    <div className="text-4xl font-bold text-yellow-400 mb-2">🔥</div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Live Trading Dashboard</h3>
-                    <p className="text-gray-300 text-sm">
-                      Monitor liquidation levels, manage positions, and track performance in real-time
+                  
+                  <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                    <p className="text-green-300 text-sm leading-relaxed">
+                      <span className="font-semibold">Advanced Strategy Guidance:</span> Keep a spreadsheet of your trades and review monthly to the high timeframe chart. Make revisions to position size and leverage, practice taking 80% profit at 25%+ and leave the 20% in for further upside in a bull market. The more bullish the more you leave, always take 50% profit at 25%. Build your bags with almost zero risk. Just takes time and hard work - patience and discipline, the ninja skills in trading.
                     </p>
                   </div>
                 </div>
+                
+                <div className="flex items-center justify-center space-x-2 text-sm text-gray-300 mb-6">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  <span>Liquidation Level Breakouts</span>
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span>Risk Management</span>
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Profit Recycling</span>
+                </div>
+                
+                <button
+                  onClick={openLiquidationModal}
+                  className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 rounded-lg transition-all duration-200 text-white font-semibold flex items-center space-x-2 mx-auto shadow-lg hover:shadow-xl"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  </svg>
+                  <span>Open Liquidation Heatmap</span>
+                </button>
               </div>
             </div>
+
+            {/* Live Trading Signals */}
+            <LiveTradingSignals />
           </div>
         </div>
       </div>
@@ -219,6 +222,22 @@ export default function HyperliquidTradePage() {
           </div>
         </div>
       </footer>
+
+              {/* Liquidation Modal */}
+        <Modal isOpen={isModalOpen} onClose={closeModal}>
+          <div className="p-6">
+            <h2 className="text-2xl font-bold text-yellow-500 mb-4">Liquidation Analysis</h2>
+            <p className="text-gray-300 mb-4">
+              Monitor liquidation levels and market conditions for optimal entry points.
+            </p>
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+              <p className="text-yellow-300 text-sm">
+                <span className="font-semibold">Strategy:</span> Wait for liquidation level breakouts 
+                when red and yellow lines are cleared for optimal long entries.
+              </p>
+            </div>
+          </div>
+        </Modal>
     </div>
   );
 }
