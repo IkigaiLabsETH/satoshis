@@ -1,13 +1,96 @@
 "use client";
 
-import LiveTradingSignals from '@/components/hyperliquid/LiveTradingSignals';
-import TradingStrategy from '@/components/hyperliquid/TradingStrategy';
-import LiquidationTracker from '@/components/hyperliquid/LiquidationTracker';
-import PositionManager from '@/components/hyperliquid/PositionManager';
-import LiveMetrics from '@/components/hyperliquid/LiveMetrics';
-import TradingChart from '@/components/hyperliquid/TradingChart';
-import Modal from '@/components/Modal';
+import dynamic from 'next/dynamic';
 import { useState } from 'react';
+
+// Dynamic imports for Vercel compatibility
+const LiveTradingSignals = dynamic(() => import('@/components/hyperliquid/LiveTradingSignals'), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_rgba(234,179,8,1)] mb-16">
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-yellow-500 mb-4">Live Trading Signals</h2>
+        <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          Loading trading signals...
+        </p>
+      </div>
+    </div>
+  )
+});
+
+const TradingStrategy = dynamic(() => import('@/components/hyperliquid/TradingStrategy'), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_rgba(234,179,8,1)] mb-16">
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-yellow-500 mb-4">Trading Strategy</h2>
+        <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          Loading strategy component...
+        </p>
+      </div>
+    </div>
+  )
+});
+
+const LiquidationTracker = dynamic(() => import('@/components/hyperliquid/LiquidationTracker'), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_rgba(234,179,8,1)] mb-16">
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-yellow-500 mb-4">Liquidation Tracker</h2>
+        <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          Loading liquidation tracker...
+        </p>
+      </div>
+    </div>
+  )
+});
+
+const PositionManager = dynamic(() => import('@/components/hyperliquid/PositionManager'), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_rgba(234,179,8,1)] mb-16">
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-yellow-500 mb-4">Position Manager</h2>
+        <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          Loading position manager...
+        </p>
+      </div>
+    </div>
+  )
+});
+
+const LiveMetrics = dynamic(() => import('@/components/hyperliquid/LiveMetrics'), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_rgba(234,179,8,1)] mb-16">
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-yellow-500 mb-4">Live Metrics</h2>
+        <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          Loading live metrics...
+        </p>
+      </div>
+    </div>
+  )
+});
+
+const TradingChart = dynamic(() => import('@/components/hyperliquid/TradingChart'), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_rgba(234,179,8,1)] mb-16">
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-yellow-500 mb-4">Trading Chart</h2>
+        <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          Loading trading chart...
+        </p>
+      </div>
+    </div>
+  )
+});
+
+const Modal = dynamic(() => import('@/components/Modal'), {
+  ssr: false
+});
 
 export default function HyperliquidTradePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
