@@ -14,22 +14,21 @@ interface Metrics {
 
 export default function LiveMetrics() {
   const { BTC, ETH, isLoading, error } = useLiveCryptoPrices();
-  const [metrics, setMetrics] = useState<Metrics>({
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Mock metrics data
+  const metrics: Metrics = {
     totalEquity: 521.95,
     availableMargin: 310.00,
     usedMargin: 211.95,
     marginRatio: 40.6,
     fundingRate: 0.0125,
     openInterest: 1250000
-  });
-
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-  const [currentTime, setCurrentTime] = useState('');
+  };
 
   useEffect(() => {
     setIsClient(true);
-    setCurrentTime(new Date().toLocaleTimeString());
   }, []);
 
   const refreshMetrics = () => {

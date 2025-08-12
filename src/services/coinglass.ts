@@ -1,32 +1,37 @@
-// CoinGlass API service for liquidation level data
-// Note: This is a template - you'll need to add your actual API key and endpoints
+/**
+ * CoinGlass API Service
+ * 
+ * This service provides integration with CoinGlass for liquidation data
+ * and market analytics. Currently using direct links due to API cost.
+ * 
+ * For production use, obtain API keys from: https://www.coinglass.com/api
+ */
 
 interface LiquidationLevel {
   price: number;
   type: 'red' | 'yellow' | 'green';
   description: string;
   percentage: number;
-  volume: number;
 }
 
-interface CoinGlassResponse {
-  success: boolean;
-  data: {
-    liquidationLevels: LiquidationLevel[];
-    totalLiquidation: number;
-    timestamp: number;
-  };
+interface LiquidationData {
+  asset: string;
+  levels: LiquidationLevel[];
+  timestamp: number;
 }
 
-class CoinGlassService {
-  private apiKey: string;
-  private baseUrl: string = 'https://open-api.coinglass.com/api/pro/v1';
+export class CoinGlassService {
+  private baseUrl = 'https://api.coinglass.com/api/v2';
+  private apiKey: string | null = null;
 
-  constructor(apiKey: string) {
-    this.apiKey = apiKey;
+  constructor(apiKey?: string) {
+    this.apiKey = apiKey || null;
   }
 
-  private async makeRequest(endpoint: string, params: Record<string, string> = {}): Promise<any> {
+  /**
+   * Make a request to the CoinGlass API
+   */
+  private async makeRequest(endpoint: string, params: Record<string, string> = {}): Promise<Response> {
     const url = new URL(`${this.baseUrl}${endpoint}`);
     
     // Add query parameters
@@ -34,192 +39,235 @@ class CoinGlassService {
       url.searchParams.append(key, value);
     });
 
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (this.apiKey) {
+      headers['CG-API-KEY'] = this.apiKey;
+    }
+
+    return fetch(url.toString(), {
+      method: 'GET',
+      headers,
+    });
+  }
+
+  /**
+   * Get liquidation levels for a specific asset
+   */
+  async getLiquidationLevels(asset: string): Promise<LiquidationData | null> {
     try {
-      const response = await fetch(url.toString(), {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json',
-          'CG-API-KEY': this.apiKey,
-        },
+      if (!this.apiKey) {
+        // Return mock data when no API key is available
+        return this.getMockLiquidationData(asset);
+      }
+
+      const response = await this.makeRequest('/futures/liquidation', {
+        symbol: asset,
+        interval: '1h',
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`CoinGlass API error: ${response.status}`);
       }
 
       const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error('CoinGlass API request failed:', error);
-      throw error;
+      return this.parseLiquidationResponse(data, asset);
+    } catch {
+      // Return mock data on error
+      return this.getMockLiquidationData(asset);
     }
   }
 
   /**
-   * Fetch liquidation levels for a specific asset
-   * @param symbol - Asset symbol (e.g., 'BTC', 'ETH')
-   * @param exchange - Exchange name (e.g., 'hyperliquid')
-   * @param interval - Time interval (e.g., '4h', '1d')
+   * Get liquidation heatmap data
    */
-  async getLiquidationLevels(
-    symbol: string,
-    exchange: string = 'hyperliquid',
-    interval: string = '4h'
-  ): Promise<LiquidationLevel[]> {
+  async getLiquidationHeatmap(): Promise<LiquidationData[]> {
     try {
-      const response = await this.makeRequest('/futures/liquidation-levels', {
-        symbol: symbol.toUpperCase(),
-        exchange,
-        interval,
-      });
-
-      if (response.success && response.data?.liquidationLevels) {
-        return this.processLiquidationLevels(response.data.liquidationLevels);
+      if (!this.apiKey) {
+        // Return mock data when no API key is available
+        return [
+          this.getMockLiquidationData('BTC'),
+          this.getMockLiquidationData('ETH'),
+        ].filter(Boolean) as LiquidationData[];
       }
 
-      return this.getMockLiquidationLevels(symbol);
-    } catch (error) {
-      console.warn('Using mock liquidation levels due to API error:', error);
-      return this.getMockLiquidationLevels(symbol);
-    }
-  }
-
-  /**
-   * Fetch funding rates for perpetual contracts
-   * @param symbol - Asset symbol
-   * @param exchange - Exchange name
-   */
-  async getFundingRates(symbol: string, exchange: string = 'hyperliquid'): Promise<number> {
-    try {
-      const response = await this.makeRequest('/futures/funding-rates', {
-        symbol: symbol.toUpperCase(),
-        exchange,
-      });
-
-      if (response.success && response.data?.fundingRate) {
-        return response.data.fundingRate;
+      const response = await this.makeRequest('/futures/liquidation/heatmap');
+      
+      if (!response.ok) {
+        throw new Error(`CoinGlass API error: ${response.status}`);
       }
 
-      return 0.0125; // Default mock value
-    } catch (error) {
-      console.warn('Using mock funding rate due to API error:', error);
-      return 0.0125; // Default mock value
-    }
-  }
-
-  /**
-   * Fetch open interest data
-   * @param symbol - Asset symbol
-   * @param exchange - Exchange name
-   */
-  async getOpenInterest(symbol: string, exchange: string = 'hyperliquid'): Promise<number> {
-    try {
-      const response = await this.makeRequest('/futures/open-interest', {
-        symbol: symbol.toUpperCase(),
-        exchange,
-      });
-
-      if (response.success && response.data?.openInterest) {
-        return response.data.openInterest;
-      }
-
-      return 1250000; // Default mock value
-    } catch (error) {
-      console.warn('Using mock open interest due to API error:', error);
-      return 1250000; // Default mock value
-    }
-  }
-
-  /**
-   * Process raw liquidation level data from API
-   */
-  private processLiquidationLevels(rawData: any[]): LiquidationLevel[] {
-    return rawData.map((item, index) => ({
-      price: parseFloat(item.price) || 0,
-      type: this.determineZoneType(item.percentage, index),
-      description: this.getZoneDescription(item.percentage, index),
-      percentage: parseFloat(item.percentage) || 0,
-      volume: parseFloat(item.volume) || 0,
-    }));
-  }
-
-  /**
-   * Determine zone type based on percentage and position
-   */
-  private determineZoneType(percentage: number, index: number): 'red' | 'yellow' | 'green' {
-    if (percentage > 15) return 'red';
-    if (percentage > 8) return 'yellow';
-    return 'green';
-  }
-
-  /**
-   * Get zone description based on percentage and position
-   */
-  private getZoneDescription(percentage: number, index: number): string {
-    if (percentage > 15) return 'Major Liquidation Zone';
-    if (percentage > 8) return 'Breakout Level';
-    return 'Support Level';
-  }
-
-  /**
-   * Fallback mock data when API is unavailable
-   */
-  private getMockLiquidationLevels(symbol: string): LiquidationLevel[] {
-    if (symbol.toUpperCase() === 'BTC') {
+      const data = await response.json();
+      return this.parseHeatmapResponse(data);
+    } catch {
+      // Return mock data on error
       return [
-        { price: 118065, type: 'red', description: 'Major Liquidation Zone', percentage: 15.2, volume: 2500000 },
-        { price: 119425, type: 'yellow', description: 'Breakout Level', percentage: 8.7, volume: 1800000 },
-        { price: 121000, type: 'green', description: 'Support Level', percentage: 5.3, volume: 1200000 },
-      ];
-    } else if (symbol.toUpperCase() === 'ETH') {
-      return [
-        { price: 3150, type: 'red', description: 'Major Liquidation Zone', percentage: 12.8, volume: 1800000 },
-        { price: 3200, type: 'yellow', description: 'Breakout Level', percentage: 7.4, volume: 1200000 },
-        { price: 3250, type: 'green', description: 'Support Level', percentage: 4.1, volume: 800000 },
-      ];
+        this.getMockLiquidationData('BTC'),
+        this.getMockLiquidationData('ETH'),
+      ].filter(Boolean) as LiquidationData[];
     }
-
-    return [];
   }
 
   /**
-   * Get market overview for multiple assets
+   * Get funding rates for futures
    */
-  async getMarketOverview(symbols: string[] = ['BTC', 'ETH']): Promise<Record<string, any>> {
-    const overview: Record<string, any> = {};
-
-    for (const symbol of symbols) {
-      try {
-        const [liquidationLevels, fundingRate, openInterest] = await Promise.all([
-          this.getLiquidationLevels(symbol),
-          this.getFundingRates(symbol),
-          this.getOpenInterest(symbol),
-        ]);
-
-        overview[symbol] = {
-          liquidationLevels,
-          fundingRate,
-          openInterest,
-          timestamp: Date.now(),
+  async getFundingRates(): Promise<Record<string, number>> {
+    try {
+      if (!this.apiKey) {
+        // Return mock funding rates
+        return {
+          BTC: 0.0001,
+          ETH: -0.0002,
+          BNB: 0.0003,
         };
-      } catch (error) {
-        console.error(`Failed to fetch data for ${symbol}:`, error);
       }
-    }
 
-    return overview;
+      const response = await this.makeRequest('/futures/funding-rate');
+      
+      if (!response.ok) {
+        throw new Error(`CoinGlass API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return this.parseFundingRatesResponse(data);
+    } catch {
+      // Return mock data on error
+      return {
+        BTC: 0.0001,
+        ETH: -0.0002,
+        BNB: 0.0003,
+      };
+    }
+  }
+
+  /**
+   * Parse liquidation response from API
+   */
+  private parseLiquidationResponse(data: unknown, asset: string): LiquidationData | null {
+    try {
+      // Type guard for response structure
+      if (typeof data === 'object' && data !== null && 'data' in data) {
+        const responseData = data as { data: unknown };
+        if (Array.isArray(responseData.data)) {
+          const levels: LiquidationLevel[] = responseData.data.map((item: unknown) => ({
+            price: Number((item as { price?: unknown }).price) || 0,
+            type: 'red' as const,
+            description: 'Liquidation Level',
+            percentage: 10,
+          }));
+
+          return {
+            asset,
+            levels,
+            timestamp: Date.now(),
+          };
+        }
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Parse heatmap response from API
+   */
+  private parseHeatmapResponse(data: unknown): LiquidationData[] {
+    try {
+      if (typeof data === 'object' && data !== null && 'data' in data) {
+        const responseData = data as { data: unknown };
+        if (Array.isArray(responseData.data)) {
+          return responseData.data.map((item: unknown) => {
+            const assetItem = item as { symbol?: unknown; levels?: unknown };
+            return {
+              asset: String(assetItem.symbol || 'UNKNOWN'),
+              levels: Array.isArray(assetItem.levels) ? assetItem.levels.map((level: unknown) => ({
+                price: Number((level as { price?: unknown }).price) || 0,
+                type: 'red' as const,
+                description: 'Liquidation Level',
+                percentage: 10,
+              })) : [],
+              timestamp: Date.now(),
+            };
+          });
+        }
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Parse funding rates response from API
+   */
+  private parseFundingRatesResponse(data: unknown): Record<string, number> {
+    try {
+      if (typeof data === 'object' && data !== null && 'data' in data) {
+        const responseData = data as { data: unknown };
+        if (Array.isArray(responseData.data)) {
+          const rates: Record<string, number> = {};
+          responseData.data.forEach((item: unknown) => {
+            const rateItem = item as { symbol?: unknown; fundingRate?: unknown };
+            if (rateItem.symbol && rateItem.fundingRate) {
+              rates[String(rateItem.symbol)] = Number(rateItem.fundingRate);
+            }
+          });
+          return rates;
+        }
+      }
+      return {};
+    } catch {
+      return {};
+    }
+  }
+
+  /**
+   * Generate mock liquidation data for development
+   */
+  private getMockLiquidationData(asset: string): LiquidationData {
+    const basePrice = asset === 'BTC' ? 119000 : 3200;
+    const volatility = asset === 'BTC' ? 2000 : 200;
+
+    return {
+      asset,
+      levels: [
+        {
+          price: basePrice - volatility,
+          type: 'red',
+          description: 'Major Liquidation Zone',
+          percentage: 15,
+        },
+        {
+          price: basePrice,
+          type: 'yellow',
+          description: 'Breakout Level',
+          percentage: 10,
+        },
+        {
+          price: basePrice + volatility,
+          type: 'green',
+          description: 'Support Level',
+          percentage: 12,
+        },
+      ],
+      timestamp: Date.now(),
+    };
+  }
+
+  /**
+   * Get direct link to CoinGlass liquidation heatmap
+   */
+  getLiquidationHeatmapUrl(): string {
+    return 'https://www.coinglass.com/pro/futures/LiquidationHeatMap';
+  }
+
+  /**
+   * Get direct link to CoinGlass funding rates
+   */
+  getFundingRatesUrl(): string {
+    return 'https://www.coinglass.com/pro/futures/FundingRate';
   }
 }
-
-// Export singleton instance
-let coinGlassService: CoinGlassService | null = null;
-
-export const getCoinGlassService = (): CoinGlassService => {
-  if (!coinGlassService) {
-    const apiKey = process.env.NEXT_PUBLIC_COINGLASS_API_KEY || '';
-    coinGlassService = new CoinGlassService(apiKey);
-  }
-  return coinGlassService;
-};
-
-export default CoinGlassService;

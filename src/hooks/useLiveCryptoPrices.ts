@@ -6,15 +6,13 @@ interface CryptoPrice {
   lastUpdated: string;
 }
 
-interface LiveCryptoPrices {
+interface PriceData {
   BTC: CryptoPrice;
   ETH: CryptoPrice;
-  isLoading: boolean;
-  error: string | null;
 }
 
 export function useLiveCryptoPrices() {
-  const [prices, setPrices] = useState<LiveCryptoPrices>({
+  const [prices, setPrices] = useState<PriceData>({
     BTC: { price: 0, change24h: 0, lastUpdated: '' },
     ETH: { price: 0, change24h: 0, lastUpdated: '' }
   });
@@ -51,7 +49,7 @@ export function useLiveCryptoPrices() {
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch prices');
-      console.error('Error fetching crypto prices:', err);
+      // Error logging removed for production
     } finally {
       setIsLoading(false);
     }

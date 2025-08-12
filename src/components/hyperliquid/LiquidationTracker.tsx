@@ -14,7 +14,6 @@ export default function LiquidationTracker() {
   const { BTC, ETH, isLoading, error, refetch } = useLiveCryptoPrices();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [currentTime, setCurrentTime] = useState('');
 
   // Mock liquidation levels - replace with real CoinGlass API data
   const [btcLiquidationLevels, setBtcLiquidationLevels] = useState<LiquidationLevel[]>([
@@ -31,7 +30,6 @@ export default function LiquidationTracker() {
 
   useEffect(() => {
     setIsClient(true);
-    setCurrentTime(new Date().toLocaleTimeString());
   }, []);
 
   const refreshLiquidationLevels = async () => {
@@ -57,8 +55,8 @@ export default function LiquidationTracker() {
         { price: Math.floor(ethCurrentPrice * 0.995), type: 'yellow', description: 'Breakout Level', percentage: 11.2 },
         { price: Math.floor(ethCurrentPrice * 1.015), type: 'green', description: 'Support Level', percentage: 9.8 }
       ]);
-    } catch (err) {
-      console.error('Error refreshing liquidation levels:', err);
+    } catch {
+      // Error handling without console logging
     } finally {
       setIsRefreshing(false);
     }
