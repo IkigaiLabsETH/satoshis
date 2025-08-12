@@ -6,7 +6,7 @@ import PositionManager from '@/components/hyperliquid/PositionManager';
 import TradingChart from '@/components/hyperliquid/TradingChart';
 import LiveMetrics from '@/components/hyperliquid/LiveMetrics';
 import LiveTradingSignals from '@/components/hyperliquid/LiveTradingSignals';
-import CoinGlassLiquidationModal from '@/components/hyperliquid/CoinGlassLiquidationModal';
+
 import Modal from '@/components/Modal';
 import { useState } from 'react';
 
@@ -223,10 +223,21 @@ export default function HyperliquidTradePage() {
         </div>
       </footer>
 
-      {/* CoinGlass Liquidation Modal */}
-      <Modal isOpen={isModalOpen} onClose={closeModal}>
-        <CoinGlassLiquidationModal />
-      </Modal>
+              {/* Liquidation Modal */}
+        <Modal isOpen={isModalOpen} onClose={closeModal}>
+          <div className="p-6">
+            <h2 className="text-2xl font-bold text-yellow-500 mb-4">Liquidation Analysis</h2>
+            <p className="text-gray-300 mb-4">
+              Monitor liquidation levels and market conditions for optimal entry points.
+            </p>
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+              <p className="text-yellow-300 text-sm">
+                <span className="font-semibold">Strategy:</span> Wait for liquidation level breakouts 
+                when red and yellow lines are cleared for optimal long entries.
+              </p>
+            </div>
+          </div>
+        </Modal>
     </div>
   );
 }

@@ -68,7 +68,7 @@ export function useLiveCryptoPrices() {
         }
       });
     } catch (err) {
-      console.error('Error fetching crypto prices:', err);
+      // Log error for debugging
       if (err instanceof Error) {
         if (err.name === 'AbortError') {
           setError('Request timeout - please check your connection');
