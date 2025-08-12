@@ -1,243 +1,234 @@
 "use client";
 
+import LiveTradingSignals from '@/components/hyperliquid/LiveTradingSignals';
 import TradingStrategy from '@/components/hyperliquid/TradingStrategy';
 import LiquidationTracker from '@/components/hyperliquid/LiquidationTracker';
 import PositionManager from '@/components/hyperliquid/PositionManager';
-import TradingChart from '@/components/hyperliquid/TradingChart';
 import LiveMetrics from '@/components/hyperliquid/LiveMetrics';
-import LiveTradingSignals from '@/components/hyperliquid/LiveTradingSignals';
-
+import TradingChart from '@/components/hyperliquid/TradingChart';
 import Modal from '@/components/Modal';
 import { useState } from 'react';
 
 export default function HyperliquidTradePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const openLiquidationModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
+  const _openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-black">
-          <div className="absolute inset-0 bg-[url('/assets/noise.png')] opacity-20"></div>
-        </div>
-        
-        {/* Content */}
-        <div className="relative z-10 px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl">
-            {/* Breadcrumb Navigation */}
-            <nav className="flex items-center space-x-2 text-sm text-gray-400 mb-8">
-              <a href="/" className="hover:text-white transition-colors duration-200">
-                Home
-              </a>
-              <span>/</span>
-              <a href="/hyperliquid" className="hover:text-white transition-colors duration-200">
-                Hyperliquid
-              </a>
-              <span>/</span>
-              <span className="text-yellow-400">Trading Strategy</span>
-            </nav>
-
-            {/* Header */}
-            <div className="text-center mb-16">
-              <div className="flex items-center justify-center space-x-3 mb-6">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-                <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 bg-clip-text text-transparent">
-                  Hyperliquid Trading
-                </h1>
-                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white">
+      <div className="relative z-10 px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          {/* Enhanced Header */}
+          <div className="text-center mb-20">
+            <div className="mb-8">
+              <div className="inline-block p-3 bg-yellow-500/10 rounded-full border border-yellow-500/30 mb-6">
+                <div className="w-6 h-6 bg-yellow-500 rounded-full"></div>
               </div>
-              <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
-                Professional perpetuals trading strategy with real-time liquidation monitoring,
-                risk management, and position tracking for BTC and ETH
-              </p>
             </div>
-
-            {/* Core Strategy Statement */}
-            <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] mb-16">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-white mb-4">🎯 Core Trading Strategy</h2>
-                <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                  Professional perpetuals trading approach with liquidation level analysis,
-                  risk management, and profit optimization strategies
-                </p>
+            <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 bg-clip-text text-transparent mb-8">
+              Hyperliquid Trading
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
+              Professional perpetuals trading strategy with real-time liquidation monitoring,
+              risk management, and position tracking for BTC and ETH
+            </p>
+            <div className="mt-8 flex justify-center space-x-4">
+              <div className="flex items-center space-x-2 text-yellow-400">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <span className="text-sm font-medium">Live Data</span>
               </div>
+              <div className="flex items-center space-x-2 text-green-400">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm font-medium">Real-time</span>
+              </div>
+              <div className="flex items-center space-x-2 text-blue-400">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="text-sm font-medium">Professional</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Enhanced Core Strategy Statement */}
+          <div className="bg-gradient-to-br from-[#1c1f26] to-[#2a2f3a] p-10 rounded-2xl border-2 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.3)] mb-20">
+            <div className="text-center">
+              <div className="inline-block p-4 bg-yellow-500/20 rounded-full border border-yellow-500/40 mb-8">
+                <span className="text-4xl">🎯</span>
+              </div>
+              <h2 className="text-5xl font-bold text-white mb-8">Core Trading Strategy</h2>
+              <p className="text-xl text-gray-300 max-w-4xl mx-auto mb-12 leading-relaxed">
+                Professional perpetuals trading approach with liquidation level analysis,
+                risk management, and profit optimization strategies
+              </p>
               
-              <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
-                <p className="text-xl text-white leading-relaxed mb-6">
-                  <span className="text-yellow-400 font-bold">Follow liquidation levels long when the red and yellow lines are cleared.</span> 
-                  Set stop losses (don&apos;t be me) and take profit at 25%. 
-                  <span className="text-green-400 font-bold"> Rinse-repeat and put the 25% profit into spot on the dip.</span>
-                </p>
-                
-                <div className="grid md:grid-cols-2 gap-6 mb-6">
-                  <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                    <p className="text-blue-300 text-sm leading-relaxed">
-                      <span className="font-semibold">Personal Philosophy:</span> I&apos;m of the same camp as Marty and the only long rn. The market is too hot and I&apos;m also trading SOL and SUI. I know they are destined for higher ATH (when, idk). So when the high leveraged longs get liquidated as they come down (follow Marty&apos;s liquidation chart), and the reds, yellow and sometimes blue lines get cleared- that&apos;s when Binance seems to allow the price to pump again.
-                    </p>
+              <div className="bg-gradient-to-br from-black/60 to-gray-900/60 p-8 rounded-xl border border-yellow-500/30 mt-12">
+                <div className="space-y-12">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-center mb-6">
+                      <h3 className="text-3xl font-bold text-yellow-400">Trading Philosophy</h3>
+                      <div className="ml-4 w-8 h-0.5 bg-gradient-to-r from-yellow-500 to-transparent"></div>
+                    </div>
+                    <div className="space-y-4 text-gray-300 max-w-2xl mx-auto">
+                      <div className="flex items-start space-x-4 p-4 bg-yellow-500/5 rounded-lg border border-yellow-500/20">
+                        <div className="w-3 h-3 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="text-lg">
+                          <span className="text-yellow-400 font-bold">Follow liquidation levels long</span> when the red and yellow lines are cleared
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-4 p-4 bg-green-500/5 rounded-lg border border-green-500/20">
+                        <div className="w-3 h-3 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="text-lg">
+                          <span className="text-green-400 font-bold">Set stop losses</span> (don&apos;t be me) and take profit at 25%
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-4 p-4 bg-blue-500/5 rounded-lg border border-blue-500/20">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="text-lg">
+                          <span className="text-blue-400 font-bold">Rinse-repeat</span> and put the 25% profit into spot on the dip
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-                    <p className="text-green-300 text-sm leading-relaxed">
-                      <span className="font-semibold">Advanced Strategy Guidance:</span> Keep a spreadsheet of your trades and review monthly to the high timeframe chart. Make revisions to position size and leverage, practice taking 80% profit at 25%+ and leave the 20% in for further upside in a bull market. The more bullish the more you leave, always take 50% profit at 25%. Build your bags with almost zero risk. Just takes time and hard work - patience and discipline, the ninja skills in trading.
-                    </p>
+                  <div className="w-full h-px bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent"></div>
+                  
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-center mb-6">
+                      <h3 className="text-3xl font-bold text-yellow-400">Risk Management</h3>
+                      <div className="ml-4 w-8 h-0.5 bg-gradient-to-r from-yellow-500 to-transparent"></div>
+                    </div>
+                    <div className="space-y-4 text-gray-300 max-w-2xl mx-auto">
+                      <div className="flex items-start space-x-4 p-4 bg-red-500/5 rounded-lg border border-red-500/20">
+                        <div className="w-3 h-3 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="text-lg">
+                          <span className="text-red-400 font-bold">Never risk more than 2%</span> of your portfolio on any single trade
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-4 p-4 bg-orange-500/5 rounded-lg border border-orange-500/20">
+                        <div className="w-3 h-3 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="text-lg">
+                          <span className="text-orange-400 font-bold">Use proper position sizing</span> based on account balance and volatility
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-4 p-4 bg-purple-500/5 rounded-lg border border-purple-500/20">
+                        <div className="w-3 h-3 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="text-lg">
+                          <span className="text-purple-400 font-bold">Monitor funding rates</span> and adjust positions accordingly
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Live Trading Signals */}
+          <div className="mb-20">
+            <LiveTradingSignals />
+          </div>
+
+          {/* Enhanced Strategy Overview Card */}
+          <div className="bg-gradient-to-br from-[#1c1f26] to-[#2a2f3a] p-10 rounded-2xl border-2 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.3)] mb-20">
+            <div className="space-y-12">
+              <div className="text-center mb-8">
+                <h2 className="text-4xl font-bold text-yellow-500 mb-4">Trading Strategy Overview</h2>
+                <div className="w-24 h-1 bg-gradient-to-r from-yellow-500 to-orange-500 mx-auto rounded-full"></div>
+              </div>
+              
+              <div className="space-y-8">
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-bold text-white mb-6">Strategy Parameters</h3>
+                  <div className="space-y-4 text-gray-300 max-w-3xl mx-auto">
+                    <div className="flex items-start space-x-4 p-4 bg-yellow-500/5 rounded-lg border border-yellow-500/20">
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <div className="text-lg">
+                        <span className="font-semibold text-white">Entry Strategy:</span> Wait for BTC {'>'} $119,425 and ETH {'>'} $4,500
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-4 p-4 bg-green-500/5 rounded-lg border border-green-500/20">
+                      <div className="w-3 h-3 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <div className="text-lg">
+                        <span className="font-semibold text-white">Exit Strategy:</span> Take profit at 25% gains, stop loss at 15% loss
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-4 p-4 bg-blue-500/5 rounded-lg border border-blue-500/20">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <div className="text-lg">
+                        <span className="font-semibold text-white">Position Sizing:</span> 2% max risk per trade, scale in on dips
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-center space-x-2 text-sm text-gray-300 mb-6">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                  <span>Liquidation Level Breakouts</span>
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                  <span>Risk Management</span>
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>Profit Recycling</span>
-                </div>
+                <div className="w-full h-px bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent"></div>
                 
-                <button
-                  onClick={openLiquidationModal}
-                  className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 rounded-lg transition-all duration-200 text-white font-semibold flex items-center space-x-2 mx-auto shadow-lg hover:shadow-xl"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                  </svg>
-                  <span>Open Liquidation Heatmap</span>
-                </button>
+                <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 p-8 rounded-xl border border-yellow-500/30">
+                  <h3 className="text-2xl font-bold text-yellow-400 mb-6 text-center">Current Market Status</h3>
+                  <div className="space-y-4 text-lg max-w-md mx-auto">
+                    <div className="flex justify-between items-center p-3 bg-black/30 rounded-lg">
+                      <span className="text-gray-300">BTC Entry Signal:</span>
+                      <span className="text-yellow-400 font-bold text-xl">WAITING</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-black/30 rounded-lg">
+                      <span className="text-gray-300">ETH Entry Signal:</span>
+                      <span className="text-yellow-400 font-bold text-xl">WAITING</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-black/30 rounded-lg">
+                      <span className="text-gray-300">Market Trend:</span>
+                      <span className="text-green-400 font-bold text-xl">BULLISH</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-
-            {/* Live Trading Signals */}
-            <LiveTradingSignals />
           </div>
-        </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl space-y-16">
-          {/* Trading Strategy */}
-          <section>
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-white mb-4">Trading Strategy</h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                Comprehensive overview of our perpetuals trading approach with entry points,
-                risk management, and profit strategies
-              </p>
-            </div>
+          {/* Main Trading Components - Each on its own line with enhanced spacing */}
+          <div className="mb-20">
             <TradingStrategy />
-          </section>
+          </div>
 
-          {/* Liquidation Tracker */}
-          <section>
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-white mb-4">Liquidation Levels</h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                Real-time monitoring of liquidation zones with direct access to CoinGlass
-                professional liquidation heatmaps
-              </p>
-            </div>
+          <div className="mb-20">
             <LiquidationTracker />
-          </section>
+          </div>
 
-          {/* Position Manager */}
-          <section>
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-white mb-4">Position Management</h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                Track entry/exit points, manage risk levels, and monitor position performance
-                with real-time updates
-              </p>
-            </div>
+          <div className="mb-20">
             <PositionManager />
-          </section>
+          </div>
+
+          <div className="mb-20">
+            <LiveMetrics />
+          </div>
 
           {/* Trading Chart */}
-          <section>
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-white mb-4">Price Charts</h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                Visualize price action with liquidation levels, trading signals, and
-                professional charting tools from CoinGlass
-              </p>
-            </div>
+          <div className="mb-20">
             <TradingChart />
-          </section>
+          </div>
 
-          {/* Live Metrics */}
-          <section>
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-white mb-4">Live Metrics</h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                Real-time account overview, margin status, and market conditions
-                for informed trading decisions
+          {/* Enhanced Liquidation Modal */}
+          <Modal isOpen={isModalOpen} onClose={closeModal}>
+            <div className="p-8 bg-gradient-to-br from-[#1c1f26] to-[#2a2f3a] rounded-2xl border-2 border-yellow-500">
+              <div className="text-center mb-6">
+                <div className="inline-block p-3 bg-yellow-500/20 rounded-full border border-yellow-500/40 mb-4">
+                  <span className="text-2xl">📊</span>
+                </div>
+                <h2 className="text-3xl font-bold text-yellow-500 mb-4">Liquidation Analysis</h2>
+                <div className="w-16 h-1 bg-gradient-to-r from-yellow-500 to-orange-500 mx-auto rounded-full"></div>
+              </div>
+              <p className="text-gray-300 mb-6 text-lg leading-relaxed">
+                Monitor liquidation levels and market conditions for optimal entry points.
               </p>
-            </div>
-            <LiveMetrics />
-          </section>
-
-          {/* Call to Action */}
-          <section className="text-center">
-            <div className="bg-[#1c1f26] p-12 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-              <h2 className="text-3xl font-bold text-white mb-4">Ready to Trade?</h2>
-              <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-                Access professional liquidation data, advanced charting tools, and real-time
-                market analytics to execute your trading strategy
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <a
-                  href="https://www.coinglass.com/pro/futures/LiquidationHeatMap"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-8 py-4 bg-gradient-to-r from-yellow-600 to-red-600 hover:from-yellow-700 hover:to-red-700 rounded-xl transition-all duration-200 text-white font-semibold text-lg shadow-lg hover:shadow-xl"
-                >
-                  🔥 Open CoinGlass Pro
-                </a>
-                <a
-                  href="/hyperliquid"
-                  className="px-8 py-4 bg-gray-700 hover:bg-gray-600 rounded-xl transition-all duration-200 text-white font-semibold text-lg"
-                >
-                  ← Back to Hyperliquid
-                </a>
+              <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-xl p-6">
+                <p className="text-yellow-300 text-base leading-relaxed">
+                  <span className="font-semibold">Strategy:</span> Wait for liquidation level breakouts 
+                  when red and yellow lines are cleared for optimal long entries.
+                </p>
               </div>
             </div>
-          </section>
+          </Modal>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="border-t border-gray-800 mt-16">
-        <div className="px-4 py-8 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl text-center">
-            <p className="text-gray-400">
-              Trading involves substantial risk of loss. This dashboard is for educational and
-              informational purposes only. Always consult with a financial advisor before trading.
-            </p>
-          </div>
-        </div>
-      </footer>
-
-              {/* Liquidation Modal */}
-        <Modal isOpen={isModalOpen} onClose={closeModal}>
-          <div className="p-6">
-            <h2 className="text-2xl font-bold text-yellow-500 mb-4">Liquidation Analysis</h2>
-            <p className="text-gray-300 mb-4">
-              Monitor liquidation levels and market conditions for optimal entry points.
-            </p>
-            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-              <p className="text-yellow-300 text-sm">
-                <span className="font-semibold">Strategy:</span> Wait for liquidation level breakouts 
-                when red and yellow lines are cleared for optimal long entries.
-              </p>
-            </div>
-          </div>
-        </Modal>
     </div>
   );
 }
