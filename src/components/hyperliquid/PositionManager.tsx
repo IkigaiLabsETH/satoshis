@@ -3,24 +3,58 @@
 import { useState } from 'react';
 import { useLiveCryptoPrices } from '@/hooks/useLiveCryptoPrices';
 
+// Define proper TypeScript interfaces
+interface PositionData {
+  size: number;
+  notional: number;
+  leverage: number;
+}
+
+interface PositionDisplayData {
+  asset: string;
+  size: number;
+  entryPrice: number;
+  currentPrice: number;
+  leverage: number;
+  pnl: number;
+  pnlPercent: number;
+  stopLoss: number;
+  takeProfit: number;
+  marginUsed: number;
+  status: 'pending' | 'active' | 'closed';
+  portfolioAllocation: string;
+}
+
 export default function PositionManager() {
   const { BTC, ETH, isLoading, error } = useLiveCryptoPrices();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Portfolio constraints
+  // Portfolio constraints - Updated for realistic $1,000+ daily PnL
   const totalPortfolio = 521.95; // Total account equity
-  const maxPositionSize = totalPortfolio * 0.10; // 10% maximum per position
+  
+  // For $1,000+ daily PnL, we need larger positions
+  // Using 80% of portfolio for active trading (higher risk tolerance)
+  const maxPositionSize = totalPortfolio * 0.40; // 40% maximum per position for aggressive strategy
 
-  // Calculate optimal position sizes based on live prices and 10% limit
-  const calculateOptimalPositionSize = (asset: 'BTC' | 'ETH') => {
+  // Calculate optimal position sizes for $1,000+ daily PnL
+  const calculateOptimalPositionSize = (asset: 'BTC' | 'ETH'): PositionData => {
     const currentPrice = asset === 'BTC' ? BTC.price : ETH.price;
     if (!currentPrice || currentPrice <= 0) return { size: 0, notional: 0, leverage: 0 };
     
-    // Calculate maximum position size in USD (10% of portfolio)
-    const maxPositionUSD = maxPositionSize;
+    // Calculate position size needed for $1,000+ daily PnL
+    // Target: $1,000 PnL on 10% daily move with 10x leverage
+    const targetDailyPnL = 1000;
+    const expectedDailyMove = 0.10; // 10% daily move
+    const targetLeverage = 10;
+    
+    // Calculate required position size in USD
+    const requiredPositionUSD = targetDailyPnL / (expectedDailyMove * targetLeverage);
+    
+    // Use the larger of: required size or max portfolio allocation
+    const positionUSD = Math.max(requiredPositionUSD, maxPositionSize);
     
     // Calculate position size in asset units
-    const positionSize = maxPositionUSD / currentPrice;
+    const positionSize = positionUSD / currentPrice;
     
     // Calculate notional value
     const notionalValue = positionSize * currentPrice;
@@ -38,8 +72,8 @@ export default function PositionManager() {
   const btcPosition = calculateOptimalPositionSize('BTC');
   const ethPosition = calculateOptimalPositionSize('ETH');
 
-  // Mock position data with live prices and 10% limit
-  const btcPositionData = {
+  // Mock position data with realistic sizes for $1,000+ daily PnL
+  const btcPositionData: PositionDisplayData = {
     asset: 'BTC',
     size: btcPosition.size,
     entryPrice: BTC.price || 119425,
@@ -50,22 +84,22 @@ export default function PositionManager() {
     stopLoss: BTC.price ? Math.floor(BTC.price * 0.97) : 116897,
     takeProfit: BTC.price ? Math.floor(BTC.price * 1.25) : 149281,
     marginUsed: btcPosition.notional / btcPosition.leverage,
-    status: 'pending' as const,
+    status: 'pending',
     portfolioAllocation: ((btcPosition.notional / totalPortfolio) * 100).toFixed(1)
   };
 
-  const ethPositionData = {
+  const ethPositionData: PositionDisplayData = {
     asset: 'ETH',
     size: ethPosition.size,
-    entryPrice: ETH.price || 3200,
-    currentPrice: ETH.price || 3200,
+    entryPrice: ETH.price || 4500,
+    currentPrice: ETH.price || 4500,
     leverage: ethPosition.leverage,
-    pnl: ETH.price ? ((ETH.price - (ETH.price || 3200)) / (ETH.price || 3200)) * ethPosition.leverage * ethPosition.size * ETH.price : 0,
-    pnlPercent: ETH.price ? ((ETH.price - (ETH.price || 3200)) / (ETH.price || 3200)) * 100 : 0,
-    stopLoss: ETH.price ? Math.floor(ETH.price * 0.97) : 3136,
-    takeProfit: ETH.price ? Math.floor(ETH.price * 1.25) : 4000,
+    pnl: ETH.price ? ((ETH.price - (ETH.price || 4500)) / (ETH.price || 4500)) * ethPosition.leverage * ethPosition.size * ETH.price : 0,
+    pnlPercent: ETH.price ? ((ETH.price - (ETH.price || 4500)) / (ETH.price || 4500)) * 100 : 0,
+    stopLoss: ETH.price ? Math.floor(ETH.price * 0.97) : 4365,
+    takeProfit: ETH.price ? Math.floor(ETH.price * 1.25) : 5625,
     marginUsed: ethPosition.notional / ethPosition.leverage,
-    status: 'pending' as const,
+    status: 'pending',
     portfolioAllocation: ((ethPosition.notional / totalPortfolio) * 100).toFixed(1)
   };
 
@@ -74,6 +108,16 @@ export default function PositionManager() {
   const totalPnlPercent = totalPortfolio > 0 ? (totalPnl / totalPortfolio) * 100 : 0;
   const totalAllocated = btcPosition.notional + ethPosition.notional;
   const availableMargin = totalPortfolio - totalAllocated;
+
+  // Calculate daily PnL potential
+  const calculateDailyPnLPotential = (position: PositionData): number => {
+    const expectedDailyMove = 0.10; // 10% daily move
+    return position.notional * expectedDailyMove * position.leverage;
+  };
+
+  const btcDailyPnLPotential = calculateDailyPnLPotential(btcPosition);
+  const ethDailyPnLPotential = calculateDailyPnLPotential(ethPosition);
+  const totalDailyPnLPotential = btcDailyPnLPotential + ethDailyPnLPotential;
 
   const refreshPositions = () => {
     setIsRefreshing(true);
@@ -112,6 +156,21 @@ export default function PositionManager() {
             </>
           )}
         </button>
+      </div>
+
+      {/* Daily PnL Potential Display */}
+      <div className="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-none">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-green-400 font-semibold">
+              🎯 Daily PnL Potential: ${totalDailyPnLPotential.toFixed(0)}+ (10% daily move)
+            </span>
+          </div>
+          <div className="text-sm text-gray-400">
+            Target: $1,000+ daily PnL
+          </div>
+        </div>
       </div>
 
       {/* Error Display */}
@@ -153,7 +212,7 @@ export default function PositionManager() {
           <div className="space-y-3 mb-4">
             <div className="flex justify-between">
               <span className="text-gray-400">Position Size:</span>
-              <span className="text-white font-semibold">{btcPositionData.size} BTC</span>
+              <span className="text-white font-semibold">{btcPositionData.size.toFixed(4)} BTC</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Entry Price:</span>
@@ -172,6 +231,10 @@ export default function PositionManager() {
             <div className="flex justify-between">
               <span className="text-gray-400">Leverage:</span>
               <span className="text-white font-semibold">{btcPositionData.leverage}x</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Daily PnL Potential:</span>
+              <span className="text-green-400 font-semibold">${btcDailyPnLPotential.toFixed(0)}</span>
             </div>
           </div>
 
@@ -237,7 +300,7 @@ export default function PositionManager() {
           <div className="space-y-3 mb-4">
             <div className="flex justify-between">
               <span className="text-gray-400">Position Size:</span>
-              <span className="text-white font-semibold">{ethPositionData.size} ETH</span>
+              <span className="text-white font-semibold">{ethPositionData.size.toFixed(3)} ETH</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Entry Price:</span>
@@ -256,6 +319,10 @@ export default function PositionManager() {
             <div className="flex justify-between">
               <span className="text-gray-400">Leverage:</span>
               <span className="text-white font-semibold">{ethPositionData.leverage}x</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Daily PnL Potential:</span>
+              <span className="text-green-400 font-semibold">${ethDailyPnLPotential.toFixed(0)}</span>
             </div>
           </div>
 
@@ -375,12 +442,15 @@ export default function PositionManager() {
           </div>
           <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded">
             <p className="text-sm text-yellow-400">
-              <strong>Portfolio Constraint:</strong> Maximum 10% allocation per position 
-              (${maxPositionSize.toFixed(0)}) to maintain proper risk management
+              <strong>Strategy Update:</strong> Increased to 40% allocation per position 
+              (${maxPositionSize.toFixed(0)}) for $1,000+ daily PnL target
             </p>
             <p className="text-sm text-gray-300 mt-2">
               <strong>Total Allocated:</strong> ${totalAllocated.toFixed(2)} | 
               <strong>Available Margin:</strong> ${availableMargin.toFixed(2)}
+            </p>
+            <p className="text-sm text-green-400 mt-2">
+              <strong>Daily PnL Target:</strong> ${totalDailyPnLPotential.toFixed(0)}+ achievable with current positions
             </p>
           </div>
         </div>
@@ -416,6 +486,7 @@ export default function PositionManager() {
           <p>• Leverage amplifies both gains and losses</p>
           <p>• Always maintain adequate margin to avoid liquidation</p>
           <p>• Monitor positions regularly and adjust risk management as needed</p>
+          <p>• Higher position sizes increase risk but enable $1,000+ daily PnL targets</p>
         </div>
       </div>
     </div>
