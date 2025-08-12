@@ -53,6 +53,21 @@ export default function TradingStrategy() {
         Perpetuals Trading Strategy
       </h3>
 
+      {/* Core Strategy Highlight */}
+      <div className="mb-8 p-6 bg-gradient-to-r from-yellow-500/10 to-red-500/10 border border-yellow-500/30 rounded-xl">
+        <div className="text-center">
+          <h4 className="text-xl font-bold text-yellow-400 mb-3">🎯 Strategy Summary</h4>
+          <p className="text-lg text-white leading-relaxed">
+            <span className="text-yellow-400 font-semibold">Follow liquidation levels long when the red and yellow lines are cleared.</span> 
+            <br />
+            <span className="text-red-400 font-semibold">Set stop losses (don&apos;t be me)</span> and 
+            <span className="text-green-400 font-semibold"> take profit at 25%.</span>
+            <br />
+            <span className="text-blue-400 font-semibold">Rinse-repeat and put the 25% profit into spot on the dip.</span>
+          </p>
+        </div>
+      </div>
+
       {/* Live Price Status */}
       {error && (
         <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-none">
