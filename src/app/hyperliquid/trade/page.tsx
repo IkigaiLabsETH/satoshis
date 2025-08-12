@@ -56,6 +56,18 @@ export default function HyperliquidTradePage() {
                     <span className="text-yellow-400 font-bold">Follow liquidation levels long when the red and yellow lines are cleared.</span> 
                     Set stop losses (don&apos;t be me) and take profit at 25%. 
                     <span className="text-green-400 font-bold"> Rinse-repeat and put the 25% profit into spot on the dip.</span>
+                    
+                    <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                      <p className="text-blue-300 text-sm leading-relaxed">
+                        <span className="font-semibold">Personal Philosophy:</span> I&apos;m of the same camp as Marty and the only long rn. The market is too hot and I&apos;m also trading SOL and SUI. I know they are destined for higher ATH (when, idk). So when the high leveraged longs get liquidated as they come down (follow Marty&apos;s liquidation chart), and the reds, yellow and sometimes blue lines get cleared- that&apos;s when Binance seems to allow the price to pump again.
+                      </p>
+                    </div>
+                    
+                    <div className="mt-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                      <p className="text-green-300 text-sm leading-relaxed">
+                        <span className="font-semibold">Advanced Strategy Guidance:</span> Keep a spreadsheet of your trades and review monthly to the high timeframe chart. Make revisions to position size and leverage, practice taking 80% profit at 25%+ and leave the 20% in for further upside in a bull market. The more bullish the more you leave, always take 50% profit at 25%. Build your bags with almost zero risk. Just takes time and hard work - patience and discipline, the ninja skills in trading.
+                      </p>
+                    </div>
                   </p>
                   <div className="flex items-center justify-center space-x-2 text-sm text-gray-300">
                     <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
@@ -97,6 +109,12 @@ export default function HyperliquidTradePage() {
                       <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
                       <div>
                         <span className="font-semibold text-white">Position Sizing:</span> BTC (0.018403), ETH (0.5) with margin management
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <div>
+                        <span className="font-semibold text-white">Additional Assets:</span> SOL & SUI for higher ATH potential
                       </div>
                     </div>
                   </div>
