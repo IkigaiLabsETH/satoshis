@@ -32,6 +32,62 @@ export default function LiquidationTracker() {
     setIsClient(true);
   }, []);
 
+  // Update liquidation levels based on live prices
+  useEffect(() => {
+    if (!isClient || !BTC.price || !ETH.price) return;
+
+    // Calculate dynamic liquidation levels based on current prices
+    const btcCurrentPrice = BTC.price;
+    const ethCurrentPrice = ETH.price;
+
+    // BTC liquidation levels (relative to current price)
+    const newBtcLevels: LiquidationLevel[] = [
+      { 
+        price: Math.floor(btcCurrentPrice * 0.985), // 1.5% below current
+        type: 'red', 
+        description: 'Major Liquidation Zone', 
+        percentage: 15.2 
+      },
+      { 
+        price: Math.floor(btcCurrentPrice * 0.995), // 0.5% below current
+        type: 'yellow', 
+        description: 'Breakout Level', 
+        percentage: 8.7 
+      },
+      { 
+        price: Math.floor(btcCurrentPrice * 1.015), // 1.5% above current
+        type: 'green', 
+        description: 'Support Level', 
+        percentage: 12.3 
+      }
+    ];
+
+    // ETH liquidation levels (relative to current price)
+    const newEthLevels: LiquidationLevel[] = [
+      { 
+        price: Math.floor(ethCurrentPrice * 0.985), // 1.5% below current
+        type: 'red', 
+        description: 'Major Liquidation Zone', 
+        percentage: 18.5 
+      },
+      { 
+        price: Math.floor(ethCurrentPrice * 0.995), // 0.5% below current
+        type: 'yellow', 
+        description: 'Breakout Level', 
+        percentage: 11.2 
+      },
+      { 
+        price: Math.floor(ethCurrentPrice * 1.015), // 1.5% above current
+        type: 'green', 
+        description: 'Support Level', 
+        percentage: 9.8 
+      }
+    ];
+
+    setBtcLiquidationLevels(newBtcLevels);
+    setEthLiquidationLevels(newEthLevels);
+  }, [isClient, BTC.price, ETH.price]);
+
   const refreshLiquidationLevels = async () => {
     setIsRefreshing(true);
     try {

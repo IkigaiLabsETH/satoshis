@@ -7,39 +7,73 @@ export default function PositionManager() {
   const { BTC, ETH, isLoading, error } = useLiveCryptoPrices();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Mock position data with live prices
-  const btcPosition = {
-    asset: 'BTC',
-    size: 0.018403,
-    entryPrice: 119425,
-    currentPrice: BTC.price || 119425,
-    leverage: 8,
-    pnl: BTC.price ? ((BTC.price - 119425) / 119425) * 8 * 0.018403 * BTC.price : 0,
-    pnlPercent: BTC.price ? ((BTC.price - 119425) / 119425) * 100 : 0,
-    stopLoss: 116897,
-    takeProfit: 149281,
-    marginUsed: 211.95,
-    status: 'pending' as const
+  // Portfolio constraints
+  const totalPortfolio = 521.95; // Total account equity
+  const maxPositionSize = totalPortfolio * 0.10; // 10% maximum per position
+
+  // Calculate optimal position sizes based on live prices and 10% limit
+  const calculateOptimalPositionSize = (asset: 'BTC' | 'ETH') => {
+    const currentPrice = asset === 'BTC' ? BTC.price : ETH.price;
+    if (!currentPrice || currentPrice <= 0) return { size: 0, notional: 0, leverage: 0 };
+    
+    // Calculate maximum position size in USD (10% of portfolio)
+    const maxPositionUSD = maxPositionSize;
+    
+    // Calculate position size in asset units
+    const positionSize = maxPositionUSD / currentPrice;
+    
+    // Calculate notional value
+    const notionalValue = positionSize * currentPrice;
+    
+    // Calculate safe leverage (ensure margin requirements are met)
+    const safeLeverage = Math.min(10, Math.max(5, totalPortfolio / notionalValue));
+    
+    return {
+      size: positionSize,
+      notional: notionalValue,
+      leverage: safeLeverage
+    };
   };
 
-  const ethPosition = {
+  const btcPosition = calculateOptimalPositionSize('BTC');
+  const ethPosition = calculateOptimalPositionSize('ETH');
+
+  // Mock position data with live prices and 10% limit
+  const btcPositionData = {
+    asset: 'BTC',
+    size: btcPosition.size,
+    entryPrice: BTC.price || 119425,
+    currentPrice: BTC.price || 119425,
+    leverage: btcPosition.leverage,
+    pnl: BTC.price ? ((BTC.price - (BTC.price || 119425)) / (BTC.price || 119425)) * btcPosition.leverage * btcPosition.size * BTC.price : 0,
+    pnlPercent: BTC.price ? ((BTC.price - (BTC.price || 119425)) / (BTC.price || 119425)) * 100 : 0,
+    stopLoss: BTC.price ? Math.floor(BTC.price * 0.97) : 116897,
+    takeProfit: BTC.price ? Math.floor(BTC.price * 1.25) : 149281,
+    marginUsed: btcPosition.notional / btcPosition.leverage,
+    status: 'pending' as const,
+    portfolioAllocation: ((btcPosition.notional / totalPortfolio) * 100).toFixed(1)
+  };
+
+  const ethPositionData = {
     asset: 'ETH',
-    size: 0.5,
-    entryPrice: 3200,
+    size: ethPosition.size,
+    entryPrice: ETH.price || 3200,
     currentPrice: ETH.price || 3200,
-    leverage: 8,
-    pnl: ETH.price ? ((ETH.price - 3200) / 3200) * 8 * 0.5 * ETH.price : 0,
-    pnlPercent: ETH.price ? ((ETH.price - 3200) / 3200) * 100 : 0,
-    stopLoss: 3136,
-    takeProfit: 4000,
-    marginUsed: 200,
-    status: 'pending' as const
+    leverage: ethPosition.leverage,
+    pnl: ETH.price ? ((ETH.price - (ETH.price || 3200)) / (ETH.price || 3200)) * ethPosition.leverage * ethPosition.size * ETH.price : 0,
+    pnlPercent: ETH.price ? ((ETH.price - (ETH.price || 3200)) / (ETH.price || 3200)) * 100 : 0,
+    stopLoss: ETH.price ? Math.floor(ETH.price * 0.97) : 3136,
+    takeProfit: ETH.price ? Math.floor(ETH.price * 1.25) : 4000,
+    marginUsed: ethPosition.notional / ethPosition.leverage,
+    status: 'pending' as const,
+    portfolioAllocation: ((ethPosition.notional / totalPortfolio) * 100).toFixed(1)
   };
 
   // Calculate totals
-  const totalEquity = 521.95;
-  const totalPnl = btcPosition.pnl + ethPosition.pnl;
-  const totalPnlPercent = totalEquity > 0 ? (totalPnl / totalEquity) * 100 : 0;
+  const totalPnl = btcPositionData.pnl + ethPositionData.pnl;
+  const totalPnlPercent = totalPortfolio > 0 ? (totalPnl / totalPortfolio) * 100 : 0;
+  const totalAllocated = btcPosition.notional + ethPosition.notional;
+  const availableMargin = totalPortfolio - totalAllocated;
 
   const refreshPositions = () => {
     setIsRefreshing(true);
@@ -112,18 +146,18 @@ export default function PositionManager() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold text-orange-400">Bitcoin (BTC)</h3>
             <span className="px-2 py-1 rounded text-xs font-medium bg-gray-500/20 text-gray-400">
-              {btcPosition.status.toUpperCase()}
+              {btcPositionData.status.toUpperCase()}
             </span>
           </div>
           
           <div className="space-y-3 mb-4">
             <div className="flex justify-between">
               <span className="text-gray-400">Position Size:</span>
-              <span className="text-white font-semibold">{btcPosition.size} BTC</span>
+              <span className="text-white font-semibold">{btcPositionData.size} BTC</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Entry Price:</span>
-              <span className="text-white font-semibold">${btcPosition.entryPrice.toLocaleString()}</span>
+              <span className="text-white font-semibold">${btcPositionData.entryPrice.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Current Price:</span>
@@ -131,41 +165,41 @@ export default function PositionManager() {
                 {isLoading ? (
                   <span className="animate-pulse">Loading...</span>
                 ) : (
-                  `$${btcPosition.currentPrice.toLocaleString()}`
+                  `$${btcPositionData.currentPrice.toLocaleString()}`
                 )}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Leverage:</span>
-              <span className="text-white font-semibold">{btcPosition.leverage}x</span>
+              <span className="text-white font-semibold">{btcPositionData.leverage}x</span>
             </div>
           </div>
 
           {/* P&L Display */}
           <div className={`p-3 rounded-none border ${
-            btcPosition.pnl >= 0 ? 'border-green-500/30 bg-green-500/10' : 'border-red-500/30 bg-red-500/10'
+            btcPositionData.pnl >= 0 ? 'border-green-500/30 bg-green-500/10' : 'border-red-500/30 bg-red-500/10'
           }`}>
             <div className="flex justify-between items-center">
               <span className="text-gray-400">Unrealized P&L:</span>
               <span className={`font-bold text-lg ${
-                btcPosition.pnl >= 0 ? 'text-green-400' : 'text-red-400'
+                btcPositionData.pnl >= 0 ? 'text-green-400' : 'text-red-400'
               }`}>
                 {isLoading ? (
                   <span className="animate-pulse">--</span>
                 ) : (
-                  `${btcPosition.pnl >= 0 ? '+' : ''}$${btcPosition.pnl.toFixed(2)}`
+                  `${btcPositionData.pnl >= 0 ? '+' : ''}$${btcPositionData.pnl.toFixed(2)}`
                 )}
               </span>
             </div>
             <div className="flex justify-between items-center mt-1">
               <span className="text-gray-400">P&L %:</span>
               <span className={`font-semibold ${
-                btcPosition.pnlPercent >= 0 ? 'text-green-400' : 'text-red-400'
+                btcPositionData.pnlPercent >= 0 ? 'text-green-400' : 'text-red-400'
               }`}>
                 {isLoading ? (
                   <span className="animate-pulse">--</span>
                 ) : (
-                  `${btcPosition.pnlPercent >= 0 ? '+' : ''}${btcPosition.pnlPercent.toFixed(2)}%`
+                  `${btcPositionData.pnlPercent >= 0 ? '+' : ''}${btcPositionData.pnlPercent.toFixed(2)}%`
                 )}
               </span>
             </div>
@@ -177,15 +211,15 @@ export default function PositionManager() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-400">Stop Loss:</span>
-                <span className="text-red-400">${btcPosition.stopLoss.toLocaleString()}</span>
+                <span className="text-red-400">${btcPositionData.stopLoss.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Take Profit:</span>
-                <span className="text-green-400">${btcPosition.takeProfit.toLocaleString()}</span>
+                <span className="text-green-400">${btcPositionData.takeProfit.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Margin Used:</span>
-                <span className="text-white">${btcPosition.marginUsed.toFixed(2)}</span>
+                <span className="text-white">${btcPositionData.marginUsed.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -196,18 +230,18 @@ export default function PositionManager() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold text-blue-400">Ethereum (ETH)</h3>
             <span className="px-2 py-1 rounded text-xs font-medium bg-gray-500/20 text-gray-400">
-              {ethPosition.status.toUpperCase()}
+              {ethPositionData.status.toUpperCase()}
             </span>
           </div>
           
           <div className="space-y-3 mb-4">
             <div className="flex justify-between">
               <span className="text-gray-400">Position Size:</span>
-              <span className="text-white font-semibold">{ethPosition.size} ETH</span>
+              <span className="text-white font-semibold">{ethPositionData.size} ETH</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Entry Price:</span>
-              <span className="text-white font-semibold">${ethPosition.entryPrice.toLocaleString()}</span>
+              <span className="text-white font-semibold">${ethPositionData.entryPrice.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Current Price:</span>
@@ -215,41 +249,41 @@ export default function PositionManager() {
                 {isLoading ? (
                   <span className="animate-pulse">Loading...</span>
                 ) : (
-                  `$${ethPosition.currentPrice.toLocaleString()}`
+                  `$${ethPositionData.currentPrice.toLocaleString()}`
                 )}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Leverage:</span>
-              <span className="text-white font-semibold">{ethPosition.leverage}x</span>
+              <span className="text-white font-semibold">{ethPositionData.leverage}x</span>
             </div>
           </div>
 
           {/* P&L Display */}
           <div className={`p-3 rounded-none border ${
-            ethPosition.pnl >= 0 ? 'border-green-500/30 bg-green-500/10' : 'border-red-500/30 bg-red-500/10'
+            ethPositionData.pnl >= 0 ? 'border-green-500/30 bg-green-500/10' : 'border-red-500/30 bg-red-500/10'
           }`}>
             <div className="flex justify-between items-center">
               <span className="text-gray-400">Unrealized P&L:</span>
               <span className={`font-bold text-lg ${
-                ethPosition.pnl >= 0 ? 'text-green-400' : 'text-red-400'
+                ethPositionData.pnl >= 0 ? 'text-green-400' : 'text-red-400'
               }`}>
                 {isLoading ? (
                   <span className="animate-pulse">--</span>
                 ) : (
-                  `${ethPosition.pnl >= 0 ? '+' : ''}$${ethPosition.pnl.toFixed(2)}`
+                  `${ethPositionData.pnl >= 0 ? '+' : ''}$${ethPositionData.pnl.toFixed(2)}`
                 )}
               </span>
             </div>
             <div className="flex justify-between items-center mt-1">
               <span className="text-gray-400">P&L %:</span>
               <span className={`font-semibold ${
-                ethPosition.pnlPercent >= 0 ? 'text-green-400' : 'text-red-400'
+                ethPositionData.pnlPercent >= 0 ? 'text-green-400' : 'text-red-400'
               }`}>
                 {isLoading ? (
                   <span className="animate-pulse">--</span>
                 ) : (
-                  `${ethPosition.pnlPercent >= 0 ? '+' : ''}${ethPosition.pnlPercent.toFixed(2)}%`
+                  `${ethPositionData.pnlPercent >= 0 ? '+' : ''}${ethPositionData.pnlPercent.toFixed(2)}%`
                 )}
               </span>
             </div>
@@ -261,15 +295,15 @@ export default function PositionManager() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-400">Stop Loss:</span>
-                <span className="text-red-400">${ethPosition.stopLoss.toLocaleString()}</span>
+                <span className="text-red-400">${ethPositionData.stopLoss.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Take Profit:</span>
-                <span className="text-green-400">${ethPosition.takeProfit.toLocaleString()}</span>
+                <span className="text-green-400">${ethPositionData.takeProfit.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Margin Used:</span>
-                <span className="text-white">${ethPosition.marginUsed.toFixed(2)}</span>
+                <span className="text-white">${ethPositionData.marginUsed.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -281,7 +315,7 @@ export default function PositionManager() {
         <h3 className="text-xl font-semibold text-white mb-4">Portfolio Summary</h3>
         <div className="grid md:grid-cols-3 gap-6">
           <div className="text-center">
-            <div className="text-2xl font-bold text-white mb-1">${totalEquity.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-white mb-1">${totalPortfolio.toFixed(2)}</div>
             <div className="text-sm text-gray-400">Total Equity</div>
           </div>
           <div className="text-center">
@@ -307,6 +341,47 @@ export default function PositionManager() {
               )}
             </div>
             <div className="text-sm text-gray-400">Total P&L %</div>
+          </div>
+        </div>
+
+        {/* Portfolio Allocation Summary */}
+        <div className="bg-black/50 rounded-none p-6 border border-yellow-500/20">
+          <h4 className="text-lg font-semibold text-yellow-400 mb-4">Portfolio Allocation</h4>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-gray-400">BTC Allocation:</span>
+                <span className="text-white font-semibold">{btcPositionData.portfolioAllocation}%</span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-2">
+                <div 
+                  className="bg-yellow-500 h-2 rounded-full" 
+                  style={{ width: `${btcPositionData.portfolioAllocation}%` }}
+                ></div>
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-gray-400">ETH Allocation:</span>
+                <span className="text-white font-semibold">{ethPositionData.portfolioAllocation}%</span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-2">
+                <div 
+                  className="bg-blue-500 h-2 rounded-full" 
+                  style={{ width: `${ethPositionData.portfolioAllocation}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded">
+            <p className="text-sm text-yellow-400">
+              <strong>Portfolio Constraint:</strong> Maximum 10% allocation per position 
+              (${maxPositionSize.toFixed(0)}) to maintain proper risk management
+            </p>
+            <p className="text-sm text-gray-300 mt-2">
+              <strong>Total Allocated:</strong> ${totalAllocated.toFixed(2)} | 
+              <strong>Available Margin:</strong> ${availableMargin.toFixed(2)}
+            </p>
           </div>
         </div>
       </div>

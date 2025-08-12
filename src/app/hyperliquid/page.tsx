@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from 'react';
 import ThesisSection from '@/components/hyperliquid/ThesisSection';
 import OverviewSection from '@/components/hyperliquid/OverviewSection';
 import KeyFeatures from '@/components/hyperliquid/KeyFeatures';
@@ -12,6 +13,44 @@ import ValuationSection from '@/components/hyperliquid/ValuationSection';
 import CTASection from '@/components/hyperliquid/CTASection';
 
 export default function HyperliquidPage() {
+  const [btcPrice, setBtcPrice] = useState<number | null>(null);
+  const [ethPrice, setEthPrice] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPrices = async () => {
+      try {
+        const response = await fetch(
+          'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd'
+        );
+        
+        if (!response.ok) {
+          throw new Error(`CoinGecko API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setBtcPrice(data.bitcoin?.usd || null);
+        setEthPrice(data.ethereum?.usd || null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch prices');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPrices();
+    
+    // Refresh prices every 5 minutes
+    const interval = setInterval(fetchPrices, 5 * 60 * 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // Calculate dynamic entry levels based on live prices
+  const btcEntryLevel = btcPrice ? Math.floor(btcPrice * 0.995) : 119425;
+  const ethEntryLevel = ethPrice ? Math.floor(ethPrice * 0.995) : 3200;
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Hero Section */}
@@ -39,6 +78,16 @@ export default function HyperliquidPage() {
               </p>
             </div>
 
+            {/* Live Price Status */}
+            {error && (
+              <div className="mb-8 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl">
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span className="text-red-400">Error fetching live prices: {error}</span>
+                </div>
+              </div>
+            )}
+
             {/* Trading Strategy CTA */}
             <div className="bg-gradient-to-r from-yellow-500/20 to-red-500/20 border border-yellow-500/30 rounded-2xl p-8 mb-16">
               <div className="grid md:grid-cols-2 gap-8 items-center">
@@ -48,10 +97,40 @@ export default function HyperliquidPage() {
                     Access our comprehensive perpetuals trading strategy with real-time liquidation monitoring, 
                     risk management, and position tracking for BTC and ETH
                   </p>
+                  
+                  {/* Live Price Display */}
+                  <div className="mb-6 p-4 bg-black/20 rounded-xl border border-yellow-500/30">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-yellow-400 font-semibold">Live Market Prices</span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-sm text-gray-400">
+                          {isLoading ? 'Loading...' : 'Live from CoinGecko'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-orange-400">
+                          {isLoading ? '--' : btcPrice ? `$${btcPrice.toLocaleString()}` : '$119,425'}
+                        </div>
+                        <div className="text-sm text-gray-400">BTC</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-400">
+                          {isLoading ? '--' : ethPrice ? `$${ethPrice.toLocaleString()}` : '$3,200'}
+                        </div>
+                        <div className="text-sm text-gray-400">ETH</div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="space-y-3 text-gray-300">
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                      <span>Entry Strategy: BTC &gt; $119,425, ETH &gt; $3,200</span>
+                      <span>
+                        Entry Strategy: BTC &gt; ${btcEntryLevel.toLocaleString()}, ETH &gt; ${ethEntryLevel.toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
