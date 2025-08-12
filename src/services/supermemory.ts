@@ -8,6 +8,18 @@ import {
   OutperformWatchlist
 } from '../types/supermemory';
 
+export class SupermemoryApiError extends Error {
+  status: number;
+  details?: string;
+
+  constructor(message: string, status: number, details?: string) {
+    super(message);
+    this.name = 'SupermemoryApiError';
+    this.status = status;
+    this.details = details;
+  }
+}
+
 class SupermemoryService {
   private apiKey: string;
   private baseUrl: string;
@@ -39,7 +51,13 @@ class SupermemoryService {
       });
 
       if (!response.ok) {
-        throw new Error(`Supermemory API error: ${response.status}`);
+        let details: string | undefined;
+        try {
+          details = await response.text();
+        } catch {
+          // ignore
+        }
+        throw new SupermemoryApiError(`Supermemory API error: ${response.status}` , response.status, details);
       }
 
       return await response.json();
@@ -67,7 +85,13 @@ class SupermemoryService {
       });
 
       if (!response.ok) {
-        throw new Error(`Supermemory API error: ${response.status}`);
+        let details: string | undefined;
+        try {
+          details = await response.text();
+        } catch {
+          // ignore
+        }
+        throw new SupermemoryApiError(`Supermemory API error: ${response.status}` , response.status, details);
       }
 
       return await response.json();

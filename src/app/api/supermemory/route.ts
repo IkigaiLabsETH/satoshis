@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import supermemoryService from '@/services/supermemory';
+import supermemoryService, { SupermemoryApiError } from '@/services/supermemory';
 
 export async function POST(request: NextRequest) {
   try {
@@ -63,8 +63,14 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch {
-    // Supermemory API error
+  } catch (err) {
+    // Surface upstream status/details when available
+    if (err instanceof SupermemoryApiError) {
+      return NextResponse.json(
+        { error: err.message, details: err.details },
+        { status: err.status || 500 }
+      );
+    }
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -94,8 +100,13 @@ export async function GET(request: NextRequest) {
       { error: 'Invalid request' },
       { status: 400 }
     );
-  } catch {
-    // Supermemory API error
+  } catch (err) {
+    if (err instanceof SupermemoryApiError) {
+      return NextResponse.json(
+        { error: err.message, details: err.details },
+        { status: err.status || 500 }
+      );
+    }
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
