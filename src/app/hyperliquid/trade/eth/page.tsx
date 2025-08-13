@@ -33,6 +33,10 @@ export default function EthMinimalStrategyPage() {
   const slPrice = direction === 'long' ? entryMid * (1 - slBufferPct) : entryMid * (1 + slBufferPct);
   const requiredNotionalFor1kAtMove = 1000 / (movePct * leverage);
   const requiredMarginAtMove = requiredNotionalFor1kAtMove / leverage;
+  // Simulation metrics
+  const potentialProfitAtMove = perTradeNotional * movePct * leverage; // +move
+  const potentialLossAtMove = perTradeNotional * movePct * leverage; // -move (no SL)
+  const plannedMaxLossAtSL = perTradeNotional * slBufferPct * leverage; // with SL
 
   // Simple auto-extract from heatmap (brightness peaks along rows)
   const autoExtractFromHeatmap = async () => {
@@ -246,6 +250,17 @@ export default function EthMinimalStrategyPage() {
           </select>
         </div>
         <div className="mt-2">Required notional for $1k at {(movePct*100).toFixed(1)}%: ${requiredNotionalFor1kAtMove.toFixed(0)} | Margin @7x: ${requiredMarginAtMove.toFixed(0)}</div>
+      </div>
+
+      {/* Simulation: 7x Long on $21k Notional */}
+      <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded text-sm">
+        <div className="font-semibold text-blue-300 mb-2">Simulation (7x Long on $21,000 notional)</div>
+        <div className="grid md:grid-cols-3 gap-3">
+          <ActionTile label="Profit @ +Move" value={`$${potentialProfitAtMove.toFixed(0)}`} />
+          <ActionTile label="Loss @ -Move (no SL)" value={`$${potentialLossAtMove.toFixed(0)}`} tone="danger" />
+          <ActionTile label="Planned Max Loss (SL)" value={`$${plannedMaxLossAtSL.toFixed(0)} (~${(slBufferPct*100).toFixed(2)}%)`} tone="danger" />
+        </div>
+        <div className="text-xs text-gray-400 mt-2">Move = {(movePct*100).toFixed(2)}%. SL buffer = {(slBufferPct*100).toFixed(2)}%. Notional = $21,000 • Leverage = 7x.</div>
       </div>
     </div>
   );
