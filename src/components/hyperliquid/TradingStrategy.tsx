@@ -214,6 +214,9 @@ export default function TradingStrategy() {
           <span className="mr-4">Margin @ {leverageAssumption}x: ${marginRequiredSingle.toFixed(0)}</span>
           <span>Expected PnL: ${expectedPnLSingle.toFixed(0)} {shortfallSingle > 0 ? `(shortfall $${shortfallSingle.toFixed(0)})` : ''}</span>
         </div>
+        <div className="mt-2 text-xs text-gray-400">
+          Required notional to hit $1k at {(movePct*100).toFixed(1)}% move: ${requiredNotionalFor1k.toFixed(0)} | Margin @ {leverageAssumption}x: ${requiredMarginFor1k.toFixed(0)}
+        </div>
       </div>
 
       <div className="space-y-6">
