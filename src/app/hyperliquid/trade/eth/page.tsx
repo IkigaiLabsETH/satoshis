@@ -9,6 +9,7 @@ export default function EthMinimalStrategyPage() {
   const [heatmapImage, setHeatmapImage] = useState<string | null>(null);
   const [axisTopPrice, setAxisTopPrice] = useState<number>(4848);
   const [axisBottomPrice, setAxisBottomPrice] = useState<number>(4100);
+  const [extractedBands, setExtractedBands] = useState<number[] | null>(null);
 
   // Editable plan levels
   const [entryLower, setEntryLower] = useState<number>(4560);
@@ -19,6 +20,7 @@ export default function EthMinimalStrategyPage() {
   const [slBufferPct, setSlBufferPct] = useState<number>(0.0075); // 0.75%
   const [movePct, setMovePct] = useState<number>(0.02); // 2%
   const [direction, setDirection] = useState<'long' | 'short'>('long');
+  const [suggestedDir, setSuggestedDir] = useState<'long' | 'short'>('long');
 
   // Constants
   const leverage = 7;
@@ -26,11 +28,20 @@ export default function EthMinimalStrategyPage() {
 
   // Derived numbers
   const entryMid = (entryLower + entryUpper) / 2;
+  const retestMid = (retestLower + retestUpper) / 2;
+  const currentPrice = ETH.price || entryMid;
   const requiredMoveFor1k = 1000 / (perTradeNotional * leverage); // decimal
-  const tp1Price = direction === 'long' ? entryMid * (1 + requiredMoveFor1k) : entryMid * (1 - requiredMoveFor1k);
-  const slPrice = direction === 'long' ? entryMid * (1 - slBufferPct) : entryMid * (1 + slBufferPct);
+  // Decide mode and anchor: pullback → entry band; momentum → retest band
+  const mode: 'pullback' | 'momentum' = currentPrice >= breakLevel ? 'momentum' : 'pullback';
+  const entryAnchor = mode === 'momentum' ? retestMid : entryMid;
+  const tp1Price = direction === 'long' ? entryAnchor * (1 + requiredMoveFor1k) : entryAnchor * (1 - requiredMoveFor1k);
+  const slPrice = direction === 'long' ? entryAnchor * (1 - slBufferPct) : entryAnchor * (1 + slBufferPct);
   const requiredNotionalFor1kAtMove = 1000 / (movePct * leverage);
   const requiredMarginAtMove = requiredNotionalFor1kAtMove / leverage;
+  // Simulation metrics
+  const potentialProfitAtMove = perTradeNotional * movePct * leverage; // +move
+  const potentialLossAtMove = perTradeNotional * movePct * leverage; // -move (no SL)
+  const plannedMaxLossAtSL = perTradeNotional * slBufferPct * leverage; // with SL
 
   // Simple auto-extract from heatmap (brightness peaks along rows)
   const autoExtractFromHeatmap = async () => {
@@ -93,6 +104,7 @@ export default function EthMinimalStrategyPage() {
     }
     const toPrice = (rowY: number) => axisTopPrice - (rowY / h) * (axisTopPrice - axisBottomPrice);
     const bands = picked.map(toPrice).sort((a, b) => a - b);
+    setExtractedBands(bands);
     const current = ETH.price || entryMid;
     const below = [...bands].filter(p => p < current).pop();
     const above = bands.find(p => p > current);
@@ -106,6 +118,30 @@ export default function EthMinimalStrategyPage() {
       setRetestUpper(Math.floor(above - 10));
     }
   };
+
+  // Auto-suggest direction from bands vs current price
+  useEffect(() => {
+    const current = ETH.price || entryMid;
+    let dir: 'long' | 'short' = 'long';
+    if (extractedBands && extractedBands.length) {
+      const below = extractedBands.filter(p => p < current).pop();
+      const above = extractedBands.find(p => p > current);
+      if (below && above) dir = (current - below) <= (above - current) ? 'long' : 'short';
+      else if (!below && above) dir = 'short';
+      else dir = 'long';
+    } else {
+      // fallback: if current above entry band and below break, prefer long
+      if (current < entryLower) dir = 'long';
+      else if (current > breakLevel) dir = 'long';
+      else dir = 'long';
+    }
+    setSuggestedDir(dir);
+  }, [ETH.price, extractedBands, entryLower, breakLevel, entryMid]);
+
+  // Sync direction to suggestion by default (user can override by clicking)
+  useEffect(() => {
+    setDirection(suggestedDir);
+  }, [suggestedDir]);
 
   return (
     <div className="bg-[#0f1116] min-h-screen text-white p-6">
@@ -126,6 +162,14 @@ export default function EthMinimalStrategyPage() {
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <label className="block text-purple-300 text-sm mb-2">Upload 1D ETH Heatmap</label>
+            <a
+              href="https://coinank.com/liqHeatMapChart/ethusdt/1d"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block mb-2 px-3 py-1 rounded bg-purple-700 hover:bg-purple-600 text-white text-xs"
+            >
+              Open CoinAnk 1D ETH Heatmap
+            </a>
             <input
               type="file"
               accept="image/*"
@@ -182,20 +226,22 @@ export default function EthMinimalStrategyPage() {
         <div className="font-semibold text-yellow-400">Suggested Trade</div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-gray-300">Direction:</span>
+          <span className={`px-2 py-1 rounded text-xs ${suggestedDir==='long'?'bg-green-600/30 text-green-300 border border-green-600/50':'bg-red-600/30 text-red-300 border border-red-600/50'}`}>Suggested: {suggestedDir.toUpperCase()}</span>
+          <span className={`px-2 py-1 rounded text-xs ${mode==='momentum'?'bg-blue-600/30 text-blue-300 border border-blue-600/50':'bg-yellow-600/30 text-yellow-300 border border-yellow-600/50'}`}>{mode==='momentum'?'Mode: Momentum (break & retest)':'Mode: Pullback (entry band)'}</span>
           <button className={`px-3 py-1 rounded text-sm ${direction==='long'?'bg-green-600':'bg-gray-700'}`} onClick={()=>setDirection('long')}>Long</button>
           <button className={`px-3 py-1 rounded text-sm ${direction==='short'?'bg-red-600':'bg-gray-700'}`} onClick={()=>setDirection('short')}>Short</button>
         </div>
-        <div>- Primary: sweep {direction==='long'? 'below':'above'} {entryLower}-{entryUpper}, {direction==='long'? 'reclaim':'reject at'} {entryLower} on 5–15m; enter ≈ ${entryMid.toFixed(0)}.</div>
-        <div>- Alt momentum: break {breakLevel}, {direction==='long'? 'buy HL':'sell LH'} on retest {retestLower}-{retestUpper}.</div>
+        <div>- Primary (pullback): sweep {direction==='long'? 'below':'above'} {entryLower}-{entryUpper}, {direction==='long'? 'reclaim':'reject at'} {entryLower} on 5–15m; enter ≈ ${entryMid.toFixed(0)}.</div>
+        <div>- Alt (momentum): break {breakLevel}, {direction==='long'? 'buy HL':'sell LH'} on retest {retestLower}-{retestUpper}; enter ≈ ${retestMid.toFixed(0)}.</div>
         <div className="grid md:grid-cols-3 gap-3 mt-2">
           <ActionTile label="Leverage" value="7x" />
           <ActionTile label="Size (USD)" value="$21,000" copyValue="21000" />
-          <ActionTile label="Entry (guide)" value={`~$${entryMid.toFixed(0)}`} copyValue={entryMid.toFixed(0)} />
+          <ActionTile label="Entry (guide)" value={`~$${entryAnchor.toFixed(0)}`} copyValue={entryAnchor.toFixed(0)} />
           <ActionTile label="SL Price" value={`$${slPrice.toFixed(0)}`} copyValue={slPrice.toFixed(0)} tone="danger" />
           <ActionTile label="TP1 Price" value={`$${tp1Price.toFixed(0)}`} copyValue={tp1Price.toFixed(0)} tone="success" />
           <ActionTile label="TP1 Move" value={`${(requiredMoveFor1k*100).toFixed(2)}%`} />
         </div>
-        <div className="text-xs text-gray-400">Copy values into Hyperliquid order panel (Isolated • 7x • One-Way). Use Market after reclaim or set a Limit inside the entry band.</div>
+        <div className="text-xs text-gray-400">Copy values into Hyperliquid order panel (Isolated • 7x • One-Way). {mode==='pullback'? 'Price is above entry; place limit in entry band and wait for pullback.':'Price is above break; wait for retest and buy HL.'}</div>
       </div>
 
       {/* Capital requirement helper */}
@@ -209,7 +255,64 @@ export default function EthMinimalStrategyPage() {
             <option value={0.03}>3%</option>
           </select>
         </div>
-        <div className="mt-2">Required notional for $1k at {(movePct*100).toFixed(1)}%: ${requiredNotionalFor1kAtMove.toFixed(0)} | Margin @7x: ${requiredMarginAtMove.toFixed(0)}</div>
+        <div className="mt-2">To earn $1,000 with {(movePct*100).toFixed(1)}% move and 7x: Notional = ${requiredNotionalFor1kAtMove.toFixed(0)} • Margin = ${requiredMarginAtMove.toFixed(0)}.</div>
+        <div className="text-gray-300 mt-1">With your per‑trade cap ($21,000), expected PnL at {(movePct*100).toFixed(1)}% = ${ (perTradeNotional*movePct*leverage).toFixed(0)} • Minimum move needed for $1,000 = {( (1000/(perTradeNotional*leverage))*100 ).toFixed(2)}%.</div>
+      </div>
+
+      {/* Simulation: 7x Long on $21k Notional */}
+      <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded text-sm">
+        <div className="font-semibold text-blue-300 mb-2">Simulation (7x Long on $21,000 notional)</div>
+        <div className="grid md:grid-cols-3 gap-3">
+          <ActionTile label="Profit @ +Move" value={`$${potentialProfitAtMove.toFixed(0)}`} />
+          <ActionTile label="Loss @ -Move (no SL)" value={`$${potentialLossAtMove.toFixed(0)}`} tone="danger" />
+          <ActionTile label="Planned Max Loss (SL)" value={`$${plannedMaxLossAtSL.toFixed(0)} (~${(slBufferPct*100).toFixed(2)}%)`} tone="danger" />
+        </div>
+        <div className="text-xs text-gray-400 mt-2">Move = {(movePct*100).toFixed(2)}%. SL buffer = {(slBufferPct*100).toFixed(2)}%. Notional = $21,000 • Leverage = 7x.</div>
+      </div>
+
+      {/* Liquidation Map Playbook */}
+      <div className="mt-6 p-4 bg-black/50 border border-yellow-500/20 rounded text-sm space-y-3">
+        <div className="text-yellow-400 font-semibold">Liquidation Map Playbook</div>
+        <p className="text-gray-300">
+          Goal: protect capital and grow token balances. Trade the liquidation heat map with discipline; wait
+          for flushes and execute with defined risk.
+        </p>
+        <div className="space-y-2">
+          <div className="text-white font-semibold">Core Rules</div>
+          <ul className="list-disc pl-5 space-y-1 text-gray-300">
+            <li>Never sit in a losing trade. If red by ~2–3%, exit and re-enter lower/higher after the flush.</li>
+            <li>Always set a stop loss. Template: risk = size × SL%. For $1k risk on $21k, SL ≈ 4.8%.</li>
+            <li>TP fast: aim to extract 10–35% (relative to your leveraged position move) on flush bounces; don’t round trip.</li>
+            <li>Protect capital. Consistency and patience beat boredom trades.</li>
+          </ul>
+        </div>
+        <div className="space-y-2">
+          <div className="text-white font-semibold">How the Heat Map Is Used</div>
+          <ul className="list-disc pl-5 space-y-1 text-gray-300">
+            <li>Red/yellow = high-leverage (50–100×+) zones that are frequently flushed.</li>
+            <li>Blue (25–50×) is the signal: “enter in the blues” after the flush and reclaim on 5–15m.</li>
+            <li>On bullish days, exchanges often flush down before markup; on bearish days, they squeeze up before markdown.</li>
+          </ul>
+        </div>
+        <div className="space-y-2">
+          <div className="text-white font-semibold">Entries</div>
+          <ul className="list-disc pl-5 space-y-1 text-gray-300">
+            <li>Pullback: wait for sweep into blue band {`(${entryLower}-${entryUpper})`} and reclaim → enter near ~${entryMid.toFixed(0)}.</li>
+            <li>Momentum: break {breakLevel}, then {direction==='long'? 'buy HL':'sell LH'} on retest {retestLower}-{retestUpper} → enter ~${retestMid.toFixed(0)}.</li>
+          </ul>
+        </div>
+        <div className="space-y-2">
+          <div className="text-white font-semibold">Stops & Targets</div>
+          <ul className="list-disc pl-5 space-y-1 text-gray-300">
+            <li>Stop just beyond invalidation or set risk-first: SL% = risk / size (e.g., $1k/$21k ≈ 4.8%).</li>
+            <li>TP1 at move needed for $1k (~{(requiredMoveFor1k*100).toFixed(2)}% from entry, ${tp1Price.toFixed(0)} guide); scale more at +1.5–2.0%.</li>
+          </ul>
+        </div>
+        <div className="space-y-1 text-gray-400 text-xs">
+          <div>Macro: liquidity cycle likely shifting from QT to QE → bull run setup; learn to trade the flushes.</div>
+          <div>Micro: CEX microstructure is a casino; liquidation bands mark where leverage is harvested. Wait for events.</div>
+          <div>Reminder: self-custody spot stack for the long term; avoid high leverage; don’t get liquidated.</div>
+        </div>
       </div>
     </div>
   );
