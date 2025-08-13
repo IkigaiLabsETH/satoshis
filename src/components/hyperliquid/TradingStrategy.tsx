@@ -85,6 +85,14 @@ export default function TradingStrategy() {
   const marginRequiredSingle = recommendedNotionalSingle / leverageAssumption;
   const shortfallSingle = Math.max(0, targetPnL - expectedPnLSingle);
 
+  // Per-trade cap math (explicit 21k notional at 7x)
+  const perTradeNotional = PER_TRADE_CAP;
+  const requiredMoveToHit1k = targetPnL / (perTradeNotional * leverageAssumption); // decimal
+  const requiredMoveToHit1kPct = requiredMoveToHit1k * 100;
+  const requiredPriceDeltaUsd = (ETH.price || 0) * requiredMoveToHit1k;
+  const requiredSLFor1kOn21kPct = (dailyRiskCap / perTradeNotional) * 100; // % SL to cap loss at $1k with 21k notional
+  const notionalToCapLossAt25SL = dailyRiskCap / stopLossPct; // ≈ $4,000 for $1k cap with 25% SL
+
   return (
     <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
       <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
@@ -142,6 +150,27 @@ export default function TradingStrategy() {
                 BTC: ${BTC.price.toLocaleString()} | ETH: ${ETH.price.toLocaleString()} • Max trades: {MAX_TRADES} • Per-trade cap: ${PER_TRADE_CAP.toLocaleString()}
               </>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Required Move and Risk Box */}
+      <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-none">
+        <div className="grid md:grid-cols-3 gap-4 text-sm">
+          <div>
+            <div className="text-blue-300">Required Move for $1k (21k notional @ 7x)</div>
+            <div className="text-white font-semibold">{requiredMoveToHit1kPct.toFixed(2)}%</div>
+            <div className="text-gray-400">≈ ${requiredPriceDeltaUsd.toFixed(2)} up from current ETH</div>
+          </div>
+          <div>
+            <div className="text-blue-300">Stop Loss to Cap Loss at $1k (21k notional)</div>
+            <div className="text-white font-semibold">{requiredSLFor1kOn21kPct.toFixed(2)}%</div>
+            <div className="text-gray-400">If SL larger than this, daily risk &gt; $1k</div>
+          </div>
+          <div>
+            <div className="text-blue-300">Notional for $1k Risk with 25% SL</div>
+            <div className="text-white font-semibold">${notionalToCapLossAt25SL.toFixed(0)}</div>
+            <div className="text-gray-400">Use when keeping SL at 25%</div>
           </div>
         </div>
       </div>
