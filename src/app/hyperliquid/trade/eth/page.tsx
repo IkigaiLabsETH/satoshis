@@ -329,6 +329,19 @@ export default function EthMinimalStrategyPage() {
           <div>Reminder: self-custody spot stack for the long term; avoid high leverage; don’t get liquidated.</div>
         </div>
       </div>
+
+      {/* Why 7x (and not 40x) */}
+      <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded text-sm space-y-3">
+        <div className="text-red-300 font-semibold">Why 7x — and never 40x again</div>
+        <ul className="list-disc pl-5 space-y-1 text-gray-300">
+          <li>Same exposure, different survival: $140k notional can be reached with 7x on $21k or 40x on ~$3.5k. The PnL formula is the same (PnL = notional × move%), but the path-to-ruin is not.</li>
+          <li>Realistic stop width: With a $1k risk target on $140k notional, SL% = 1000/140000 ≈ <span className="text-white font-semibold">0.71%</span> at 40x — inside normal noise. At 7x, SL ≈ <span className="text-white font-semibold">4.8%</span>, which fits structural levels and allows re‑entries.</li>
+          <li>Liquidation is a worse stop: “No stop” at 40x turns into forced liquidation with worse fills/fees and total loss of margin control.</li>
+          <li>Rule of thumb: keep liquidation ≥ 3× farther than your SL; if not, reduce leverage/size. Trade the heat‑map event with structure, not at liq distance.</li>
+          <li>Capital efficiency without ruin: If you need more efficiency, use 7–10x and adjust notional, but keep $ risk = notional × SL% (e.g., $1k/day).</li>
+        </ul>
+        <div className="text-xs text-gray-400">Summary: 7x lets us use 4–8% structural stops, respect the heat‑map signal, and survive. 40x/no‑stop eventually blows up.</div>
+      </div>
     </div>
   );
 }
