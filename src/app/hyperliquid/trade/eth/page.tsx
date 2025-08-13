@@ -28,9 +28,14 @@ export default function EthMinimalStrategyPage() {
 
   // Derived numbers
   const entryMid = (entryLower + entryUpper) / 2;
+  const retestMid = (retestLower + retestUpper) / 2;
+  const currentPrice = ETH.price || entryMid;
   const requiredMoveFor1k = 1000 / (perTradeNotional * leverage); // decimal
-  const tp1Price = direction === 'long' ? entryMid * (1 + requiredMoveFor1k) : entryMid * (1 - requiredMoveFor1k);
-  const slPrice = direction === 'long' ? entryMid * (1 - slBufferPct) : entryMid * (1 + slBufferPct);
+  // Decide mode and anchor: pullback → entry band; momentum → retest band
+  const mode: 'pullback' | 'momentum' = currentPrice >= breakLevel ? 'momentum' : 'pullback';
+  const entryAnchor = mode === 'momentum' ? retestMid : entryMid;
+  const tp1Price = direction === 'long' ? entryAnchor * (1 + requiredMoveFor1k) : entryAnchor * (1 - requiredMoveFor1k);
+  const slPrice = direction === 'long' ? entryAnchor * (1 - slBufferPct) : entryAnchor * (1 + slBufferPct);
   const requiredNotionalFor1kAtMove = 1000 / (movePct * leverage);
   const requiredMarginAtMove = requiredNotionalFor1kAtMove / leverage;
   // Simulation metrics
@@ -222,20 +227,21 @@ export default function EthMinimalStrategyPage() {
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-gray-300">Direction:</span>
           <span className={`px-2 py-1 rounded text-xs ${suggestedDir==='long'?'bg-green-600/30 text-green-300 border border-green-600/50':'bg-red-600/30 text-red-300 border border-red-600/50'}`}>Suggested: {suggestedDir.toUpperCase()}</span>
+          <span className={`px-2 py-1 rounded text-xs ${mode==='momentum'?'bg-blue-600/30 text-blue-300 border border-blue-600/50':'bg-yellow-600/30 text-yellow-300 border border-yellow-600/50'}`}>{mode==='momentum'?'Mode: Momentum (break & retest)':'Mode: Pullback (entry band)'}</span>
           <button className={`px-3 py-1 rounded text-sm ${direction==='long'?'bg-green-600':'bg-gray-700'}`} onClick={()=>setDirection('long')}>Long</button>
           <button className={`px-3 py-1 rounded text-sm ${direction==='short'?'bg-red-600':'bg-gray-700'}`} onClick={()=>setDirection('short')}>Short</button>
         </div>
-        <div>- Primary: sweep {direction==='long'? 'below':'above'} {entryLower}-{entryUpper}, {direction==='long'? 'reclaim':'reject at'} {entryLower} on 5–15m; enter ≈ ${entryMid.toFixed(0)}.</div>
-        <div>- Alt momentum: break {breakLevel}, {direction==='long'? 'buy HL':'sell LH'} on retest {retestLower}-{retestUpper}.</div>
+        <div>- Primary (pullback): sweep {direction==='long'? 'below':'above'} {entryLower}-{entryUpper}, {direction==='long'? 'reclaim':'reject at'} {entryLower} on 5–15m; enter ≈ ${entryMid.toFixed(0)}.</div>
+        <div>- Alt (momentum): break {breakLevel}, {direction==='long'? 'buy HL':'sell LH'} on retest {retestLower}-{retestUpper}; enter ≈ ${retestMid.toFixed(0)}.</div>
         <div className="grid md:grid-cols-3 gap-3 mt-2">
           <ActionTile label="Leverage" value="7x" />
           <ActionTile label="Size (USD)" value="$21,000" copyValue="21000" />
-          <ActionTile label="Entry (guide)" value={`~$${entryMid.toFixed(0)}`} copyValue={entryMid.toFixed(0)} />
+          <ActionTile label="Entry (guide)" value={`~$${entryAnchor.toFixed(0)}`} copyValue={entryAnchor.toFixed(0)} />
           <ActionTile label="SL Price" value={`$${slPrice.toFixed(0)}`} copyValue={slPrice.toFixed(0)} tone="danger" />
           <ActionTile label="TP1 Price" value={`$${tp1Price.toFixed(0)}`} copyValue={tp1Price.toFixed(0)} tone="success" />
           <ActionTile label="TP1 Move" value={`${(requiredMoveFor1k*100).toFixed(2)}%`} />
         </div>
-        <div className="text-xs text-gray-400">Copy values into Hyperliquid order panel (Isolated • 7x • One-Way). Use Market after reclaim or set a Limit inside the entry band.</div>
+        <div className="text-xs text-gray-400">Copy values into Hyperliquid order panel (Isolated • 7x • One-Way). {mode==='pullback'? 'Price is above entry; place limit in entry band and wait for pullback.':'Price is above break; wait for retest and buy HL.'}</div>
       </div>
 
       {/* Capital requirement helper */}
@@ -249,7 +255,8 @@ export default function EthMinimalStrategyPage() {
             <option value={0.03}>3%</option>
           </select>
         </div>
-        <div className="mt-2">Required notional for $1k at {(movePct*100).toFixed(1)}%: ${requiredNotionalFor1kAtMove.toFixed(0)} | Margin @7x: ${requiredMarginAtMove.toFixed(0)}</div>
+        <div className="mt-2">To earn $1,000 with {(movePct*100).toFixed(1)}% move and 7x: Notional = ${requiredNotionalFor1kAtMove.toFixed(0)} • Margin = ${requiredMarginAtMove.toFixed(0)}.</div>
+        <div className="text-gray-300 mt-1">With your per‑trade cap ($21,000), expected PnL at {(movePct*100).toFixed(1)}% = ${ (perTradeNotional*movePct*leverage).toFixed(0)} • Minimum move needed for $1,000 = {( (1000/(perTradeNotional*leverage))*100 ).toFixed(2)}%.</div>
       </div>
 
       {/* Simulation: 7x Long on $21k Notional */}
