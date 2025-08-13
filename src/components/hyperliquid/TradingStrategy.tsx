@@ -47,6 +47,22 @@ export default function TradingStrategy() {
   const btcPosition = calculateOptimalPositionSize('BTC');
   const ethPosition = calculateOptimalPositionSize('ETH');
 
+  // Dynamic TP calculations based on live prices and current position sizes
+  const calculateTakeProfit = (asset: 'BTC' | 'ETH') => {
+    const price = asset === 'BTC' ? BTC.price : ETH.price;
+    const size = asset === 'BTC' ? btcPosition.size : ethPosition.size;
+    if (!price || price <= 0) {
+      return { entry: 0, target: 0, profitPerPosition: 0 };
+    }
+    const entry = price;
+    const target = entry * 1.25;
+    const profitPerPosition = (target - entry) * size;
+    return { entry, target, profitPerPosition };
+  };
+
+  const btcTP = calculateTakeProfit('BTC');
+  const ethTP = calculateTakeProfit('ETH');
+
   return (
     <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
       <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
@@ -273,17 +289,17 @@ export default function TradingStrategy() {
                 <div>
                   <h5 className="text-green-400 font-semibold mb-2">BTC Take Profit</h5>
                   <ul className="space-y-1 text-sm">
-                    <li>• Entry: $119,425</li>
-                    <li>• Target: $149,281 (25% profit)</li>
-                    <li>• Profit: ~$549.44 per position</li>
+                    <li>• Entry: {isLoading ? '--' : `$${btcTP.entry.toLocaleString()}`}</li>
+                    <li>• Target: {isLoading ? '--' : `$${btcTP.target.toLocaleString()}`} (25% profit)</li>
+                    <li>• Profit: {isLoading ? '--' : `~$${btcTP.profitPerPosition.toFixed(2)} per position`}</li>
                   </ul>
                 </div>
                 <div>
                   <h5 className="text-green-400 font-semibold mb-2">ETH Take Profit</h5>
                   <ul className="space-y-1 text-sm">
-                    <li>• Entry: $3,200</li>
-                    <li>• Target: $4,000 (25% profit)</li>
-                    <li>• Profit: ~$400.00 per position</li>
+                    <li>• Entry: {isLoading ? '--' : `$${ethTP.entry.toLocaleString()}`}</li>
+                    <li>• Target: {isLoading ? '--' : `$${ethTP.target.toLocaleString()}`} (25% profit)</li>
+                    <li>• Profit: {isLoading ? '--' : `~$${ethTP.profitPerPosition.toFixed(2)} per position`}</li>
                   </ul>
                 </div>
               </div>
