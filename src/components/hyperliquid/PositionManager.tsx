@@ -53,15 +53,15 @@ export default function PositionManager() {
     return {
       size: positionSize,
       notional: notionalValue,
-      leverage: 7 // Realistic 7x leverage
+      leverage: 7 // Use 7x to match target assumption
     };
   };
 
   const btcPosition = calculateOptimalPositionSize('BTC');
   const ethPosition = calculateOptimalPositionSize('ETH');
 
-  // Calculate daily PnL potential (assumption: 10% daily move, editable)
-  const expectedDailyMove = 0.10; // shared assumption used across display
+  // Calculate daily PnL potential (assumption: 2% daily move, editable)
+  const expectedDailyMove = 0.02; // 2% is a more realistic average daily move for BTC/ETH
   const calculateDailyPnLPotential = (position: PositionData): number => {
     return position.notional * expectedDailyMove * position.leverage;
   };
@@ -75,7 +75,7 @@ export default function PositionManager() {
   const totalDailyPnLPotential = btcDailyPnL + ethDailyPnL; // Combined daily PnL potential
   
   // Requirement to hit $1,000/day using BTC-only assumptions
-  // Clarify both required notional and required margin (at 7x)
+  // Clarify both required notional and required margin (at selected leverage)
   const leverageAssumption = 7;
   const requiredNotionalFor1000PnLBTC = 1000 / (expectedDailyMove * leverageAssumption); // e.g. $1,429
   const requiredMarginFor1000PnLBTC = requiredNotionalFor1000PnLBTC / leverageAssumption; // e.g. ~$204
@@ -158,18 +158,18 @@ export default function PositionManager() {
           <div className="flex items-center space-x-3">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-green-400 font-semibold">
-              🎯 Daily PnL Potential (combined): ${totalDailyPnLPotential.toFixed(0)} (7x leverage, 10% move)
+              🎯 Daily PnL Potential (combined): ${totalDailyPnLPotential.toFixed(0)} (${leverageAssumption}x leverage, ${(expectedDailyMove*100).toFixed(0)}% move)
             </span>
           </div>
           <div className="text-sm text-gray-400">
-            Portfolio: ${totalPortfolio.toLocaleString()} | Required notional for $1,000/day (BTC-only): ${requiredNotionalFor1000PnLBTC.toFixed(0)} | Margin @7x: ${requiredMarginFor1000PnLBTC.toFixed(0)}
+            Portfolio: ${totalPortfolio.toLocaleString()} | Required notional for $1,000/day (BTC-only): ${requiredNotionalFor1000PnLBTC.toFixed(0)} | Margin @${leverageAssumption}x: ${requiredMarginFor1000PnLBTC.toFixed(0)}
           </div>
         </div>
         <div className="mt-2 text-sm text-gray-300">
           <strong>Current Setup:</strong> {btcPosition.size.toFixed(4)} BTC | {ethPosition.size.toFixed(4)} ETH (ETH position optional; target uses BTC-only)
         </div>
         <div className="mt-2 text-sm text-yellow-400">
-          <strong>Risk Management:</strong> 25% stop loss, 25% take profit, 7x max leverage
+          <strong>Risk Management:</strong> 25% stop loss, 25% take profit, {leverageAssumption}x max leverage
         </div>
       </div>
 
@@ -443,20 +443,20 @@ export default function PositionManager() {
           <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded">
             <p className="text-sm text-yellow-400">
               <strong>Strategy Update:</strong> Using 35% allocation per position 
-              (${maxPositionSize.toFixed(0)}) with 7x leverage. $1,000/day requirement is calculated on BTC-only; ETH exposure is optional and not needed for the target.
+              (${maxPositionSize.toFixed(0)}) with {leverageAssumption}x leverage. $1,000/day requirement is calculated on BTC-only; ETH exposure is optional and not needed for the target.
             </p>
             <p className="text-sm text-gray-300 mt-2">
               <strong>Total Allocated:</strong> ${totalAllocated.toFixed(2)} | 
               <strong>Available Margin:</strong> ${availableMargin.toFixed(2)}
             </p>
             <p className="text-sm text-green-400 mt-2">
-              <strong>Current Daily PnL Potential:</strong> ${totalDailyPnLPotential.toFixed(0)} with current positions (7x leverage, 10% move)
+              <strong>Current Daily PnL Potential:</strong> ${totalDailyPnLPotential.toFixed(0)} with current positions ({leverageAssumption}x leverage, {(expectedDailyMove*100).toFixed(0)}% move)
             </p>
             <p className="text-sm text-red-400 mt-2">
-              <strong>⚠️ Reality Check:</strong> To target $1,000/day on BTC: Notional ≈ ${requiredNotionalFor1000PnLBTC.toFixed(0)}, Margin @7x ≈ ${requiredMarginFor1000PnLBTC.toFixed(0)} (current equity: ${totalPortfolio})
+              <strong>⚠️ Reality Check:</strong> To target $1,000/day on BTC: Notional ≈ ${requiredNotionalFor1000PnLBTC.toFixed(0)}, Margin @${leverageAssumption}x ≈ ${requiredMarginFor1000PnLBTC.toFixed(0)} (current equity: ${totalPortfolio})
             </p>
             <p className="text-sm text-blue-400 mt-2">
-              <strong>Risk Management:</strong> 25% stop loss, 25% take profit, 7x max leverage, 70% portfolio allocated
+              <strong>Risk Management:</strong> 25% stop loss, 25% take profit, {leverageAssumption}x max leverage, 70% portfolio allocated
             </p>
           </div>
         </div>
