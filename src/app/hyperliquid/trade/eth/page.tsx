@@ -17,20 +17,22 @@ export default function EthMinimalStrategyPage() {
   const [breakLevel, setBreakLevel] = useState<number>(4680);
   const [retestLower, setRetestLower] = useState<number>(4660);
   const [retestUpper, setRetestUpper] = useState<number>(4670);
-  const [slBufferPct, setSlBufferPct] = useState<number>(0.0075); // 0.75%
+  const [slBufferPct, setSlBufferPct] = useState<number>(0.048); // 4.8% default to risk ~$1k on $21k
   const [movePct, setMovePct] = useState<number>(0.02); // 2%
   const [direction, setDirection] = useState<'long' | 'short'>('long');
   const [suggestedDir, setSuggestedDir] = useState<'long' | 'short'>('long');
 
   // Constants
   const leverage = 7;
-  const perTradeNotional = 21000; // $21k cap
+  const [notional] = useState<number>(21000); // $21k cap
+  const [riskTargetUSD] = useState<number>(1000);
+  const [autoRisk, setAutoRisk] = useState<boolean>(true); // auto set SL to hit $1k risk on current notional
 
   // Derived numbers
   const entryMid = (entryLower + entryUpper) / 2;
   const retestMid = (retestLower + retestUpper) / 2;
   const currentPrice = ETH.price || entryMid;
-  const requiredMoveFor1k = 1000 / perTradeNotional; // decimal
+  const requiredMoveFor1k = 1000 / notional; // decimal
   // Decide mode and anchor: pullback → entry band; momentum → retest band
   const mode: 'pullback' | 'momentum' = currentPrice >= breakLevel ? 'momentum' : 'pullback';
   const entryAnchor = mode === 'momentum' ? retestMid : entryMid;
@@ -39,9 +41,16 @@ export default function EthMinimalStrategyPage() {
   const requiredNotionalFor1kAtMove = 1000 / (movePct);
   const requiredMarginAtMove = requiredNotionalFor1kAtMove / leverage;
   // Simulation metrics
-  const potentialProfitAtMove = perTradeNotional * movePct; // +move
-  const potentialLossAtMove = perTradeNotional * movePct; // -move (no SL)
-  const plannedMaxLossAtSL = perTradeNotional * slBufferPct; // with SL
+  const potentialProfitAtMove = notional * movePct; // +move
+  const potentialLossAtMove = notional * movePct; // -move (no SL)
+  const plannedMaxLossAtSL = notional * slBufferPct; // with SL
+
+  // Auto-fit SL to target risk when enabled
+  useEffect(() => {
+    if (autoRisk && notional > 0) {
+      setSlBufferPct(riskTargetUSD / notional);
+    }
+  }, [autoRisk, riskTargetUSD, notional]);
 
   // Simple auto-extract from heatmap (brightness peaks along rows)
   const autoExtractFromHeatmap = async () => {
@@ -215,8 +224,14 @@ export default function EthMinimalStrategyPage() {
           </div>
           <div>
             <div className="text-yellow-300 mb-1">SL Buffer %</div>
-            <input type="number" step="0.001" className="bg-black/50 border border-yellow-500/30 rounded px-2 py-1 w-28" value={slBufferPct} onChange={(e)=>setSlBufferPct(Number(e.target.value))} />
-            <div className="text-xs text-gray-400">0.0075 = 0.75%</div>
+            <div className="flex items-center space-x-2">
+              <input type="number" step="0.001" className="bg-black/50 border border-yellow-500/30 rounded px-2 py-1 w-28" value={slBufferPct} onChange={(e)=>{ setAutoRisk(false); setSlBufferPct(Number(e.target.value)); }} />
+              <label className="flex items-center space-x-2 text-xs text-gray-300">
+                <input type="checkbox" checked={autoRisk} onChange={(e)=>setAutoRisk(e.target.checked)} />
+                <span>Target ${riskTargetUSD} risk</span>
+              </label>
+            </div>
+            <div className="text-xs text-gray-400">SL% = risk / notional. When auto is on, SL% = {riskTargetUSD} / {notional}.</div>
           </div>
         </div>
       </div>
@@ -235,7 +250,7 @@ export default function EthMinimalStrategyPage() {
         <div>- Alt (momentum): break {breakLevel}, {direction==='long'? 'buy HL':'sell LH'} on retest {retestLower}-{retestUpper}; enter ≈ ${retestMid.toFixed(0)}.</div>
         <div className="grid md:grid-cols-3 gap-3 mt-2">
           <ActionTile label="Leverage" value="7x" />
-          <ActionTile label="Size (USD)" value="$21,000" copyValue="21000" />
+          <ActionTile label="Size (USD)" value={`$${notional.toLocaleString()}`} copyValue={String(notional)} />
           <ActionTile label="Entry (guide)" value={`~$${entryAnchor.toFixed(0)}`} copyValue={entryAnchor.toFixed(0)} />
           <ActionTile label="SL Price" value={`$${slPrice.toFixed(0)}`} copyValue={slPrice.toFixed(0)} tone="danger" />
           <ActionTile label="TP1 Price" value={`$${tp1Price.toFixed(0)}`} copyValue={tp1Price.toFixed(0)} tone="success" />
@@ -256,7 +271,7 @@ export default function EthMinimalStrategyPage() {
           </select>
         </div>
         <div className="mt-2">To earn $1,000 with {(movePct*100).toFixed(1)}% move: Notional = ${requiredNotionalFor1kAtMove.toFixed(0)} • Margin @7x = ${requiredMarginAtMove.toFixed(0)}.</div>
-        <div className="text-gray-300 mt-1">With your per‑trade cap ($21,000), expected PnL at {(movePct*100).toFixed(1)}% = ${ (perTradeNotional*movePct).toFixed(0)} • Minimum move needed for $1,000 = {( (1000/(perTradeNotional))*100 ).toFixed(2)}%.</div>
+        <div className="text-gray-300 mt-1">With your size (${notional.toLocaleString()}), expected PnL at {(movePct*100).toFixed(1)}% = ${ (notional*movePct).toFixed(0)} • Minimum move needed for $1,000 = {( (1000/(notional))*100 ).toFixed(2)}%.</div>
       </div>
 
       {/* Simulation: 7x Long on $21k Notional */}
@@ -267,7 +282,7 @@ export default function EthMinimalStrategyPage() {
           <ActionTile label="Loss @ -Move (no SL)" value={`$${potentialLossAtMove.toFixed(0)}`} tone="danger" />
           <ActionTile label="Planned Max Loss (SL)" value={`$${plannedMaxLossAtSL.toFixed(0)} (~${(slBufferPct*100).toFixed(2)}%)`} tone="danger" />
         </div>
-        <div className="text-xs text-gray-400 mt-2">Move = {(movePct*100).toFixed(2)}%. SL buffer = {(slBufferPct*100).toFixed(2)}%. Notional = $21,000 • Leverage = 7x.</div>
+        <div className="text-xs text-gray-400 mt-2">Move = {(movePct*100).toFixed(2)}%. SL% = {(slBufferPct*100).toFixed(2)}%. Notional = ${notional.toLocaleString()} • Leverage = 7x. Risk ≈ ${plannedMaxLossAtSL.toFixed(0)}.</div>
       </div>
 
       {/* Liquidation Map Playbook */}
