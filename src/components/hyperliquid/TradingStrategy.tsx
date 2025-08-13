@@ -63,6 +63,12 @@ export default function TradingStrategy() {
   const btcTP = calculateTakeProfit('BTC');
   const ethTP = calculateTakeProfit('ETH');
 
+  // Goal context for a clear summary
+  const leverageAssumption = 7;
+  const expectedDailyMove = 0.02; // 2% baseline
+  const requiredNotionalFor1k = 1000 / (expectedDailyMove * leverageAssumption);
+  const requiredMarginFor1k = requiredNotionalFor1k / leverageAssumption;
+
   return (
     <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
       <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
@@ -401,6 +407,42 @@ export default function TradingStrategy() {
                   This strategy prioritizes capital preservation over aggressive gains.
                 </p>
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* Strategy Summary (Plain-English) */}
+        <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+          <button
+            onClick={() => toggleSection('summary')}
+            className="w-full text-left flex items-center justify-between"
+          >
+            <h4 className="text-xl font-bold text-yellow-500">Simple Strategy Summary</h4>
+            <span className="text-yellow-500 text-2xl">
+              {expandedSection === 'summary' ? '−' : '+'}
+            </span>
+          </button>
+          {expandedSection === 'summary' && (
+            <div className="mt-4 space-y-3 text-gray-300 text-sm leading-6">
+              <p>
+                - We aim for roughly $1,000/day in potential PnL by trading BTC and optionally ETH with
+                {` ${leverageAssumption}x `} leverage. A realistic daily move assumption is ~{(expectedDailyMove*100).toFixed(0)}%.
+              </p>
+              <p>
+                - To have a shot at $1k/day on a single asset, you generally need about ${requiredNotionalFor1k.toFixed(0)} notional
+                exposure (≈ ${requiredMarginFor1k.toFixed(0)} margin at {leverageAssumption}x). Our portfolio context is ${totalPortfolio.toLocaleString()} (~0.5 BTC), and we cap any single position at 35% of the account.
+              </p>
+              <p>
+                - Entries follow the liquidation heatmap: wait until red/yellow zones are cleared, then consider a long. We cut risk with a
+                25% stop loss and take profits near +25%. Profits are partially moved to spot on dips to build long-term exposure.
+              </p>
+              <p>
+                - Risk discipline: keep total risk per trade small (target under ~2% of equity). If volatility is lower than expected,
+                we lower profit expectations or position size; if volatility is higher, we scale out faster.
+              </p>
+              <p className="text-yellow-400">
+                This is not financial advice. It’s a rules-based approach focused on consistent execution, not prediction.
+              </p>
             </div>
           )}
         </div>
