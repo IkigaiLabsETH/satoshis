@@ -16,9 +16,11 @@ export default function TradingStrategy() {
     setExpandedSection(expandedSection === section ? null : section);
   };
 
-  // Portfolio constraints - Updated to match realistic calculations
-  const totalPortfolio = 30000; // Total account equity - enough for 0.5 BTC positions
+  // Portfolio constraints - aligned with ~0.5 BTC (~$60k)
+  const totalPortfolio = 60000; // Total account equity
   const maxPositionSize = totalPortfolio * 0.35; // 35% maximum per position (matches PositionManager)
+  const MAX_TRADES = 3;
+  const PER_TRADE_CAP = 21000; // explicit per-trade notional cap
 
   // Calculate optimal position sizes based on live prices and 35% limit
   const calculateOptimalPositionSize = (asset: 'BTC' | 'ETH') => {
@@ -62,6 +64,34 @@ export default function TradingStrategy() {
 
   const btcTP = calculateTakeProfit('BTC');
   const ethTP = calculateTakeProfit('ETH');
+
+  // Assumptions (user adjustable)
+  const leverageAssumption = 7;
+  const [movePct, setMovePct] = useState(0.02); // 2% baseline
+  const [riskCap, setRiskCap] = useState(1000); // max daily loss
+
+  // Goal context for a clear summary (derived)
+  const requiredNotionalFor1k = 1000 / (movePct * leverageAssumption);
+  const requiredMarginFor1k = requiredNotionalFor1k / leverageAssumption;
+
+  // Daily risk cap logic: cap max daily loss to $1,000 with 25% SL
+  const targetPnL = 1000;
+  const dailyRiskCap = riskCap;
+  const stopLossPct = 0.25; // 25% baseline SL
+  const riskLimitedNotionalSingle = dailyRiskCap / stopLossPct; // notional allowed to keep loss ≤ risk cap
+  const targetNotionalSingle = targetPnL / (movePct * leverageAssumption);
+  const recommendedNotionalSingle = Math.min(targetNotionalSingle, riskLimitedNotionalSingle, PER_TRADE_CAP);
+  const expectedPnLSingle = recommendedNotionalSingle * movePct * leverageAssumption;
+  const marginRequiredSingle = recommendedNotionalSingle / leverageAssumption;
+  const shortfallSingle = Math.max(0, targetPnL - expectedPnLSingle);
+
+  // Per-trade cap math (explicit 21k notional at 7x)
+  const perTradeNotional = PER_TRADE_CAP;
+  const requiredMoveToHit1k = targetPnL / (perTradeNotional * leverageAssumption); // decimal
+  const requiredMoveToHit1kPct = requiredMoveToHit1k * 100;
+  const requiredPriceDeltaUsd = (ETH.price || 0) * requiredMoveToHit1k;
+  const requiredSLFor1kOn21kPct = (dailyRiskCap / perTradeNotional) * 100; // % SL to cap loss at $1k with 21k notional
+  const notionalToCapLossAt25SL = dailyRiskCap / stopLossPct; // ≈ $4,000 for $1k cap with 25% SL
 
   return (
     <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
@@ -117,13 +147,75 @@ export default function TradingStrategy() {
           <div className="text-sm text-gray-400">
             {isClient && !isLoading && (
               <>
-                BTC: ${BTC.price.toLocaleString()} | ETH: ${ETH.price.toLocaleString()}
+                BTC: ${BTC.price.toLocaleString()} | ETH: ${ETH.price.toLocaleString()} • Max trades: {MAX_TRADES} • Per-trade cap: ${PER_TRADE_CAP.toLocaleString()}
               </>
             )}
           </div>
         </div>
       </div>
+
+      {/* Required Move and Risk Box */}
+      <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-none">
+        <div className="grid md:grid-cols-3 gap-4 text-sm">
+          <div>
+            <div className="text-blue-300">Required Move for $1k (21k notional @ 7x)</div>
+            <div className="text-white font-semibold">{requiredMoveToHit1kPct.toFixed(2)}%</div>
+            <div className="text-gray-400">≈ ${requiredPriceDeltaUsd.toFixed(2)} up from current ETH</div>
+          </div>
+          <div>
+            <div className="text-blue-300">Stop Loss to Cap Loss at $1k (21k notional)</div>
+            <div className="text-white font-semibold">{requiredSLFor1kOn21kPct.toFixed(2)}%</div>
+            <div className="text-gray-400">If SL larger than this, daily risk &gt; $1k</div>
+          </div>
+          <div>
+            <div className="text-blue-300">Notional for $1k Risk with 25% SL</div>
+            <div className="text-white font-semibold">${notionalToCapLossAt25SL.toFixed(0)}</div>
+            <div className="text-gray-400">Use when keeping SL at 25%</div>
+          </div>
+        </div>
+      </div>
       
+      {/* Controls: Volatility and Daily Risk Cap */}
+      <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-none">
+        <div className="grid md:grid-cols-2 gap-4 items-end">
+          <div>
+            <label className="block text-yellow-400 text-sm mb-1">Assumed Daily Move</label>
+            <div className="flex items-center space-x-2">
+              <select
+                className="bg-black/50 border border-yellow-500/30 text-white rounded px-3 py-2"
+                value={movePct}
+                onChange={(e) => setMovePct(parseFloat(e.target.value))}
+              >
+                <option value={0.01}>1%</option>
+                <option value={0.015}>1.5%</option>
+                <option value={0.02}>2%</option>
+                <option value={0.03}>3%</option>
+              </select>
+              <span className="text-gray-400 text-sm">Leverage: {leverageAssumption}x</span>
+            </div>
+          </div>
+          <div>
+            <label className="block text-yellow-400 text-sm mb-1">Daily Risk Cap (max loss)</label>
+            <div className="flex items-center space-x-2">
+              <input
+                type="number"
+                className="bg-black/50 border border-yellow-500/30 text-white rounded px-3 py-2 w-36"
+                value={riskCap}
+                min={100}
+                step={100}
+                onChange={(e) => setRiskCap(Math.max(0, Number(e.target.value)))}
+              />
+              <span className="text-gray-400 text-sm">USD</span>
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 text-sm text-gray-300">
+          <span className="mr-4">Recommended Notional: ${recommendedNotionalSingle.toFixed(0)}</span>
+          <span className="mr-4">Margin @ {leverageAssumption}x: ${marginRequiredSingle.toFixed(0)}</span>
+          <span>Expected PnL: ${expectedPnLSingle.toFixed(0)} {shortfallSingle > 0 ? `(shortfall $${shortfallSingle.toFixed(0)})` : ''}</span>
+        </div>
+      </div>
+
       <div className="space-y-6">
         {/* Entry Strategy */}
         <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
@@ -198,7 +290,7 @@ export default function TradingStrategy() {
                   )}
                 </div>
                 <div>
-                  <h5 className="text-yellow-400 font-semibold mb-2">Ethereum (ETH)</h5>
+                  <h5 className="text-yellow-400 font-semibold mb-2">Ethereum (ETH) — Core Perp</h5>
                   {isLoading ? (
                     <div className="animate-pulse space-y-1">
                       <div className="h-4 bg-gray-700 rounded"></div>
@@ -213,13 +305,14 @@ export default function TradingStrategy() {
                       <li>• Notional Value: ~${ethPosition.notional.toFixed(0)}</li>
                       <li>• Leverage: {ethPosition.leverage.toFixed(1)}x</li>
                       <li>• Portfolio Allocation: {((ethPosition.notional / totalPortfolio) * 100).toFixed(1)}%</li>
+                      <li>• Per-trade Notional Cap: ${PER_TRADE_CAP.toLocaleString()}</li>
                     </ul>
                   )}
                 </div>
               </div>
               <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded">
                 <p className="text-sm text-yellow-400">
-                  <strong>Portfolio Constraint:</strong> Maximum 10% allocation per position 
+                  <strong>Portfolio Constraint:</strong> Maximum 35% allocation per position 
                   (${maxPositionSize.toFixed(0)}) to maintain proper risk management
                 </p>
                 <p className="text-sm text-gray-300 mt-2">
@@ -248,24 +341,23 @@ export default function TradingStrategy() {
                 <div>
                   <h5 className="text-red-400 font-semibold mb-2">BTC Stop Loss</h5>
                   <ul className="space-y-1 text-sm">
-                    <li>• Entry: $119,425</li>
-                    <li>• Stop Loss: $89,569 (25% below entry)</li>
-                    <li>• Risk: ~$7,481 per position</li>
+                    <li>• Entry: {isLoading ? '--' : `$${BTC.price.toLocaleString()}`}</li>
+                    <li>• Stop Loss: {isLoading ? '--' : `$${Math.floor((BTC.price || 0) * 0.75).toLocaleString()}`} (25% below entry)</li>
+                    <li>• Risk: {isLoading ? '--' : `~$${(((BTC.price || 0) - (BTC.price || 0) * 0.75) * btcPosition.size).toFixed(2)} per position`}</li>
                   </ul>
                 </div>
                 <div>
                   <h5 className="text-red-400 font-semibold mb-2">ETH Stop Loss</h5>
                   <ul className="space-y-1 text-sm">
-                    <li>• Entry: $3,200</li>
-                    <li>• Stop Loss: $3,375 (25% below entry)</li>
-                    <li>• Risk: ~$2,812 per position</li>
+                    <li>• Entry: {isLoading ? '--' : `$${ETH.price.toLocaleString()}`}</li>
+                    <li>• Stop Loss: {isLoading ? '--' : `$${Math.floor((ETH.price || 0) * 0.75).toLocaleString()}`} (25% below entry)</li>
+                    <li>• Risk: {isLoading ? '--' : `~$${(((ETH.price || 0) - (ETH.price || 0) * 0.75) * ethPosition.size).toFixed(2)} per position`}</li>
                   </ul>
                 </div>
               </div>
               <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded">
                 <p className="text-sm text-red-400">
-                  <strong>Risk Management:</strong> Total risk per trade cycle: ~$78.50 
-                  (15% of account equity)
+                  <strong>Risk Management:</strong> 25% stop loss baseline on each position; size conservatively so combined risk remains under 2% of equity per trade.
                 </p>
               </div>
             </div>
@@ -402,6 +494,46 @@ export default function TradingStrategy() {
                   This strategy prioritizes capital preservation over aggressive gains.
                 </p>
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* Strategy Summary (Plain-English) */}
+        <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+          <button
+            onClick={() => toggleSection('summary')}
+            className="w-full text-left flex items-center justify-between"
+          >
+            <h4 className="text-xl font-bold text-yellow-500">Simple Strategy Summary</h4>
+            <span className="text-yellow-500 text-2xl">
+              {expandedSection === 'summary' ? '−' : '+'}
+            </span>
+          </button>
+          {expandedSection === 'summary' && (
+            <div className="mt-4 space-y-3 text-gray-300 text-sm leading-6">
+              <p>
+                - Core: We 7x long ETH perps as a hedge/edge since our non-trading portfolio is mostly BTC. This gives extra ETH exposure with ~7× less capital than spot. We target ~$1,000/day potential using a {(movePct*100).toFixed(0)}% move baseline.
+              </p>
+              <p>
+                - Sizing Rules: Max {MAX_TRADES} concurrent trades, ${PER_TRADE_CAP.toLocaleString()} notional cap per trade, 35% of equity absolute cap, 7x leverage.
+                To target $1k/day on one asset you’d need ≈ ${requiredNotionalFor1k.toFixed(0)} notional (margin ≈ ${requiredMarginFor1k.toFixed(0)} at 7x) at this volatility.
+              </p>
+              <p>
+                - We also cap daily risk to $1,000. With a 25% stop loss, the max notional per active trade under the risk cap is
+                ${riskLimitedNotionalSingle.toFixed(0)} (margin ≈ ${marginRequiredSingle.toFixed(0)} at {leverageAssumption}x). If this
+                size yields less than $1k expected PnL at {(movePct*100).toFixed(0)}% move, we accept the shortfall (≈ ${shortfallSingle.toFixed(0)})
+                rather than increasing risk.
+              </p>
+              <p>
+                - Entries: Use CoinGlass liquidation heatmap. Wait for red/yellow clusters above to clear, then enter 7x long ETH. Exits: −25% stop loss, +25% take profit; recycle part of profits to spot on dips to compound exposure.
+              </p>
+              <p>
+                - Risk discipline: keep total risk per trade small (target under ~2% of equity). If volatility is lower than expected,
+                we lower profit expectations or position size; if volatility is higher, we scale out faster.
+              </p>
+              <p className="text-yellow-400">
+                This is not financial advice. It’s a rules-based approach focused on consistent execution, not prediction.
+              </p>
             </div>
           )}
         </div>
