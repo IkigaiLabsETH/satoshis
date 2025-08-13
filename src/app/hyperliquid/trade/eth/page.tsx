@@ -126,6 +126,14 @@ export default function EthMinimalStrategyPage() {
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <label className="block text-purple-300 text-sm mb-2">Upload 1D ETH Heatmap</label>
+            <a
+              href="https://coinank.com/liqHeatMapChart/ethusdt/1d"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block mb-2 px-3 py-1 rounded bg-purple-700 hover:bg-purple-600 text-white text-xs"
+            >
+              Open CoinAnk 1D ETH Heatmap
+            </a>
             <input
               type="file"
               accept="image/*"
