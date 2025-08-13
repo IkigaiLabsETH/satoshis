@@ -102,34 +102,14 @@ export default function HyperliquidTradePage() {
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white">
       <div className="relative z-10 px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          {/* Enhanced Header */}
+          {/* Clear Header */}
           <div className="text-center mb-20">
-            <div className="mb-8">
-              <div className="inline-block p-3 bg-yellow-500/10 rounded-full border border-yellow-500/30 mb-6">
-                <div className="w-6 h-6 bg-yellow-500 rounded-full"></div>
-              </div>
-            </div>
             <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 bg-clip-text text-transparent mb-8">
-              Hyperliquid Trading
+              $1000/Day PnL Model
             </h1>
-            <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
-              Professional perpetuals trading strategy with real-time liquidation monitoring,
-              risk management, and position tracking for BTC and ETH
+            <p className="text-2xl text-gray-300 max-w-4xl mx-auto mb-8">
+              Trading ETH/BTC on Hyperliquid with 7x leverage
             </p>
-            <div className="mt-8 flex justify-center space-x-4">
-              <div className="flex items-center space-x-2 text-yellow-400">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span className="text-sm font-medium">Live Data</span>
-              </div>
-              <div className="flex items-center space-x-2 text-green-400">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm font-medium">Real-time</span>
-              </div>
-              <div className="flex items-center space-x-2 text-blue-400">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-sm font-medium">Professional</span>
-              </div>
-            </div>
             
             {/* Liquidation Modal Button */}
             <div className="mt-8">
@@ -139,82 +119,71 @@ export default function HyperliquidTradePage() {
               >
                 <div className="flex items-center space-x-3">
                   <span className="text-2xl">🔥</span>
-                  <span>Open Live Liquidation Heatmap</span>
-                  <span className="text-sm opacity-80">CoinGlass Data</span>
+                  <span>Liquidation Heatmap</span>
                 </div>
               </button>
             </div>
           </div>
 
-          {/* Enhanced Core Strategy Statement */}
+          {/* Core Strategy - Crystal Clear */}
           <div className="bg-gradient-to-br from-[#1c1f26] to-[#2a2f3a] p-10 rounded-2xl border-2 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.3)] mb-20">
             <div className="text-center">
-              <div className="inline-block p-4 bg-yellow-500/20 rounded-full border border-yellow-500/40 mb-8">
-                <span className="text-4xl">🎯</span>
-              </div>
-              <h2 className="text-5xl font-bold text-white mb-8">Core Trading Strategy</h2>
-              <p className="text-xl text-gray-300 max-w-4xl mx-auto mb-12 leading-relaxed">
-                Professional perpetuals trading approach with liquidation level analysis,
-                risk management, and profit optimization strategies
-              </p>
+              <h2 className="text-4xl font-bold text-yellow-500 mb-8">The Model</h2>
               
-              <div className="bg-gradient-to-br from-black/60 to-gray-900/60 p-8 rounded-xl border border-yellow-500/30 mt-12">
-                <div className="space-y-12">
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-center mb-6">
-                      <h3 className="text-3xl font-bold text-yellow-400">Trading Philosophy</h3>
-                      <div className="ml-4 w-8 h-0.5 bg-gradient-to-r from-yellow-500 to-transparent"></div>
+              <div className="grid md:grid-cols-2 gap-8 text-left">
+                {/* Left Column - Strategy */}
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-bold text-white mb-4">Strategy</h3>
+                  <div className="space-y-4 text-gray-300">
+                    <div className="p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
+                      <span className="text-yellow-400 font-bold">Entry:</span> Long ETH/BTC when liquidation levels clear
                     </div>
-                    <div className="space-y-4 text-gray-300 max-w-2xl mx-auto">
-                      <div className="flex items-start space-x-4 p-4 bg-yellow-500/5 rounded-lg border border-yellow-500/20">
-                        <div className="w-3 h-3 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <div className="text-lg">
-                          <span className="text-yellow-400 font-bold">Follow liquidation levels long</span> when the red and yellow lines are cleared
-                        </div>
-                      </div>
-                      <div className="flex items-start space-x-4 p-4 bg-green-500/5 rounded-lg border border-green-500/20">
-                        <div className="w-3 h-3 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <div className="text-lg">
-                          <span className="text-green-400 font-bold">Set stop losses</span> (don&apos;t be me) and take profit at 25%
-                        </div>
-                      </div>
-                      <div className="flex items-start space-x-4 p-4 bg-blue-500/5 rounded-lg border border-blue-500/20">
-                        <div className="w-3 h-3 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <div className="text-lg">
-                          <span className="text-blue-400 font-bold">Rinse-repeat</span> and put the 25% profit into spot on the dip
-                        </div>
-                      </div>
+                    <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/30">
+                      <span className="text-green-400 font-bold">Exit:</span> 25% take profit, 25% stop loss
+                    </div>
+                    <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/30">
+                      <span className="text-blue-400 font-bold">Leverage:</span> 7x max
                     </div>
                   </div>
-                  
-                  <div className="w-full h-px bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent"></div>
-                  
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-center mb-6">
-                      <h3 className="text-3xl font-bold text-yellow-400">Risk Management</h3>
-                      <div className="ml-4 w-8 h-0.5 bg-gradient-to-r from-yellow-500 to-transparent"></div>
+                </div>
+
+                {/* Right Column - Why ETH */}
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-bold text-white mb-4">Why ETH?</h3>
+                  <div className="space-y-4 text-gray-300">
+                    <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/30">
+                      <span className="text-purple-400 font-bold">$BMNR:</span> $20.5B dry powder = 4.5M ETH
                     </div>
-                    <div className="space-y-4 text-gray-300 max-w-2xl mx-auto">
-                      <div className="flex items-start space-x-4 p-4 bg-red-500/5 rounded-lg border border-red-500/20">
-                        <div className="w-3 h-3 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <div className="text-lg">
-                          <span className="text-red-400 font-bold">Never risk more than 2%</span> of your portfolio on any single trade
-                        </div>
-                      </div>
-                      <div className="flex items-start space-x-4 p-4 bg-orange-500/5 rounded-lg border border-orange-500/20">
-                        <div className="w-3 h-3 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <div className="text-lg">
-                          <span className="text-orange-400 font-bold">Use proper position sizing</span> based on account balance and volatility
-                        </div>
-                      </div>
-                      <div className="flex items-start space-x-4 p-4 bg-purple-500/5 rounded-lg border border-purple-500/20">
-                        <div className="w-3 h-3 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <div className="text-lg">
-                          <span className="text-purple-400 font-bold">Monitor funding rates</span> and adjust positions accordingly
-                        </div>
-                      </div>
+                    <div className="p-4 bg-orange-500/10 rounded-lg border border-orange-500/30">
+                      <span className="text-orange-400 font-bold">$ATNF:</span> 82K ETH + $238M cash
+                    </div>
+                    <div className="p-4 bg-red-500/10 rounded-lg border border-red-500/30">
+                      <span className="text-red-400 font-bold">Peter Thiel:</span> Invested in both
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Clear Example */}
+              <div className="mt-12 bg-black/60 p-8 rounded-xl border border-yellow-500/30">
+                <h3 className="text-2xl font-bold text-yellow-400 mb-6">Example: $1000/Day PnL</h3>
+                <div className="grid md:grid-cols-3 gap-6 text-center">
+                  <div className="p-4 bg-green-500/10 rounded-lg">
+                    <div className="text-2xl font-bold text-green-400">$30K</div>
+                    <div className="text-gray-300">Portfolio</div>
+                  </div>
+                  <div className="p-4 bg-blue-500/10 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-400">7x</div>
+                    <div className="text-gray-300">Leverage</div>
+                  </div>
+                  <div className="p-4 bg-yellow-500/10 rounded-lg">
+                    <div className="text-2xl font-bold text-yellow-400">$1000</div>
+                    <div className="text-gray-300">Daily Target</div>
+                  </div>
+                </div>
+                <div className="mt-6 text-gray-300 text-center">
+                  <p>10% daily move × 7x leverage = $2100 potential</p>
+                  <p>Target: $1000/day with 25% stop loss protection</p>
                 </div>
               </div>
             </div>
@@ -223,62 +192,6 @@ export default function HyperliquidTradePage() {
           {/* Live Trading Signals */}
           <div className="mb-20">
             <LiveTradingSignals />
-          </div>
-
-          {/* Enhanced Strategy Overview Card */}
-          <div className="bg-gradient-to-br from-[#1c1f26] to-[#2a2f3a] p-10 rounded-2xl border-2 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.3)] mb-20">
-            <div className="space-y-12">
-              <div className="text-center mb-8">
-                <h2 className="text-4xl font-bold text-yellow-500 mb-4">Trading Strategy Overview</h2>
-                <div className="w-24 h-1 bg-gradient-to-r from-yellow-500 to-orange-500 mx-auto rounded-full"></div>
-              </div>
-              
-              <div className="space-y-8">
-                <div className="space-y-6">
-                  <h3 className="text-2xl font-bold text-white mb-6">Strategy Parameters</h3>
-                  <div className="space-y-4 text-gray-300 max-w-3xl mx-auto">
-                    <div className="flex items-start space-x-4 p-4 bg-yellow-500/5 rounded-lg border border-yellow-500/20">
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <div className="text-lg">
-                        <span className="font-semibold text-white">Entry Strategy:</span> Wait for BTC {'>'} $119,425 and ETH {'>'} $4,500
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-4 p-4 bg-green-500/5 rounded-lg border border-green-500/20">
-                      <div className="w-3 h-3 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <div className="text-lg">
-                        <span className="font-semibold text-white">Exit Strategy:</span> Take profit at 25% gains, stop loss at 15% loss
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-4 p-4 bg-blue-500/5 rounded-lg border border-blue-500/20">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <div className="text-lg">
-                        <span className="font-semibold text-white">Position Sizing:</span> 2% max risk per trade, scale in on dips
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent"></div>
-                
-                <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 p-8 rounded-xl border border-yellow-500/30">
-                  <h3 className="text-2xl font-bold text-yellow-400 mb-6 text-center">Current Market Status</h3>
-                  <div className="space-y-4 text-lg max-w-md mx-auto">
-                    <div className="flex justify-between items-center p-3 bg-black/30 rounded-lg">
-                      <span className="text-gray-300">BTC Entry Signal:</span>
-                      <span className="text-yellow-400 font-bold text-xl">WAITING</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-black/30 rounded-lg">
-                      <span className="text-gray-300">ETH Entry Signal:</span>
-                      <span className="text-yellow-400 font-bold text-xl">WAITING</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-black/30 rounded-lg">
-                      <span className="text-gray-300">Market Trend:</span>
-                      <span className="text-green-400 font-bold text-xl">BULLISH</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Main Trading Components - Each on its own line with enhanced spacing */}
