@@ -7,6 +7,7 @@ export default function TradingStrategy() {
   const { BTC, ETH, isLoading, error } = useLiveCryptoPrices();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [heatmapImage, setHeatmapImage] = useState<string | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -49,26 +50,106 @@ export default function TradingStrategy() {
   const btcPosition = calculateOptimalPositionSize('BTC');
   const ethPosition = calculateOptimalPositionSize('ETH');
 
-  // Dynamic TP calculations based on live prices and current position sizes
-  const calculateTakeProfit = (asset: 'BTC' | 'ETH') => {
-    const price = asset === 'BTC' ? BTC.price : ETH.price;
-    const size = asset === 'BTC' ? btcPosition.size : ethPosition.size;
-    if (!price || price <= 0) {
-      return { entry: 0, target: 0, profitPerPosition: 0 };
-    }
-    const entry = price;
-    const target = entry * 1.25;
-    const profitPerPosition = (target - entry) * size;
-    return { entry, target, profitPerPosition };
-  };
-
-  // const btcTP = calculateTakeProfit('BTC'); // BTC not traded here
-  const ethTP = calculateTakeProfit('ETH');
+  // Removed dynamic TP helper (now using planned targets driven by heatmap)
 
   // Assumptions (user adjustable)
   const leverageAssumption = 7;
   const [movePct, setMovePct] = useState(0.02); // 2% baseline
   const [riskCap, setRiskCap] = useState(1000); // max daily loss
+  // Heatmap-derived levels (editable after upload)
+  const [entryLower, setEntryLower] = useState<number>(4560);
+  const [entryUpper, setEntryUpper] = useState<number>(4580);
+  const [breakLevel, setBreakLevel] = useState<number>(4680);
+  const [retestLower, setRetestLower] = useState<number>(4660);
+  const [retestUpper, setRetestUpper] = useState<number>(4670);
+  const [slBufferPct, setSlBufferPct] = useState<number>(0.0075); // ~0.75%
+  const [axisTopPrice, setAxisTopPrice] = useState<number>(4848);
+  const [axisBottomPrice, setAxisBottomPrice] = useState<number>(4100);
+  const [extractedBands, setExtractedBands] = useState<number[] | null>(null);
+
+  const autoExtractFromHeatmap = async () => {
+    if (!heatmapImage) return;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    const url = heatmapImage;
+    const brightnessPeaks: number[] = [];
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = reject;
+      img.src = url;
+    });
+    const canvas = document.createElement('canvas');
+    const width = img.naturalWidth;
+    const height = img.naturalHeight;
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.drawImage(img, 0, 0);
+    const rowScores = new Float32Array(height);
+    // Sample only the central 60% horizontally to avoid legends/axes
+    const xStart = Math.floor(width * 0.2);
+    const xEnd = Math.floor(width * 0.8);
+    for (let y = 0; y < height; y++) {
+      const rowData = ctx.getImageData(xStart, y, xEnd - xStart, 1).data;
+      let sum = 0;
+      for (let i = 0; i < rowData.length; i += 4) {
+        const r = rowData[i];
+        const g = rowData[i + 1];
+        const b = rowData[i + 2];
+        const brightness = Math.max(r, g, b); // bright bands
+        sum += brightness;
+      }
+      rowScores[y] = sum / ((xEnd - xStart));
+    }
+    // Smooth with simple moving average (5px)
+    const smoothed = new Float32Array(height);
+    const win = 5;
+    for (let y = 0; y < height; y++) {
+      let s = 0, c = 0;
+      for (let k = -win; k <= win; k++) {
+        const yy = y + k;
+        if (yy >= 0 && yy < height) { s += rowScores[yy]; c++; }
+      }
+      smoothed[y] = s / c;
+    }
+    // Find peaks: above mean + 1 std dev
+    let mean = 0; for (let y = 0; y < height; y++) mean += smoothed[y];
+    mean /= height;
+    let variance = 0; for (let y = 0; y < height; y++) { const d = smoothed[y] - mean; variance += d * d; }
+    const std = Math.sqrt(variance / height);
+    const threshold = mean + std;
+    for (let y = 1; y < height - 1; y++) {
+      if (smoothed[y] > threshold && smoothed[y] > smoothed[y - 1] && smoothed[y] > smoothed[y + 1]) {
+        brightnessPeaks.push(y);
+      }
+    }
+    // Deduplicate peaks (keep far apart)
+    brightnessPeaks.sort((a, b) => smoothed[b] - smoothed[a]);
+    const picked: number[] = [];
+    const minGap = Math.floor(height * 0.03); // 3% of height
+    for (const y of brightnessPeaks) {
+      if (!picked.some(p => Math.abs(p - y) < minGap)) picked.push(y);
+      if (picked.length >= 10) break;
+    }
+    // Map rows to prices using axis inputs (top at y=0)
+    const toPrice = (rowY: number) => axisTopPrice - (rowY / height) * (axisTopPrice - axisBottomPrice);
+    const bandPrices = picked.map(toPrice).sort((a, b) => a - b);
+    setExtractedBands(bandPrices);
+    // Choose nearest support below and resistance above current price
+    const current = ETH.price || plannedEntryMid;
+    const below = [...bandPrices].filter(p => p < current).pop();
+    const above = bandPrices.find(p => p > current);
+    if (below) {
+      setEntryLower(Math.max(0, Math.floor(below - 20)));
+      setEntryUpper(Math.floor(below));
+    }
+    if (above) {
+      setBreakLevel(Math.floor(above));
+      setRetestLower(Math.max(0, Math.floor(above - 20)));
+      setRetestUpper(Math.floor(above - 10));
+    }
+  };
 
   // Goal context for a clear summary (derived)
   const requiredNotionalFor1k = 1000 / (movePct * leverageAssumption);
@@ -90,8 +171,16 @@ export default function TradingStrategy() {
   const requiredMoveToHit1k = targetPnL / (perTradeNotional * leverageAssumption); // decimal
   const requiredMoveToHit1kPct = requiredMoveToHit1k * 100;
   const requiredPriceDeltaUsd = (ETH.price || 0) * requiredMoveToHit1k;
-  const requiredSLFor1kOn21kPct = (dailyRiskCap / perTradeNotional) * 100; // % SL to cap loss at $1k with 21k notional
-  const notionalToCapLossAt25SL = dailyRiskCap / stopLossPct; // ≈ $4,000 for $1k cap with 25% SL
+  const requiredSLFor1kOn21kPct = (dailyRiskCap / (perTradeNotional * leverageAssumption)) * 100; // price move % at 7x to lose $1k
+  const notionalToCapLossAt25SL = dailyRiskCap / (stopLossPct * leverageAssumption); // notional to risk $1k with 25% move at 7x
+
+  // Trade plan anchors from current heatmap (derived)
+  const plannedEntryMid = (entryLower + entryUpper) / 2;
+  const slRiskPrice = plannedEntryMid * (1 - slBufferPct);
+  const tp1MovePct = requiredMoveToHit1k; // decimal
+  const tp1Price = plannedEntryMid * (1 + tp1MovePct);
+  const tp2Price1 = plannedEntryMid * 1.015; // +1.5%
+  const tp2Price2 = plannedEntryMid * 1.02;  // +2.0%
 
   return (
     <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
@@ -219,6 +308,74 @@ export default function TradingStrategy() {
         </div>
       </div>
 
+      {/* Upload latest ETH 1D heatmap image (for manual level extraction) */}
+      <div className="mb-6 p-4 bg-purple-500/10 border border-purple-500/30 rounded-none">
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-purple-300 text-sm mb-2">Upload 1D ETH Heatmap Screenshot</label>
+            <input
+              type="file"
+              accept="image/*"
+              className="block w-full text-sm text-gray-300"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) {
+                  const url = URL.createObjectURL(f);
+                  setHeatmapImage(url);
+                }
+              }}
+            />
+            <p className="text-xs text-gray-400 mt-2">This stores the image locally and lets you annotate levels below. (Auto-extraction can be added later.)</p>
+          </div>
+          <div className="flex items-center justify-center">
+            {heatmapImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={heatmapImage} alt="ETH heatmap" className="max-h-48 rounded border border-purple-500/30" />
+            ) : (
+              <div className="text-gray-500 text-sm">No image uploaded</div>
+            )}
+          </div>
+        </div>
+        <div className="grid md:grid-cols-4 gap-4 mt-4 text-sm">
+          <div>
+            <div className="text-gray-300 mb-1">Chart Axis Top / Bottom</div>
+            <div className="flex space-x-2">
+              <input type="number" className="bg-black/50 border border-purple-500/30 rounded px-2 py-1 w-28 text-white" value={axisTopPrice} onChange={(e)=>setAxisTopPrice(Number(e.target.value))} />
+              <input type="number" className="bg-black/50 border border-purple-500/30 rounded px-2 py-1 w-28 text-white" value={axisBottomPrice} onChange={(e)=>setAxisBottomPrice(Number(e.target.value))} />
+            </div>
+            <button className="mt-2 px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded text-white text-xs" onClick={autoExtractFromHeatmap}>Auto-extract bands</button>
+          </div>
+          <div className="col-span-3">
+            <div className="text-gray-300 mb-1">Extracted Bands (top 10)</div>
+            <div className="text-xs text-gray-400 h-16 overflow-auto border border-purple-500/20 rounded p-2">
+              {extractedBands?.length ? extractedBands.map((p,i)=>(<span key={i} className="mr-2">{p.toFixed(0)}</span>)) : '—'}
+            </div>
+          </div>
+        </div>
+        <div className="grid md:grid-cols-3 gap-4 mt-4 text-sm">
+          <div>
+            <div className="text-gray-300 mb-1">Primary Entry Band</div>
+            <div className="flex space-x-2">
+              <input type="number" className="bg-black/50 border border-purple-500/30 rounded px-2 py-1 w-28 text-white" value={entryLower} onChange={(e)=>setEntryLower(Number(e.target.value))} />
+              <input type="number" className="bg-black/50 border border-purple-500/30 rounded px-2 py-1 w-28 text-white" value={entryUpper} onChange={(e)=>setEntryUpper(Number(e.target.value))} />
+            </div>
+          </div>
+          <div>
+            <div className="text-gray-300 mb-1">Break & Retest</div>
+            <div className="flex space-x-2">
+              <input type="number" className="bg-black/50 border border-purple-500/30 rounded px-2 py-1 w-28 text-white" value={breakLevel} onChange={(e)=>setBreakLevel(Number(e.target.value))} />
+              <input type="number" className="bg-black/50 border border-purple-500/30 rounded px-2 py-1 w-28 text-white" value={retestLower} onChange={(e)=>setRetestLower(Number(e.target.value))} />
+              <input type="number" className="bg-black/50 border border-purple-500/30 rounded px-2 py-1 w-28 text-white" value={retestUpper} onChange={(e)=>setRetestUpper(Number(e.target.value))} />
+            </div>
+          </div>
+          <div>
+            <div className="text-gray-300 mb-1">SL Buffer %</div>
+            <input type="number" step="0.001" className="bg-black/50 border border-purple-500/30 rounded px-2 py-1 w-28 text-white" value={slBufferPct} onChange={(e)=>setSlBufferPct(Number(e.target.value))} />
+            <div className="text-xs text-gray-400">0.0075 = 0.75%</div>
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-6">
         {/* Entry Strategy */}
         <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
@@ -236,8 +393,7 @@ export default function TradingStrategy() {
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                 <span>
-                  Wait for ETH to clear ${isLoading ? '--' : ETH.price ? Math.floor(ETH.price * 0.995).toLocaleString() : '3,200'} 
-                  (yellow liquidation level)
+                  Primary entry: Sweep below {entryLower}-{entryUpper}, then reclaim {entryLower} on 5–15m; enter near ~${plannedEntryMid.toFixed(0)}.
                 </span>
               </div>
               <div className="flex items-center space-x-3">
@@ -246,7 +402,7 @@ export default function TradingStrategy() {
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span>Enter long positions with conservative leverage (5-10x)</span>
+                <span>Alt momentum: Break and retest {breakLevel} → {retestLower}-{retestUpper} higher-low, then long.</span>
               </div>
             </div>
           )}
@@ -320,9 +476,9 @@ export default function TradingStrategy() {
                 <div>
                   <h5 className="text-red-400 font-semibold mb-2">ETH Stop Loss</h5>
                   <ul className="space-y-1 text-sm">
-                    <li>• Entry: {isLoading ? '--' : `$${ETH.price.toLocaleString()}`}</li>
-                    <li>• Stop Loss: {isLoading ? '--' : `$${Math.floor((ETH.price || 0) * 0.75).toLocaleString()}`} (25% below entry)</li>
-                    <li>• Risk: {isLoading ? '--' : `~$${(((ETH.price || 0) - (ETH.price || 0) * 0.75) * ethPosition.size).toFixed(2)} per position`}</li>
+                    <li>• Planned Entry Mid: ~${plannedEntryMid.toFixed(0)}</li>
+                    <li>• Stop Loss: ~${slRiskPrice.toFixed(0)} (≈ {(slBufferPct*100).toFixed(2)}% below entry to risk ≈ $1k on $21k @ 7x)</li>
+                    <li>• Risk Cap: ${dailyRiskCap} per day</li>
                   </ul>
                 </div>
               </div>
@@ -353,9 +509,9 @@ export default function TradingStrategy() {
                 <div>
                   <h5 className="text-green-400 font-semibold mb-2">ETH Take Profit</h5>
                   <ul className="space-y-1 text-sm">
-                    <li>• Entry: {isLoading ? '--' : `$${ethTP.entry.toLocaleString()}`}</li>
-                    <li>• Target: {isLoading ? '--' : `$${ethTP.target.toLocaleString()}`} (25% profit)</li>
-                    <li>• Profit: {isLoading ? '--' : `~$${ethTP.profitPerPosition.toFixed(2)} per position`}</li>
+                    <li>• TP1: ~${tp1Price.toFixed(0)} (+{(tp1MovePct*100).toFixed(2)}%) — close 50% (≈ $1k on $21k @ 7x)</li>
+                    <li>• TP2: ~${tp2Price1.toFixed(0)} to ~${tp2Price2.toFixed(0)} (+1.5–2.0%) — close 25%</li>
+                    <li>• Runner: Leave 25% while entry band holds on closes</li>
                   </ul>
                 </div>
               </div>
