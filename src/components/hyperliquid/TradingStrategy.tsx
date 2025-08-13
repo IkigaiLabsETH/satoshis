@@ -16,16 +16,16 @@ export default function TradingStrategy() {
     setExpandedSection(expandedSection === section ? null : section);
   };
 
-  // Portfolio constraints
+  // Portfolio constraints - Updated to match realistic calculations
   const totalPortfolio = 521.95; // Total account equity
-  const maxPositionSize = totalPortfolio * 0.10; // 10% maximum per position
+  const maxPositionSize = totalPortfolio * 0.35; // 35% maximum per position (matches PositionManager)
 
-  // Calculate optimal position sizes based on live prices and 10% limit
+  // Calculate optimal position sizes based on live prices and 35% limit
   const calculateOptimalPositionSize = (asset: 'BTC' | 'ETH') => {
     const currentPrice = asset === 'BTC' ? BTC.price : ETH.price;
     if (!currentPrice || currentPrice <= 0) return { size: 0, notional: 0, leverage: 0 };
     
-    // Calculate maximum position size in USD (10% of portfolio)
+    // Calculate maximum position size in USD (35% of portfolio)
     const maxPositionUSD = maxPositionSize;
     
     // Calculate position size in asset units
@@ -34,13 +34,13 @@ export default function TradingStrategy() {
     // Calculate notional value
     const notionalValue = positionSize * currentPrice;
     
-    // Calculate safe leverage (ensure margin requirements are met)
-    const safeLeverage = Math.min(10, Math.max(5, totalPortfolio / notionalValue));
+    // Use realistic 7x leverage (matches PositionManager)
+    const leverage = 7;
     
     return {
       size: positionSize,
       notional: notionalValue,
-      leverage: safeLeverage
+      leverage: leverage
     };
   };
 

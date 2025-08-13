@@ -29,29 +29,31 @@ export default function PositionManager() {
   const { BTC, ETH, isLoading, error } = useLiveCryptoPrices();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Portfolio constraints - Updated for realistic $1,000+ daily PnL
+  // Portfolio constraints - Realistic sizing for achievable daily PnL
   const totalPortfolio = 521.95; // Total account equity
   
-  // For $1,000+ daily PnL, we need larger positions
-  // Using 80% of portfolio for active trading (higher risk tolerance)
-  const maxPositionSize = totalPortfolio * 0.40; // 40% maximum per position for aggressive strategy
+  // With $521.95 portfolio, realistic targets are different
+  // Using 35% of portfolio per position (70% total allocated)
+  const maxPositionSize = totalPortfolio * 0.35; // 35% maximum per position
 
-  // Calculate optimal position sizes for $1,000+ daily PnL
+  // Calculate optimal position sizes for realistic daily PnL
   const calculateOptimalPositionSize = (asset: 'BTC' | 'ETH'): PositionData => {
     const currentPrice = asset === 'BTC' ? BTC.price : ETH.price;
     if (!currentPrice || currentPrice <= 0) return { size: 0, notional: 0, leverage: 0 };
     
-    // Calculate position size needed for $1,000+ daily PnL
-    // Target: $1,000 PnL on 10% daily move with 10x leverage
-    const targetDailyPnL = 1000;
+    // Realistic target: Achievable daily PnL with current portfolio
     const expectedDailyMove = 0.10; // 10% daily move
-    const targetLeverage = 10;
+    const leverage = 7; // Realistic 7x leverage
     
-    // Calculate required position size in USD
-    const requiredPositionUSD = targetDailyPnL / (expectedDailyMove * targetLeverage);
+    // Calculate what we can actually achieve with current portfolio
+    // Maximum notional = Portfolio × Leverage = $521.95 × 7 = $3,653.65
+    const maxNotional = totalPortfolio * leverage;
     
-    // Use the larger of: required size or max portfolio allocation
-    const positionUSD = Math.max(requiredPositionUSD, maxPositionSize);
+    // Realistic daily PnL = Max Notional × Daily Move × Leverage
+    const realisticDailyPnL = maxNotional * expectedDailyMove * leverage;
+    
+    // Use max portfolio allocation per position
+    const positionUSD = maxPositionSize;
     
     // Calculate position size in asset units
     const positionSize = positionUSD / currentPrice;
@@ -59,20 +61,31 @@ export default function PositionManager() {
     // Calculate notional value
     const notionalValue = positionSize * currentPrice;
     
-    // Calculate safe leverage (ensure margin requirements are met)
-    const safeLeverage = Math.min(10, Math.max(5, totalPortfolio / notionalValue));
-    
     return {
       size: positionSize,
       notional: notionalValue,
-      leverage: safeLeverage
+      leverage: leverage
     };
   };
 
   const btcPosition = calculateOptimalPositionSize('BTC');
   const ethPosition = calculateOptimalPositionSize('ETH');
 
-  // Mock position data with realistic sizes for $1,000+ daily PnL
+  // Calculate daily PnL potential
+  const calculateDailyPnLPotential = (position: PositionData): number => {
+    const expectedDailyMove = 0.10; // 10% daily move
+    return position.notional * expectedDailyMove * position.leverage;
+  };
+
+  const btcDailyPnLPotential = calculateDailyPnLPotential(btcPosition);
+  const ethDailyPnLPotential = calculateDailyPnLPotential(ethPosition);
+
+  // Calculate what's actually achievable
+  const maxNotional = totalPortfolio * 7; // 7x leverage
+  const realisticDailyPnL = maxNotional * 0.10 * 7; // 10% daily move
+  const requiredPortfolioFor1000PnL = 1000 / (0.10 * 7); // Portfolio needed for $1,000 daily PnL
+
+  // Mock position data with realistic sizes
   const btcPositionData: PositionDisplayData = {
     asset: 'BTC',
     size: btcPosition.size,
@@ -103,21 +116,11 @@ export default function PositionManager() {
     portfolioAllocation: ((ethPosition.notional / totalPortfolio) * 100).toFixed(1)
   };
 
-  // Calculate totals
+  // Calculate totals - these should now be realistic
   const totalPnl = btcPositionData.pnl + ethPositionData.pnl;
   const totalPnlPercent = totalPortfolio > 0 ? (totalPnl / totalPortfolio) * 100 : 0;
   const totalAllocated = btcPosition.notional + ethPosition.notional;
   const availableMargin = totalPortfolio - totalAllocated;
-
-  // Calculate daily PnL potential
-  const calculateDailyPnLPotential = (position: PositionData): number => {
-    const expectedDailyMove = 0.10; // 10% daily move
-    return position.notional * expectedDailyMove * position.leverage;
-  };
-
-  const btcDailyPnLPotential = calculateDailyPnLPotential(btcPosition);
-  const ethDailyPnLPotential = calculateDailyPnLPotential(ethPosition);
-  const totalDailyPnLPotential = btcDailyPnLPotential + ethDailyPnLPotential;
 
   const refreshPositions = () => {
     setIsRefreshing(true);
@@ -164,11 +167,11 @@ export default function PositionManager() {
           <div className="flex items-center space-x-3">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-green-400 font-semibold">
-              🎯 Daily PnL Potential: ${totalDailyPnLPotential.toFixed(0)}+ (10% daily move)
+              🎯 Realistic Daily PnL: ${realisticDailyPnL.toFixed(0)} (7x leverage, 10% daily move)
             </span>
           </div>
           <div className="text-sm text-gray-400">
-            Target: $1,000+ daily PnL
+            Current portfolio: ${totalPortfolio} | Required for $1,000/day: ${requiredPortfolioFor1000PnL.toFixed(0)}
           </div>
         </div>
       </div>
@@ -442,15 +445,21 @@ export default function PositionManager() {
           </div>
           <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded">
             <p className="text-sm text-yellow-400">
-              <strong>Strategy Update:</strong> Increased to 40% allocation per position 
-              (${maxPositionSize.toFixed(0)}) for $1,000+ daily PnL target
+              <strong>Strategy Update:</strong> Using 35% allocation per position 
+              (${maxPositionSize.toFixed(0)}) with 7x leverage for realistic daily PnL targets
             </p>
             <p className="text-sm text-gray-300 mt-2">
               <strong>Total Allocated:</strong> ${totalAllocated.toFixed(2)} | 
               <strong>Available Margin:</strong> ${availableMargin.toFixed(2)}
             </p>
             <p className="text-sm text-green-400 mt-2">
-              <strong>Daily PnL Target:</strong> ${totalDailyPnLPotential.toFixed(0)}+ achievable with current positions
+              <strong>Realistic Daily PnL:</strong> ${realisticDailyPnL.toFixed(0)} achievable with 7x leverage on 10% daily moves
+            </p>
+            <p className="text-sm text-red-400 mt-2">
+              <strong>⚠️ Reality Check:</strong> $1,000 daily PnL requires ${requiredPortfolioFor1000PnL.toFixed(0)} portfolio (current: ${totalPortfolio})
+            </p>
+            <p className="text-sm text-blue-400 mt-2">
+              <strong>Risk Management:</strong> 70% portfolio allocated, 30% margin buffer, realistic 7x leverage
             </p>
           </div>
         </div>

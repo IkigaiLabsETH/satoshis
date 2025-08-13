@@ -17,12 +17,12 @@ export default function LiveMetrics() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
-  // Mock metrics data
+  // Mock metrics data - Updated to match realistic calculations
   const metrics: Metrics = {
     totalEquity: 521.95,
-    availableMargin: 310.00,
-    usedMargin: 211.95,
-    marginRatio: 40.6,
+    availableMargin: 156.59, // 30% of portfolio (521.95 * 0.30)
+    usedMargin: 365.37, // 70% of portfolio (521.95 * 0.70)
+    marginRatio: 70.0, // 70% allocated
     fundingRate: 0.0125,
     openInterest: 1250000
   };
