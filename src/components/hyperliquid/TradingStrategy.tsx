@@ -19,6 +19,8 @@ export default function TradingStrategy() {
   // Portfolio constraints - aligned with ~0.5 BTC (~$60k)
   const totalPortfolio = 60000; // Total account equity
   const maxPositionSize = totalPortfolio * 0.35; // 35% maximum per position (matches PositionManager)
+  const MAX_TRADES = 3;
+  const PER_TRADE_CAP = 21000; // explicit per-trade notional cap
 
   // Calculate optimal position sizes based on live prices and 35% limit
   const calculateOptimalPositionSize = (asset: 'BTC' | 'ETH') => {
@@ -78,7 +80,7 @@ export default function TradingStrategy() {
   const stopLossPct = 0.25; // 25% baseline SL
   const riskLimitedNotionalSingle = dailyRiskCap / stopLossPct; // notional allowed to keep loss ≤ risk cap
   const targetNotionalSingle = targetPnL / (movePct * leverageAssumption);
-  const recommendedNotionalSingle = Math.min(targetNotionalSingle, riskLimitedNotionalSingle);
+  const recommendedNotionalSingle = Math.min(targetNotionalSingle, riskLimitedNotionalSingle, PER_TRADE_CAP);
   const expectedPnLSingle = recommendedNotionalSingle * movePct * leverageAssumption;
   const marginRequiredSingle = recommendedNotionalSingle / leverageAssumption;
   const shortfallSingle = Math.max(0, targetPnL - expectedPnLSingle);
@@ -137,7 +139,7 @@ export default function TradingStrategy() {
           <div className="text-sm text-gray-400">
             {isClient && !isLoading && (
               <>
-                BTC: ${BTC.price.toLocaleString()} | ETH: ${ETH.price.toLocaleString()}
+                BTC: ${BTC.price.toLocaleString()} | ETH: ${ETH.price.toLocaleString()} • Max trades: {MAX_TRADES} • Per-trade cap: ${PER_TRADE_CAP.toLocaleString()}
               </>
             )}
           </div>
@@ -259,7 +261,7 @@ export default function TradingStrategy() {
                   )}
                 </div>
                 <div>
-                  <h5 className="text-yellow-400 font-semibold mb-2">Ethereum (ETH)</h5>
+                  <h5 className="text-yellow-400 font-semibold mb-2">Ethereum (ETH) — Core Perp</h5>
                   {isLoading ? (
                     <div className="animate-pulse space-y-1">
                       <div className="h-4 bg-gray-700 rounded"></div>
@@ -274,6 +276,7 @@ export default function TradingStrategy() {
                       <li>• Notional Value: ~${ethPosition.notional.toFixed(0)}</li>
                       <li>• Leverage: {ethPosition.leverage.toFixed(1)}x</li>
                       <li>• Portfolio Allocation: {((ethPosition.notional / totalPortfolio) * 100).toFixed(1)}%</li>
+                      <li>• Per-trade Notional Cap: ${PER_TRADE_CAP.toLocaleString()}</li>
                     </ul>
                   )}
                 </div>
@@ -480,12 +483,11 @@ export default function TradingStrategy() {
           {expandedSection === 'summary' && (
             <div className="mt-4 space-y-3 text-gray-300 text-sm leading-6">
               <p>
-                - We aim for roughly $1,000/day in potential PnL by trading BTC and optionally ETH with
-                {` ${leverageAssumption}x `} leverage. A realistic daily move assumption is ~{(movePct*100).toFixed(0)}%.
+                - Core: We 7x long ETH perps as a hedge/edge since our non-trading portfolio is mostly BTC. This gives extra ETH exposure with ~7× less capital than spot. We target ~$1,000/day potential using a {(movePct*100).toFixed(0)}% move baseline.
               </p>
               <p>
-                - To have a shot at $1k/day on a single asset, you generally need about ${requiredNotionalFor1k.toFixed(0)} notional
-                exposure (≈ ${requiredMarginFor1k.toFixed(0)} margin at {leverageAssumption}x). Our portfolio context is ${totalPortfolio.toLocaleString()} (~0.5 BTC), and we cap any single position at 35% of the account.
+                - Sizing Rules: Max {MAX_TRADES} concurrent trades, ${PER_TRADE_CAP.toLocaleString()} notional cap per trade, 35% of equity absolute cap, 7x leverage.
+                To target $1k/day on one asset you’d need ≈ ${requiredNotionalFor1k.toFixed(0)} notional (margin ≈ ${requiredMarginFor1k.toFixed(0)} at 7x) at this volatility.
               </p>
               <p>
                 - We also cap daily risk to $1,000. With a 25% stop loss, the max notional per active trade under the risk cap is
@@ -494,8 +496,7 @@ export default function TradingStrategy() {
                 rather than increasing risk.
               </p>
               <p>
-                - Entries follow the liquidation heatmap: wait until red/yellow zones are cleared, then consider a long. We cut risk with a
-                25% stop loss and take profits near +25%. Profits are partially moved to spot on dips to build long-term exposure.
+                - Entries: Use CoinGlass liquidation heatmap. Wait for red/yellow clusters above to clear, then enter 7x long ETH. Exits: −25% stop loss, +25% take profit; recycle part of profits to spot on dips to compound exposure.
               </p>
               <p>
                 - Risk discipline: keep total risk per trade small (target under ~2% of equity). If volatility is lower than expected,
