@@ -9,6 +9,7 @@ export default function EthMinimalStrategyPage() {
   const [heatmapImage, setHeatmapImage] = useState<string | null>(null);
   const [axisTopPrice, setAxisTopPrice] = useState<number>(4848);
   const [axisBottomPrice, setAxisBottomPrice] = useState<number>(4100);
+  const [extractedBands, setExtractedBands] = useState<number[] | null>(null);
 
   // Editable plan levels
   const [entryLower, setEntryLower] = useState<number>(4560);
@@ -19,6 +20,7 @@ export default function EthMinimalStrategyPage() {
   const [slBufferPct, setSlBufferPct] = useState<number>(0.0075); // 0.75%
   const [movePct, setMovePct] = useState<number>(0.02); // 2%
   const [direction, setDirection] = useState<'long' | 'short'>('long');
+  const [suggestedDir, setSuggestedDir] = useState<'long' | 'short'>('long');
 
   // Constants
   const leverage = 7;
@@ -93,6 +95,7 @@ export default function EthMinimalStrategyPage() {
     }
     const toPrice = (rowY: number) => axisTopPrice - (rowY / h) * (axisTopPrice - axisBottomPrice);
     const bands = picked.map(toPrice).sort((a, b) => a - b);
+    setExtractedBands(bands);
     const current = ETH.price || entryMid;
     const below = [...bands].filter(p => p < current).pop();
     const above = bands.find(p => p > current);
@@ -106,6 +109,30 @@ export default function EthMinimalStrategyPage() {
       setRetestUpper(Math.floor(above - 10));
     }
   };
+
+  // Auto-suggest direction from bands vs current price
+  useEffect(() => {
+    const current = ETH.price || entryMid;
+    let dir: 'long' | 'short' = 'long';
+    if (extractedBands && extractedBands.length) {
+      const below = extractedBands.filter(p => p < current).pop();
+      const above = extractedBands.find(p => p > current);
+      if (below && above) dir = (current - below) <= (above - current) ? 'long' : 'short';
+      else if (!below && above) dir = 'short';
+      else dir = 'long';
+    } else {
+      // fallback: if current above entry band and below break, prefer long
+      if (current < entryLower) dir = 'long';
+      else if (current > breakLevel) dir = 'long';
+      else dir = 'long';
+    }
+    setSuggestedDir(dir);
+  }, [ETH.price, extractedBands, entryLower, breakLevel, entryMid]);
+
+  // Sync direction to suggestion by default (user can override by clicking)
+  useEffect(() => {
+    setDirection(suggestedDir);
+  }, [suggestedDir]);
 
   return (
     <div className="bg-[#0f1116] min-h-screen text-white p-6">
@@ -190,6 +217,7 @@ export default function EthMinimalStrategyPage() {
         <div className="font-semibold text-yellow-400">Suggested Trade</div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-gray-300">Direction:</span>
+          <span className={`px-2 py-1 rounded text-xs ${suggestedDir==='long'?'bg-green-600/30 text-green-300 border border-green-600/50':'bg-red-600/30 text-red-300 border border-red-600/50'}`}>Suggested: {suggestedDir.toUpperCase()}</span>
           <button className={`px-3 py-1 rounded text-sm ${direction==='long'?'bg-green-600':'bg-gray-700'}`} onClick={()=>setDirection('long')}>Long</button>
           <button className={`px-3 py-1 rounded text-sm ${direction==='short'?'bg-red-600':'bg-gray-700'}`} onClick={()=>setDirection('short')}>Short</button>
         </div>
