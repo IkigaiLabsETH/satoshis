@@ -269,6 +269,51 @@ export default function EthMinimalStrategyPage() {
         </div>
         <div className="text-xs text-gray-400 mt-2">Move = {(movePct*100).toFixed(2)}%. SL buffer = {(slBufferPct*100).toFixed(2)}%. Notional = $21,000 • Leverage = 7x.</div>
       </div>
+
+      {/* Liquidation Map Playbook */}
+      <div className="mt-6 p-4 bg-black/50 border border-yellow-500/20 rounded text-sm space-y-3">
+        <div className="text-yellow-400 font-semibold">Liquidation Map Playbook</div>
+        <p className="text-gray-300">
+          Goal: protect capital and grow token balances. Trade the liquidation heat map with discipline; wait
+          for flushes and execute with defined risk.
+        </p>
+        <div className="space-y-2">
+          <div className="text-white font-semibold">Core Rules</div>
+          <ul className="list-disc pl-5 space-y-1 text-gray-300">
+            <li>Never sit in a losing trade. If red by ~2–3%, exit and re-enter lower/higher after the flush.</li>
+            <li>Always set a stop loss. Template: risk = size × SL%. For $1k risk on $21k, SL ≈ 4.8%.</li>
+            <li>TP fast: aim to extract 10–35% (relative to your leveraged position move) on flush bounces; don’t round trip.</li>
+            <li>Protect capital. Consistency and patience beat boredom trades.</li>
+          </ul>
+        </div>
+        <div className="space-y-2">
+          <div className="text-white font-semibold">How the Heat Map Is Used</div>
+          <ul className="list-disc pl-5 space-y-1 text-gray-300">
+            <li>Red/yellow = high-leverage (50–100×+) zones that are frequently flushed.</li>
+            <li>Blue (25–50×) is the signal: “enter in the blues” after the flush and reclaim on 5–15m.</li>
+            <li>On bullish days, exchanges often flush down before markup; on bearish days, they squeeze up before markdown.</li>
+          </ul>
+        </div>
+        <div className="space-y-2">
+          <div className="text-white font-semibold">Entries</div>
+          <ul className="list-disc pl-5 space-y-1 text-gray-300">
+            <li>Pullback: wait for sweep into blue band {`(${entryLower}-${entryUpper})`} and reclaim → enter near ~${entryMid.toFixed(0)}.</li>
+            <li>Momentum: break {breakLevel}, then {direction==='long'? 'buy HL':'sell LH'} on retest {retestLower}-{retestUpper} → enter ~${retestMid.toFixed(0)}.</li>
+          </ul>
+        </div>
+        <div className="space-y-2">
+          <div className="text-white font-semibold">Stops & Targets</div>
+          <ul className="list-disc pl-5 space-y-1 text-gray-300">
+            <li>Stop just beyond invalidation or set risk-first: SL% = risk / size (e.g., $1k/$21k ≈ 4.8%).</li>
+            <li>TP1 at move needed for $1k (~{(requiredMoveFor1k*100).toFixed(2)}% from entry, ${tp1Price.toFixed(0)} guide); scale more at +1.5–2.0%.</li>
+          </ul>
+        </div>
+        <div className="space-y-1 text-gray-400 text-xs">
+          <div>Macro: liquidity cycle likely shifting from QT to QE → bull run setup; learn to trade the flushes.</div>
+          <div>Micro: CEX microstructure is a casino; liquidation bands mark where leverage is harvested. Wait for events.</div>
+          <div>Reminder: self-custody spot stack for the long term; avoid high leverage; don’t get liquidated.</div>
+        </div>
+      </div>
     </div>
   );
 }
