@@ -29,6 +29,13 @@ export default function PositionManager() {
   const { BTC, ETH, isLoading, error } = useLiveCryptoPrices();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Shared heatmap-driven levels (manual for now; can be lifted from TradingStrategy via context/store later)
+  const [entryLower] = useState<number>(4560);
+  const [entryUpper] = useState<number>(4580);
+  const [breakLevel] = useState<number>(4680);
+  const [retestLower] = useState<number>(4660);
+  const [retestUpper] = useState<number>(4670);
+
   // Portfolio constraints - Align with ~0.5 BTC (~$60k) capital
   const totalPortfolio = 60000; // Total account equity
   
@@ -61,7 +68,7 @@ export default function PositionManager() {
   const ethPosition = calculateOptimalPositionSize('ETH');
 
   // Calculate daily PnL potential (assumption: 2% daily move, editable)
-  const expectedDailyMove = 0.02; // 2% is a more realistic average daily move for BTC/ETH
+  const expectedDailyMove = 0.02; // 2% baseline
   const calculateDailyPnLPotential = (position: PositionData): number => {
     return position.notional * expectedDailyMove * position.leverage;
   };
@@ -193,7 +200,7 @@ export default function PositionManager() {
             </span>
           </div>
           <div className="text-sm text-gray-400">
-            Auto-refresh every 30s
+            Entry {entryLower}-{entryUpper} | Break {breakLevel} → Retest {retestLower}-{retestUpper}
           </div>
         </div>
       </div>
