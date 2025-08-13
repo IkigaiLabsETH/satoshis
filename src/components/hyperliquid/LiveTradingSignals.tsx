@@ -180,7 +180,7 @@ export default function LiveTradingSignals() {
               <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
               <div>
                 <span className="font-semibold text-white">Risk Management:</span> 
-                <span className="text-orange-400"> 5-10x leverage, 2-3% stop loss</span>
+                <span className="text-orange-400"> 7x leverage, 25% stop loss</span>
               </div>
             </div>
             <div className="flex items-start space-x-3">

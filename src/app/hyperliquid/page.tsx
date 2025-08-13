@@ -134,7 +134,7 @@ export default function HyperliquidPage() {
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                      <span>Risk Management: 5-10x leverage, 2-3% stop loss</span>
+                      <span>Risk Management: 7x leverage, 25% stop loss</span>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-2 bg-red-500 rounded-full"></div>

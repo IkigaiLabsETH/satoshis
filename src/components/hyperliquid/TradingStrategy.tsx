@@ -233,16 +233,16 @@ export default function TradingStrategy() {
                   <h5 className="text-red-400 font-semibold mb-2">BTC Stop Loss</h5>
                   <ul className="space-y-1 text-sm">
                     <li>• Entry: $119,425</li>
-                    <li>• Stop Loss: $116,897 (2.1% below entry)</li>
-                    <li>• Risk: ~$46.50 per position</li>
+                    <li>• Stop Loss: $89,569 (25% below entry)</li>
+                    <li>• Risk: ~$7,481 per position</li>
                   </ul>
                 </div>
                 <div>
                   <h5 className="text-red-400 font-semibold mb-2">ETH Stop Loss</h5>
                   <ul className="space-y-1 text-sm">
                     <li>• Entry: $3,200</li>
-                    <li>• Stop Loss: $3,136 (2.0% below entry)</li>
-                    <li>• Risk: ~$32.00 per position</li>
+                    <li>• Stop Loss: $3,375 (25% below entry)</li>
+                    <li>• Risk: ~$2,812 per position</li>
                   </ul>
                 </div>
               </div>
@@ -372,7 +372,8 @@ export default function TradingStrategy() {
                 <div>
                   <h5 className="text-yellow-400 font-semibold mb-2">Exit Rules</h5>
                   <ul className="space-y-1 text-sm">
-                    <li>• Stop loss: 2-3% below entry</li>
+                    <li>• Position sizing: 2% max risk per trade, scale in on dips</li>
+                    <li>• Stop loss: 25% below entry</li>
                     <li>• Take profit: 25% above entry</li>
                     <li>• Emergency exit: If margin ratio drops below 30%</li>
                     <li>• Time-based exit: Close if no TP hit within 48 hours</li>
