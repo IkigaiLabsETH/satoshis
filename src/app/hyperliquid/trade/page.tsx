@@ -130,6 +130,20 @@ export default function HyperliquidTradePage() {
                 <span className="text-sm font-medium">Professional</span>
               </div>
             </div>
+            
+            {/* Liquidation Modal Button */}
+            <div className="mt-8">
+              <button
+                onClick={_openModal}
+                className="px-8 py-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 rounded-xl transition-all duration-200 text-white font-bold text-lg shadow-lg hover:shadow-xl border-2 border-yellow-500/50 hover:border-yellow-500"
+              >
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">🔥</span>
+                  <span>Open Live Liquidation Heatmap</span>
+                  <span className="text-sm opacity-80">CoinGlass Data</span>
+                </div>
+              </button>
+            </div>
           </div>
 
           {/* Enhanced Core Strategy Statement */}
@@ -273,7 +287,7 @@ export default function HyperliquidTradePage() {
           </div>
 
           <div className="mb-20">
-            <LiquidationTracker />
+            <LiquidationTracker onOpenModal={_openModal} />
           </div>
 
           <div className="mb-20">
@@ -289,24 +303,58 @@ export default function HyperliquidTradePage() {
             <TradingChart />
           </div>
 
-          {/* Enhanced Liquidation Modal */}
+          {/* Enhanced Liquidation Modal with CoinGlass Embed */}
           <Modal isOpen={isModalOpen} onClose={closeModal}>
-            <div className="p-8 bg-gradient-to-br from-[#1c1f26] to-[#2a2f3a] rounded-2xl border-2 border-yellow-500">
+            <div className="p-8 bg-gradient-to-br from-[#1c1f26] to-[#2a2f3a] rounded-2xl border-2 border-yellow-500 max-w-7xl w-full">
               <div className="text-center mb-6">
                 <div className="inline-block p-3 bg-yellow-500/20 rounded-full border border-yellow-500/40 mb-4">
-                  <span className="text-2xl">📊</span>
+                  <span className="text-2xl">🔥</span>
                 </div>
-                <h2 className="text-3xl font-bold text-yellow-500 mb-4">Liquidation Analysis</h2>
+                <h2 className="text-3xl font-bold text-yellow-500 mb-4">Live Liquidation Heatmap</h2>
                 <div className="w-16 h-1 bg-gradient-to-r from-yellow-500 to-orange-500 mx-auto rounded-full"></div>
               </div>
-              <p className="text-gray-300 mb-6 text-lg leading-relaxed">
-                Monitor liquidation levels and market conditions for optimal entry points.
-              </p>
-              <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-xl p-6">
-                <p className="text-yellow-300 text-base leading-relaxed">
-                  <span className="font-semibold">Strategy:</span> Wait for liquidation level breakouts 
-                  when red and yellow lines are cleared for optimal long entries.
-                </p>
+              
+              {/* CoinGlass Liquidation Heatmap Embed */}
+              <div className="bg-black/50 rounded-xl border border-yellow-500/30 overflow-hidden">
+                <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 p-4 border-b border-yellow-500/30">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                      <span className="text-yellow-400 font-semibold">Real-time Liquidation Data</span>
+                    </div>
+                    <a 
+                      href="https://www.coinglass.com/pro/futures/LiquidationHeatMap" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-400 hover:text-blue-300 underline"
+                    >
+                      Open in CoinGlass →
+                    </a>
+                  </div>
+                </div>
+                
+                {/* Embedded CoinGlass Liquidation Heatmap */}
+                <div className="w-full h-[600px] bg-black">
+                  <iframe
+                    src="https://www.coinglass.com/pro/futures/LiquidationHeatMap"
+                    className="w-full h-full border-0"
+                    title="CoinGlass Liquidation Heatmap"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+              
+              {/* Strategy Notes */}
+              <div className="mt-6 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-yellow-400 mb-3">📊 Liquidation Strategy Notes:</h3>
+                <div className="text-gray-300 text-sm space-y-2">
+                  <p>• <strong>Red Zones:</strong> High liquidation levels - potential reversal points</p>
+                  <p>• <strong>Yellow Zones:</strong> Medium liquidation levels - watch for breakouts</p>
+                  <p>• <strong>Green Zones:</strong> Low liquidation levels - accumulation opportunities</p>
+                  <p>• <strong>Strategy:</strong> Enter long when liquidation levels are cleared (red→yellow→green)</p>
+                  <p>• <strong>Risk Management:</strong> Use 25% stop loss and 25% take profit with 7x leverage</p>
+                </div>
               </div>
             </div>
           </Modal>

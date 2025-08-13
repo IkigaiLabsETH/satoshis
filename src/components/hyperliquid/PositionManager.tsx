@@ -69,10 +69,13 @@ export default function PositionManager() {
   const btcDailyPnLPotential = calculateDailyPnLPotential(btcPosition);
   const ethDailyPnLPotential = calculateDailyPnLPotential(ethPosition);
 
-  // Calculate what's actually achievable with $30,000 portfolio
-  const maxNotional = totalPortfolio * 7; // 7x leverage = $210,000
-  const realisticDailyPnL = maxNotional * 0.10 * 7; // 10% daily move = $147,000 potential
-  const requiredPortfolioFor1000PnL = 1000 / (0.10 * 7); // Portfolio needed for $1,000 daily PnL
+  // Calculate what's needed for $1,000 daily PnL with current setup
+  const btcDailyPnL = btcPosition.notional * 0.10 * 7; // BTC position daily PnL on 10% move
+  const ethDailyPnL = ethPosition.notional * 0.10 * 7; // ETH position daily PnL on 10% move
+  const totalDailyPnLPotential = btcDailyPnL + ethDailyPnL; // Combined daily PnL potential
+  
+  // Portfolio needed for $1,000 daily PnL with 7x leverage and 10% daily moves
+  const requiredPortfolioFor1000PnL = 1000 / (0.10 * 7); // = $1,429 needed
 
   // Calculate total allocation and available margin
   const totalAllocated = btcPosition.notional + ethPosition.notional;
@@ -87,8 +90,8 @@ export default function PositionManager() {
     leverage: btcPosition.leverage,
     pnl: BTC.price ? ((BTC.price - (BTC.price || 119425)) / (BTC.price || 119425)) * btcPosition.leverage * btcPosition.size * BTC.price : 0,
     pnlPercent: BTC.price ? ((BTC.price - (BTC.price || 119425)) / (BTC.price || 119425)) * 100 : 0,
-    stopLoss: BTC.price ? Math.floor(BTC.price * 0.97) : 116897,
-    takeProfit: BTC.price ? Math.floor(BTC.price * 1.25) : 149281,
+    stopLoss: BTC.price ? Math.floor(BTC.price * 0.75) : 89569, // 25% stop loss (0.75)
+    takeProfit: BTC.price ? Math.floor(BTC.price * 1.25) : 149281, // 25% take profit (1.25)
     marginUsed: btcPosition.notional / btcPosition.leverage,
     status: 'pending',
     portfolioAllocation: ((btcPosition.notional / totalPortfolio) * 100).toFixed(1)
@@ -102,8 +105,8 @@ export default function PositionManager() {
     leverage: ethPosition.leverage,
     pnl: ETH.price ? ((ETH.price - (ETH.price || 4500)) / (ETH.price || 4500)) * ethPosition.leverage * ethPosition.size * ETH.price : 0,
     pnlPercent: ETH.price ? ((ETH.price - (ETH.price || 4500)) / (ETH.price || 4500)) * 100 : 0,
-    stopLoss: ETH.price ? Math.floor(ETH.price * 0.97) : 4365,
-    takeProfit: ETH.price ? Math.floor(ETH.price * 1.25) : 5625,
+    stopLoss: ETH.price ? Math.floor(ETH.price * 0.75) : 3375, // 25% stop loss (0.75)
+    takeProfit: ETH.price ? Math.floor(ETH.price * 1.25) : 5625, // 25% take profit (1.25)
     marginUsed: ethPosition.notional / ethPosition.leverage,
     status: 'pending',
     portfolioAllocation: ((ethPosition.notional / totalPortfolio) * 100).toFixed(1)
@@ -152,7 +155,7 @@ export default function PositionManager() {
           <div className="flex items-center space-x-3">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-green-400 font-semibold">
-              🎯 Daily PnL Potential: ${realisticDailyPnL.toFixed(0)} (7x leverage, 10% daily move)
+              🎯 Daily PnL Potential: ${totalDailyPnLPotential.toFixed(0)} (7x leverage, 10% daily move)
             </span>
           </div>
           <div className="text-sm text-gray-400">
@@ -160,7 +163,10 @@ export default function PositionManager() {
           </div>
         </div>
         <div className="mt-2 text-sm text-gray-300">
-          <strong>Current Setup:</strong> 0.5 BTC equivalent positions achievable with ${totalPortfolio.toLocaleString()} portfolio
+          <strong>Current Setup:</strong> ${btcPosition.size.toFixed(4)} BTC + ${ethPosition.size.toFixed(4)} ETH positions
+        </div>
+        <div className="mt-2 text-sm text-yellow-400">
+          <strong>Risk Management:</strong> 25% stop loss, 25% take profit, 7x max leverage
         </div>
       </div>
 
@@ -441,13 +447,13 @@ export default function PositionManager() {
               <strong>Available Margin:</strong> ${availableMargin.toFixed(2)}
             </p>
             <p className="text-sm text-green-400 mt-2">
-              <strong>Realistic Daily PnL:</strong> ${realisticDailyPnL.toFixed(0)} achievable with 7x leverage on 10% daily moves
+              <strong>Current Daily PnL Potential:</strong> ${totalDailyPnLPotential.toFixed(0)} with current positions (7x leverage, 10% daily moves)
             </p>
             <p className="text-sm text-red-400 mt-2">
               <strong>⚠️ Reality Check:</strong> $1,000 daily PnL requires ${requiredPortfolioFor1000PnL.toFixed(0)} portfolio (current: ${totalPortfolio})
             </p>
             <p className="text-sm text-blue-400 mt-2">
-              <strong>Risk Management:</strong> 70% portfolio allocated, 30% margin buffer, realistic 7x leverage
+              <strong>Risk Management:</strong> 25% stop loss, 25% take profit, 7x max leverage, 70% portfolio allocated
             </p>
           </div>
         </div>

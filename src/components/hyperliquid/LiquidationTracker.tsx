@@ -10,7 +10,11 @@ interface LiquidationLevel {
   percentage: number;
 }
 
-export default function LiquidationTracker() {
+interface LiquidationTrackerProps {
+  onOpenModal?: () => void;
+}
+
+export default function LiquidationTracker({ onOpenModal }: LiquidationTrackerProps) {
   const { BTC, ETH, isLoading, error, refetch } = useLiveCryptoPrices();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -190,17 +194,15 @@ export default function LiquidationTracker() {
               <span>• Professional trading tools</span>
             </div>
           </div>
-          <a
-            href="https://www.coinglass.com/pro/futures/LiquidationHeatMap"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={onOpenModal}
             className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 rounded-lg transition-all duration-200 text-white font-semibold flex items-center space-x-2 shadow-lg hover:shadow-xl"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
-            <span>Open CoinGlass</span>
-          </a>
+            <span>Open Liquidation Modal</span>
+          </button>
         </div>
       </div>
 
