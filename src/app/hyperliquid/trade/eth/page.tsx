@@ -152,6 +152,9 @@ export default function EthMinimalStrategyPage() {
     setDirection(suggestedDir);
   }, [suggestedDir]);
 
+  // Strategy summary (auto-generated from current inputs)
+  const strategySummary = `Liquidation Map Playbook\n\nGoal: protect capital and grow token balances. Trade the liquidation map with discipline; wait for flushes and execute with defined risk.\n\nCore Rules\n- Never sit in a losing trade. If red by ~2–3%, exit and re-enter lower/higher after the flush.\n- Always set a stop loss. Template: risk = size × SL%. For $${riskTargetUSD} risk on $${notional.toLocaleString()}, SL ≈ ${( (riskTargetUSD/notional)*100 ).toFixed(2)}%.\n- TP fast: aim to extract 10–35% on flush bounces; don’t round trip.\n- Protect capital. Consistency and patience beat boredom trades.\n\nHow the Heat Map Is Used\n- Red/yellow = high-leverage (50–100×+) zones that are frequently flushed.\n- Blue (25–50×) is the signal: “enter in the blues” after the flush and reclaim on 5–15m.\n- On bullish days, exchanges often flush down before markup; on bearish days, they squeeze up before markdown.\n\nEntries\n- Pullback: wait for sweep into blue band (${entryLower}-${entryUpper}) and reclaim → enter near ~$${entryMid.toFixed(0)}.\n- Momentum: break ${breakLevel}, then ${direction==='long'?'buy HL':'sell LH'} on retest ${retestLower}-${retestUpper} → enter ~$${retestMid.toFixed(0)}.\n\nStops & Targets\n- Stop beyond invalidation or set risk-first: SL% = risk / size (e.g., $${riskTargetUSD}/$${notional} ≈ ${( (riskTargetUSD/notional)*100 ).toFixed(2)}%).\n- TP1 at move needed for $${riskTargetUSD} (~${(requiredMoveFor1k*100).toFixed(2)}% from entry, $${tp1Price.toFixed(0)} guide); scale more at +1.5–2.0%.\n\nMacro/Micro\n- Macro: liquidity cycle likely shifting from QT to QE → bull run setup.\n- Micro: CEX microstructure is a casino; liquidation bands mark where leverage is harvested. Wait for events.\n`;
+
   return (
     <div className="bg-[#0f1116] min-h-screen text-white p-6">
       <h1 className="text-2xl font-bold text-yellow-500 mb-4">ETH 7x Strategy (Minimal)</h1>
@@ -292,6 +295,7 @@ export default function EthMinimalStrategyPage() {
           Goal: protect capital and grow token balances. Trade the liquidation heat map with discipline; wait
           for flushes and execute with defined risk.
         </p>
+        <pre className="whitespace-pre-wrap text-xs text-gray-400 bg-black/30 border border-yellow-500/10 rounded p-3">{strategySummary}</pre>
         <div className="space-y-2">
           <div className="text-white font-semibold">Core Rules</div>
           <ul className="list-disc pl-5 space-y-1 text-gray-300">
