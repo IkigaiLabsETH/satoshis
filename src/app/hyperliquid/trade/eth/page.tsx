@@ -18,6 +18,7 @@ export default function EthMinimalStrategyPage() {
   const [retestUpper, setRetestUpper] = useState<number>(4670);
   const [slBufferPct, setSlBufferPct] = useState<number>(0.0075); // 0.75%
   const [movePct, setMovePct] = useState<number>(0.02); // 2%
+  const [direction, setDirection] = useState<'long' | 'short'>('long');
 
   // Constants
   const leverage = 7;
@@ -26,8 +27,8 @@ export default function EthMinimalStrategyPage() {
   // Derived numbers
   const entryMid = (entryLower + entryUpper) / 2;
   const requiredMoveFor1k = 1000 / (perTradeNotional * leverage); // decimal
-  const tp1Price = entryMid * (1 + requiredMoveFor1k);
-  const slPrice = entryMid * (1 - slBufferPct);
+  const tp1Price = direction === 'long' ? entryMid * (1 + requiredMoveFor1k) : entryMid * (1 - requiredMoveFor1k);
+  const slPrice = direction === 'long' ? entryMid * (1 - slBufferPct) : entryMid * (1 + slBufferPct);
   const requiredNotionalFor1kAtMove = 1000 / (movePct * leverage);
   const requiredMarginAtMove = requiredNotionalFor1kAtMove / leverage;
 
@@ -179,11 +180,22 @@ export default function EthMinimalStrategyPage() {
       {/* Strategy Suggestion */}
       <div className="p-4 bg-black/50 border border-yellow-500/20 rounded text-sm space-y-2">
         <div className="font-semibold text-yellow-400">Suggested Trade</div>
-        <div>- Primary: sweep below {entryLower}-{entryUpper}, reclaim {entryLower} on 5–15m; enter ≈ ${entryMid.toFixed(0)}.</div>
-        <div>- Alt momentum: break {breakLevel}, buy HL on retest {retestLower}-{retestUpper}.</div>
-        <div>- Size: $21,000 notional (7x). Required move for $1k ≈ {(requiredMoveFor1k*100).toFixed(2)}%.</div>
-        <div>- Stop: ~${slPrice.toFixed(0)} (≈ {(slBufferPct*100).toFixed(2)}% below entry).</div>
-        <div>- TP1: ~${tp1Price.toFixed(0)} (locks ≈ $1k). TP2: scale at +1.5% to +2.0%.</div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-gray-300">Direction:</span>
+          <button className={`px-3 py-1 rounded text-sm ${direction==='long'?'bg-green-600':'bg-gray-700'}`} onClick={()=>setDirection('long')}>Long</button>
+          <button className={`px-3 py-1 rounded text-sm ${direction==='short'?'bg-red-600':'bg-gray-700'}`} onClick={()=>setDirection('short')}>Short</button>
+        </div>
+        <div>- Primary: sweep {direction==='long'? 'below':'above'} {entryLower}-{entryUpper}, {direction==='long'? 'reclaim':'reject at'} {entryLower} on 5–15m; enter ≈ ${entryMid.toFixed(0)}.</div>
+        <div>- Alt momentum: break {breakLevel}, {direction==='long'? 'buy HL':'sell LH'} on retest {retestLower}-{retestUpper}.</div>
+        <div className="grid md:grid-cols-3 gap-3 mt-2">
+          <ActionTile label="Leverage" value="7x" />
+          <ActionTile label="Size (USD)" value="$21,000" copyValue="21000" />
+          <ActionTile label="Entry (guide)" value={`~$${entryMid.toFixed(0)}`} copyValue={entryMid.toFixed(0)} />
+          <ActionTile label="SL Price" value={`$${slPrice.toFixed(0)}`} copyValue={slPrice.toFixed(0)} tone="danger" />
+          <ActionTile label="TP1 Price" value={`$${tp1Price.toFixed(0)}`} copyValue={tp1Price.toFixed(0)} tone="success" />
+          <ActionTile label="TP1 Move" value={`${(requiredMoveFor1k*100).toFixed(2)}%`} />
+        </div>
+        <div className="text-xs text-gray-400">Copy values into Hyperliquid order panel (Isolated • 7x • One-Way). Use Market after reclaim or set a Limit inside the entry band.</div>
       </div>
 
       {/* Capital requirement helper */}
@@ -198,6 +210,24 @@ export default function EthMinimalStrategyPage() {
           </select>
         </div>
         <div className="mt-2">Required notional for $1k at {(movePct*100).toFixed(1)}%: ${requiredNotionalFor1kAtMove.toFixed(0)} | Margin @7x: ${requiredMarginAtMove.toFixed(0)}</div>
+      </div>
+    </div>
+  );
+}
+
+function ActionTile({ label, value, copyValue, tone }: { label: string; value: string; copyValue?: string; tone?: 'success'|'danger' }) {
+  const copy = async () => {
+    if (!copyValue) return;
+    try { await navigator.clipboard.writeText(copyValue); } catch { /* noop */ }
+  };
+  return (
+    <div className={`p-3 rounded border text-sm ${tone==='success'? 'border-green-500/30 bg-green-500/10': tone==='danger'? 'border-red-500/30 bg-red-500/10': 'border-yellow-500/20 bg-yellow-500/5'}`}>
+      <div className="text-gray-300 mb-1">{label}</div>
+      <div className="flex items-center justify-between">
+        <div className="font-semibold text-white">{value}</div>
+        {copyValue && (
+          <button onClick={copy} className="ml-2 px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 text-xs">Copy</button>
+        )}
       </div>
     </div>
   );
