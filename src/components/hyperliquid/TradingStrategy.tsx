@@ -17,7 +17,7 @@ export default function TradingStrategy() {
   };
 
   // Portfolio constraints - Updated to match realistic calculations
-  const totalPortfolio = 521.95; // Total account equity
+  const totalPortfolio = 30000; // Total account equity - enough for 0.5 BTC positions
   const maxPositionSize = totalPortfolio * 0.35; // 35% maximum per position (matches PositionManager)
 
   // Calculate optimal position sizes based on live prices and 35% limit

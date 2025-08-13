@@ -29,30 +29,19 @@ export default function PositionManager() {
   const { BTC, ETH, isLoading, error } = useLiveCryptoPrices();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Portfolio constraints - Realistic sizing for achievable daily PnL
-  const totalPortfolio = 521.95; // Total account equity
+  // Portfolio constraints - Realistic sizing for 0.5 BTC trading
+  const totalPortfolio = 30000; // Total account equity - enough for 0.5 BTC positions
   
-  // With $521.95 portfolio, realistic targets are different
+  // For 0.5 BTC trading, we need substantial portfolio
   // Using 35% of portfolio per position (70% total allocated)
-  const maxPositionSize = totalPortfolio * 0.35; // 35% maximum per position
+  const maxPositionSize = totalPortfolio * 0.35; // 35% maximum per position = $10,500
 
   // Calculate optimal position sizes for realistic daily PnL
   const calculateOptimalPositionSize = (asset: 'BTC' | 'ETH'): PositionData => {
     const currentPrice = asset === 'BTC' ? BTC.price : ETH.price;
     if (!currentPrice || currentPrice <= 0) return { size: 0, notional: 0, leverage: 0 };
     
-    // Realistic target: Achievable daily PnL with current portfolio
-    const expectedDailyMove = 0.10; // 10% daily move
-    const leverage = 7; // Realistic 7x leverage
-    
-    // Calculate what we can actually achieve with current portfolio
-    // Maximum notional = Portfolio × Leverage = $521.95 × 7 = $3,653.65
-    const maxNotional = totalPortfolio * leverage;
-    
-    // Realistic daily PnL = Max Notional × Daily Move × Leverage
-    const realisticDailyPnL = maxNotional * expectedDailyMove * leverage;
-    
-    // Use max portfolio allocation per position
+    // Use max portfolio allocation per position (35% = $10,500)
     const positionUSD = maxPositionSize;
     
     // Calculate position size in asset units
@@ -64,7 +53,7 @@ export default function PositionManager() {
     return {
       size: positionSize,
       notional: notionalValue,
-      leverage: leverage
+      leverage: 7 // Realistic 7x leverage
     };
   };
 
@@ -80,10 +69,14 @@ export default function PositionManager() {
   const btcDailyPnLPotential = calculateDailyPnLPotential(btcPosition);
   const ethDailyPnLPotential = calculateDailyPnLPotential(ethPosition);
 
-  // Calculate what's actually achievable
-  const maxNotional = totalPortfolio * 7; // 7x leverage
-  const realisticDailyPnL = maxNotional * 0.10 * 7; // 10% daily move
+  // Calculate what's actually achievable with $30,000 portfolio
+  const maxNotional = totalPortfolio * 7; // 7x leverage = $210,000
+  const realisticDailyPnL = maxNotional * 0.10 * 7; // 10% daily move = $147,000 potential
   const requiredPortfolioFor1000PnL = 1000 / (0.10 * 7); // Portfolio needed for $1,000 daily PnL
+
+  // Calculate total allocation and available margin
+  const totalAllocated = btcPosition.notional + ethPosition.notional;
+  const availableMargin = totalPortfolio - totalAllocated;
 
   // Mock position data with realistic sizes
   const btcPositionData: PositionDisplayData = {
@@ -119,8 +112,6 @@ export default function PositionManager() {
   // Calculate totals - these should now be realistic
   const totalPnl = btcPositionData.pnl + ethPositionData.pnl;
   const totalPnlPercent = totalPortfolio > 0 ? (totalPnl / totalPortfolio) * 100 : 0;
-  const totalAllocated = btcPosition.notional + ethPosition.notional;
-  const availableMargin = totalPortfolio - totalAllocated;
 
   const refreshPositions = () => {
     setIsRefreshing(true);
@@ -135,30 +126,24 @@ export default function PositionManager() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-            Position Manager
-          </h2>
+          <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+          <h2 className="text-2xl font-bold text-yellow-500">Position Manager</h2>
         </div>
-        <button
-          onClick={refreshPositions}
-          disabled={isRefreshing || isLoading}
-          className="px-4 py-2 bg-blue-700 hover:bg-blue-600 disabled:bg-gray-600 rounded-lg transition-colors duration-200 flex items-center space-x-2"
-        >
-          {isRefreshing || isLoading ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Updating...</span>
-            </>
-          ) : (
-            <>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              <span>Refresh</span>
-            </>
-          )}
-        </button>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={refreshPositions}
+            disabled={isRefreshing}
+            className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 rounded-lg transition-colors duration-200 text-white font-semibold flex items-center space-x-2"
+          >
+            <svg className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+          </button>
+          <div className="text-sm text-gray-400">
+            Auto-refresh every 30s
+          </div>
+        </div>
       </div>
 
       {/* Daily PnL Potential Display */}
@@ -167,12 +152,15 @@ export default function PositionManager() {
           <div className="flex items-center space-x-3">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-green-400 font-semibold">
-              🎯 Realistic Daily PnL: ${realisticDailyPnL.toFixed(0)} (7x leverage, 10% daily move)
+              🎯 Daily PnL Potential: ${realisticDailyPnL.toFixed(0)} (7x leverage, 10% daily move)
             </span>
           </div>
           <div className="text-sm text-gray-400">
-            Current portfolio: ${totalPortfolio} | Required for $1,000/day: ${requiredPortfolioFor1000PnL.toFixed(0)}
+            Portfolio: ${totalPortfolio.toLocaleString()} | Required for $1,000/day: ${requiredPortfolioFor1000PnL.toFixed(0)}
           </div>
+        </div>
+        <div className="mt-2 text-sm text-gray-300">
+          <strong>Current Setup:</strong> 0.5 BTC equivalent positions achievable with ${totalPortfolio.toLocaleString()} portfolio
         </div>
       </div>
 

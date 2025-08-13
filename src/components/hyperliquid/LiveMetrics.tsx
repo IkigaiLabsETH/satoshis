@@ -19,9 +19,9 @@ export default function LiveMetrics() {
 
   // Mock metrics data - Updated to match realistic calculations
   const metrics: Metrics = {
-    totalEquity: 521.95,
-    availableMargin: 156.59, // 30% of portfolio (521.95 * 0.30)
-    usedMargin: 365.37, // 70% of portfolio (521.95 * 0.70)
+    totalEquity: 30000,
+    availableMargin: 9000, // 30% of portfolio (30000 * 0.30)
+    usedMargin: 21000, // 70% of portfolio (30000 * 0.70)
     marginRatio: 70.0, // 70% allocated
     fundingRate: 0.0125,
     openInterest: 1250000
