@@ -29,8 +29,8 @@ export default function PositionManager() {
   const { BTC, ETH, isLoading, error } = useLiveCryptoPrices();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Portfolio constraints - Realistic sizing for 0.5 BTC trading
-  const totalPortfolio = 30000; // Total account equity - enough for 0.5 BTC positions
+  // Portfolio constraints - Align with ~0.5 BTC (~$60k) capital
+  const totalPortfolio = 60000; // Total account equity
   
   // For 0.5 BTC trading, we need substantial portfolio
   // Using 35% of portfolio per position (70% total allocated)
@@ -166,7 +166,7 @@ export default function PositionManager() {
           </div>
         </div>
         <div className="mt-2 text-sm text-gray-300">
-          <strong>Current Setup:</strong> {btcPosition.size.toFixed(4)} BTC | {ethPosition.size.toFixed(4)} ETH (ETH position optional; target uses BTC-only)
+          <strong>Current Setup:</strong> {btcPosition.size.toFixed(4)} BTC | {ethPosition.size.toFixed(4)} ETH (both at 7x; target baseline computed per-asset)
         </div>
         <div className="mt-2 text-sm text-yellow-400">
           <strong>Risk Management:</strong> 25% stop loss, 25% take profit, {leverageAssumption}x max leverage
@@ -443,7 +443,7 @@ export default function PositionManager() {
           <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded">
             <p className="text-sm text-yellow-400">
               <strong>Strategy Update:</strong> Using 35% allocation per position 
-              (${maxPositionSize.toFixed(0)}) with {leverageAssumption}x leverage. $1,000/day requirement is calculated on BTC-only; ETH exposure is optional and not needed for the target.
+              (${maxPositionSize.toFixed(0)}) with {leverageAssumption}x leverage. The $1,000/day requirement shown uses the BTC baseline; ETH mirrors the same leverage and risk rules.
             </p>
             <p className="text-sm text-gray-300 mt-2">
               <strong>Total Allocated:</strong> ${totalAllocated.toFixed(2)} | 

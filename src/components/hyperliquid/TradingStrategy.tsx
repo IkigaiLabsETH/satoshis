@@ -16,8 +16,8 @@ export default function TradingStrategy() {
     setExpandedSection(expandedSection === section ? null : section);
   };
 
-  // Portfolio constraints - Updated to match realistic calculations
-  const totalPortfolio = 30000; // Total account equity - enough for 0.5 BTC positions
+  // Portfolio constraints - aligned with ~0.5 BTC (~$60k)
+  const totalPortfolio = 60000; // Total account equity
   const maxPositionSize = totalPortfolio * 0.35; // 35% maximum per position (matches PositionManager)
 
   // Calculate optimal position sizes based on live prices and 35% limit
@@ -219,7 +219,7 @@ export default function TradingStrategy() {
               </div>
               <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded">
                 <p className="text-sm text-yellow-400">
-                  <strong>Portfolio Constraint:</strong> Maximum 10% allocation per position 
+                  <strong>Portfolio Constraint:</strong> Maximum 35% allocation per position 
                   (${maxPositionSize.toFixed(0)}) to maintain proper risk management
                 </p>
                 <p className="text-sm text-gray-300 mt-2">
@@ -248,24 +248,23 @@ export default function TradingStrategy() {
                 <div>
                   <h5 className="text-red-400 font-semibold mb-2">BTC Stop Loss</h5>
                   <ul className="space-y-1 text-sm">
-                    <li>• Entry: $119,425</li>
-                    <li>• Stop Loss: $89,569 (25% below entry)</li>
-                    <li>• Risk: ~$7,481 per position</li>
+                    <li>• Entry: {isLoading ? '--' : `$${BTC.price.toLocaleString()}`}</li>
+                    <li>• Stop Loss: {isLoading ? '--' : `$${Math.floor((BTC.price || 0) * 0.75).toLocaleString()}`} (25% below entry)</li>
+                    <li>• Risk: {isLoading ? '--' : `~$${(((BTC.price || 0) - (BTC.price || 0) * 0.75) * btcPosition.size).toFixed(2)} per position`}</li>
                   </ul>
                 </div>
                 <div>
                   <h5 className="text-red-400 font-semibold mb-2">ETH Stop Loss</h5>
                   <ul className="space-y-1 text-sm">
-                    <li>• Entry: $3,200</li>
-                    <li>• Stop Loss: $3,375 (25% below entry)</li>
-                    <li>• Risk: ~$2,812 per position</li>
+                    <li>• Entry: {isLoading ? '--' : `$${ETH.price.toLocaleString()}`}</li>
+                    <li>• Stop Loss: {isLoading ? '--' : `$${Math.floor((ETH.price || 0) * 0.75).toLocaleString()}`} (25% below entry)</li>
+                    <li>• Risk: {isLoading ? '--' : `~$${(((ETH.price || 0) - (ETH.price || 0) * 0.75) * ethPosition.size).toFixed(2)} per position`}</li>
                   </ul>
                 </div>
               </div>
               <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded">
                 <p className="text-sm text-red-400">
-                  <strong>Risk Management:</strong> Total risk per trade cycle: ~$78.50 
-                  (15% of account equity)
+                  <strong>Risk Management:</strong> 25% stop loss baseline on each position; size conservatively so combined risk remains under 2% of equity per trade.
                 </p>
               </div>
             </div>
