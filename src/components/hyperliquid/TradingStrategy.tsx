@@ -62,7 +62,7 @@ export default function TradingStrategy() {
     return { entry, target, profitPerPosition };
   };
 
-  const btcTP = calculateTakeProfit('BTC');
+  // const btcTP = calculateTakeProfit('BTC'); // BTC not traded here
   const ethTP = calculateTakeProfit('ETH');
 
   // Assumptions (user adjustable)
@@ -236,13 +236,6 @@ export default function TradingStrategy() {
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                 <span>
-                  Wait for BTC to clear ${isLoading ? '--' : BTC.price ? Math.floor(BTC.price * 0.995).toLocaleString() : '119,425'} 
-                  (yellow liquidation level)
-                </span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span>
                   Wait for ETH to clear ${isLoading ? '--' : ETH.price ? Math.floor(ETH.price * 0.995).toLocaleString() : '3,200'} 
                   (yellow liquidation level)
                 </span>
@@ -273,25 +266,7 @@ export default function TradingStrategy() {
           {expandedSection === 'sizing' && (
             <div className="mt-4 space-y-3 text-gray-300">
               <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <h5 className="text-yellow-400 font-semibold mb-2">Bitcoin (BTC)</h5>
-                  {isLoading ? (
-                    <div className="animate-pulse space-y-1">
-                      <div className="h-4 bg-gray-700 rounded"></div>
-                      <div className="h-4 bg-gray-700 rounded"></div>
-                      <div className="h-4 bg-gray-700 rounded"></div>
-                      <div className="h-4 bg-gray-700 rounded"></div>
-                    </div>
-                  ) : (
-                    <ul className="space-y-1 text-sm">
-                      <li>• Position Size: {btcPosition.size.toFixed(6)} BTC</li>
-                      <li>• Entry Price: ${BTC.price ? BTC.price.toLocaleString() : '--'}</li>
-                      <li>• Notional Value: ~${btcPosition.notional.toFixed(0)}</li>
-                      <li>• Leverage: {btcPosition.leverage.toFixed(1)}x</li>
-                      <li>• Portfolio Allocation: {((btcPosition.notional / totalPortfolio) * 100).toFixed(1)}%</li>
-                    </ul>
-                  )}
-                </div>
+                {/* BTC block intentionally omitted: BTC is held as core spot, not traded here */}
                 <div>
                   <h5 className="text-yellow-400 font-semibold mb-2">Ethereum (ETH) — Core Perp</h5>
                   {isLoading ? (
@@ -341,14 +316,7 @@ export default function TradingStrategy() {
           {expandedSection === 'stopLoss' && (
             <div className="mt-4 space-y-3 text-gray-300">
               <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <h5 className="text-red-400 font-semibold mb-2">BTC Stop Loss</h5>
-                  <ul className="space-y-1 text-sm">
-                    <li>• Entry: {isLoading ? '--' : `$${BTC.price.toLocaleString()}`}</li>
-                    <li>• Stop Loss: {isLoading ? '--' : `$${Math.floor((BTC.price || 0) * 0.75).toLocaleString()}`} (25% below entry)</li>
-                    <li>• Risk: {isLoading ? '--' : `~$${(((BTC.price || 0) - (BTC.price || 0) * 0.75) * btcPosition.size).toFixed(2)} per position`}</li>
-                  </ul>
-                </div>
+                {/* BTC stop loss omitted (not trading BTC in this strategy) */}
                 <div>
                   <h5 className="text-red-400 font-semibold mb-2">ETH Stop Loss</h5>
                   <ul className="space-y-1 text-sm">
@@ -381,14 +349,7 @@ export default function TradingStrategy() {
           {expandedSection === 'takeProfit' && (
             <div className="mt-4 space-y-3 text-gray-300">
               <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <h5 className="text-green-400 font-semibold mb-2">BTC Take Profit</h5>
-                  <ul className="space-y-1 text-sm">
-                    <li>• Entry: {isLoading ? '--' : `$${btcTP.entry.toLocaleString()}`}</li>
-                    <li>• Target: {isLoading ? '--' : `$${btcTP.target.toLocaleString()}`} (25% profit)</li>
-                    <li>• Profit: {isLoading ? '--' : `~$${btcTP.profitPerPosition.toFixed(2)} per position`}</li>
-                  </ul>
-                </div>
+                {/* BTC take profit omitted (not trading BTC in this strategy) */}
                 <div>
                   <h5 className="text-green-400 font-semibold mb-2">ETH Take Profit</h5>
                   <ul className="space-y-1 text-sm">
