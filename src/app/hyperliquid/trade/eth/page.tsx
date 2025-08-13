@@ -30,18 +30,18 @@ export default function EthMinimalStrategyPage() {
   const entryMid = (entryLower + entryUpper) / 2;
   const retestMid = (retestLower + retestUpper) / 2;
   const currentPrice = ETH.price || entryMid;
-  const requiredMoveFor1k = 1000 / (perTradeNotional * leverage); // decimal
+  const requiredMoveFor1k = 1000 / perTradeNotional; // decimal
   // Decide mode and anchor: pullback → entry band; momentum → retest band
   const mode: 'pullback' | 'momentum' = currentPrice >= breakLevel ? 'momentum' : 'pullback';
   const entryAnchor = mode === 'momentum' ? retestMid : entryMid;
   const tp1Price = direction === 'long' ? entryAnchor * (1 + requiredMoveFor1k) : entryAnchor * (1 - requiredMoveFor1k);
   const slPrice = direction === 'long' ? entryAnchor * (1 - slBufferPct) : entryAnchor * (1 + slBufferPct);
-  const requiredNotionalFor1kAtMove = 1000 / (movePct * leverage);
+  const requiredNotionalFor1kAtMove = 1000 / (movePct);
   const requiredMarginAtMove = requiredNotionalFor1kAtMove / leverage;
   // Simulation metrics
-  const potentialProfitAtMove = perTradeNotional * movePct * leverage; // +move
-  const potentialLossAtMove = perTradeNotional * movePct * leverage; // -move (no SL)
-  const plannedMaxLossAtSL = perTradeNotional * slBufferPct * leverage; // with SL
+  const potentialProfitAtMove = perTradeNotional * movePct; // +move
+  const potentialLossAtMove = perTradeNotional * movePct; // -move (no SL)
+  const plannedMaxLossAtSL = perTradeNotional * slBufferPct; // with SL
 
   // Simple auto-extract from heatmap (brightness peaks along rows)
   const autoExtractFromHeatmap = async () => {
@@ -255,8 +255,8 @@ export default function EthMinimalStrategyPage() {
             <option value={0.03}>3%</option>
           </select>
         </div>
-        <div className="mt-2">To earn $1,000 with {(movePct*100).toFixed(1)}% move and 7x: Notional = ${requiredNotionalFor1kAtMove.toFixed(0)} • Margin = ${requiredMarginAtMove.toFixed(0)}.</div>
-        <div className="text-gray-300 mt-1">With your per‑trade cap ($21,000), expected PnL at {(movePct*100).toFixed(1)}% = ${ (perTradeNotional*movePct*leverage).toFixed(0)} • Minimum move needed for $1,000 = {( (1000/(perTradeNotional*leverage))*100 ).toFixed(2)}%.</div>
+        <div className="mt-2">To earn $1,000 with {(movePct*100).toFixed(1)}% move: Notional = ${requiredNotionalFor1kAtMove.toFixed(0)} • Margin @7x = ${requiredMarginAtMove.toFixed(0)}.</div>
+        <div className="text-gray-300 mt-1">With your per‑trade cap ($21,000), expected PnL at {(movePct*100).toFixed(1)}% = ${ (perTradeNotional*movePct).toFixed(0)} • Minimum move needed for $1,000 = {( (1000/(perTradeNotional))*100 ).toFixed(2)}%.</div>
       </div>
 
       {/* Simulation: 7x Long on $21k Notional */}
