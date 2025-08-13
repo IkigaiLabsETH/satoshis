@@ -69,6 +69,17 @@ export default function TradingStrategy() {
   const requiredNotionalFor1k = 1000 / (expectedDailyMove * leverageAssumption);
   const requiredMarginFor1k = requiredNotionalFor1k / leverageAssumption;
 
+  // Daily risk cap logic: cap max daily loss to $1,000 with 25% SL
+  const targetPnL = 1000;
+  const dailyRiskCap = 1000;
+  const stopLossPct = 0.25; // 25% baseline SL
+  const riskLimitedNotionalSingle = dailyRiskCap / stopLossPct; // notional allowed to keep loss ≤ risk cap
+  const targetNotionalSingle = targetPnL / (expectedDailyMove * leverageAssumption);
+  const recommendedNotionalSingle = Math.min(targetNotionalSingle, riskLimitedNotionalSingle);
+  const expectedPnLSingle = recommendedNotionalSingle * expectedDailyMove * leverageAssumption;
+  const marginRequiredSingle = recommendedNotionalSingle / leverageAssumption;
+  const shortfallSingle = Math.max(0, targetPnL - expectedPnLSingle);
+
   return (
     <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
       <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
@@ -431,6 +442,12 @@ export default function TradingStrategy() {
               <p>
                 - To have a shot at $1k/day on a single asset, you generally need about ${requiredNotionalFor1k.toFixed(0)} notional
                 exposure (≈ ${requiredMarginFor1k.toFixed(0)} margin at {leverageAssumption}x). Our portfolio context is ${totalPortfolio.toLocaleString()} (~0.5 BTC), and we cap any single position at 35% of the account.
+              </p>
+              <p>
+                - We also cap daily risk to $1,000. With a 25% stop loss, the max notional per active trade under the risk cap is
+                ${riskLimitedNotionalSingle.toFixed(0)} (margin ≈ ${marginRequiredSingle.toFixed(0)} at {leverageAssumption}x). If this
+                size yields less than $1k expected PnL at {(expectedDailyMove*100).toFixed(0)}% move, we accept the shortfall (≈ ${shortfallSingle.toFixed(0)})
+                rather than increasing risk.
               </p>
               <p>
                 - Entries follow the liquidation heatmap: wait until red/yellow zones are cleared, then consider a long. We cut risk with a
