@@ -63,20 +63,23 @@ export default function TradingStrategy() {
   const btcTP = calculateTakeProfit('BTC');
   const ethTP = calculateTakeProfit('ETH');
 
-  // Goal context for a clear summary
+  // Assumptions (user adjustable)
   const leverageAssumption = 7;
-  const expectedDailyMove = 0.02; // 2% baseline
-  const requiredNotionalFor1k = 1000 / (expectedDailyMove * leverageAssumption);
+  const [movePct, setMovePct] = useState(0.02); // 2% baseline
+  const [riskCap, setRiskCap] = useState(1000); // max daily loss
+
+  // Goal context for a clear summary (derived)
+  const requiredNotionalFor1k = 1000 / (movePct * leverageAssumption);
   const requiredMarginFor1k = requiredNotionalFor1k / leverageAssumption;
 
   // Daily risk cap logic: cap max daily loss to $1,000 with 25% SL
   const targetPnL = 1000;
-  const dailyRiskCap = 1000;
+  const dailyRiskCap = riskCap;
   const stopLossPct = 0.25; // 25% baseline SL
   const riskLimitedNotionalSingle = dailyRiskCap / stopLossPct; // notional allowed to keep loss ≤ risk cap
-  const targetNotionalSingle = targetPnL / (expectedDailyMove * leverageAssumption);
+  const targetNotionalSingle = targetPnL / (movePct * leverageAssumption);
   const recommendedNotionalSingle = Math.min(targetNotionalSingle, riskLimitedNotionalSingle);
-  const expectedPnLSingle = recommendedNotionalSingle * expectedDailyMove * leverageAssumption;
+  const expectedPnLSingle = recommendedNotionalSingle * movePct * leverageAssumption;
   const marginRequiredSingle = recommendedNotionalSingle / leverageAssumption;
   const shortfallSingle = Math.max(0, targetPnL - expectedPnLSingle);
 
@@ -141,6 +144,47 @@ export default function TradingStrategy() {
         </div>
       </div>
       
+      {/* Controls: Volatility and Daily Risk Cap */}
+      <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-none">
+        <div className="grid md:grid-cols-2 gap-4 items-end">
+          <div>
+            <label className="block text-yellow-400 text-sm mb-1">Assumed Daily Move</label>
+            <div className="flex items-center space-x-2">
+              <select
+                className="bg-black/50 border border-yellow-500/30 text-white rounded px-3 py-2"
+                value={movePct}
+                onChange={(e) => setMovePct(parseFloat(e.target.value))}
+              >
+                <option value={0.01}>1%</option>
+                <option value={0.015}>1.5%</option>
+                <option value={0.02}>2%</option>
+                <option value={0.03}>3%</option>
+              </select>
+              <span className="text-gray-400 text-sm">Leverage: {leverageAssumption}x</span>
+            </div>
+          </div>
+          <div>
+            <label className="block text-yellow-400 text-sm mb-1">Daily Risk Cap (max loss)</label>
+            <div className="flex items-center space-x-2">
+              <input
+                type="number"
+                className="bg-black/50 border border-yellow-500/30 text-white rounded px-3 py-2 w-36"
+                value={riskCap}
+                min={100}
+                step={100}
+                onChange={(e) => setRiskCap(Math.max(0, Number(e.target.value)))}
+              />
+              <span className="text-gray-400 text-sm">USD</span>
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 text-sm text-gray-300">
+          <span className="mr-4">Recommended Notional: ${recommendedNotionalSingle.toFixed(0)}</span>
+          <span className="mr-4">Margin @ {leverageAssumption}x: ${marginRequiredSingle.toFixed(0)}</span>
+          <span>Expected PnL: ${expectedPnLSingle.toFixed(0)} {shortfallSingle > 0 ? `(shortfall $${shortfallSingle.toFixed(0)})` : ''}</span>
+        </div>
+      </div>
+
       <div className="space-y-6">
         {/* Entry Strategy */}
         <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
@@ -437,7 +481,7 @@ export default function TradingStrategy() {
             <div className="mt-4 space-y-3 text-gray-300 text-sm leading-6">
               <p>
                 - We aim for roughly $1,000/day in potential PnL by trading BTC and optionally ETH with
-                {` ${leverageAssumption}x `} leverage. A realistic daily move assumption is ~{(expectedDailyMove*100).toFixed(0)}%.
+                {` ${leverageAssumption}x `} leverage. A realistic daily move assumption is ~{(movePct*100).toFixed(0)}%.
               </p>
               <p>
                 - To have a shot at $1k/day on a single asset, you generally need about ${requiredNotionalFor1k.toFixed(0)} notional
@@ -446,7 +490,7 @@ export default function TradingStrategy() {
               <p>
                 - We also cap daily risk to $1,000. With a 25% stop loss, the max notional per active trade under the risk cap is
                 ${riskLimitedNotionalSingle.toFixed(0)} (margin ≈ ${marginRequiredSingle.toFixed(0)} at {leverageAssumption}x). If this
-                size yields less than $1k expected PnL at {(expectedDailyMove*100).toFixed(0)}% move, we accept the shortfall (≈ ${shortfallSingle.toFixed(0)})
+                size yields less than $1k expected PnL at {(movePct*100).toFixed(0)}% move, we accept the shortfall (≈ ${shortfallSingle.toFixed(0)})
                 rather than increasing risk.
               </p>
               <p>
