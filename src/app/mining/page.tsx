@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 const Section = ({ title, children }: { title: string, children: React.ReactNode }) => (
   <div className="bg-[#1c1f26] p-6 md:p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
     <h3 className="text-xl md:text-3xl font-bold text-yellow-500 mb-6">
@@ -55,6 +57,44 @@ const FinancialsTable = ({ data }: { data: { metric: string, value: string }[] }
         ))}
     </div>
 );
+
+// Proto Rig profitability calculator (defaults to France electricity cost)
+const ProtoRigProfitability = () => {
+    const [electricityCost, setElectricityCost] = useState(0.10); // €/kWh (France default adjustable)
+    const powerKw = 12; // 12,000 W
+    const kWhPerDay = powerKw * 24; // 288 kWh/day
+    // Baseline revenue inferred from $0.06/kWh example: profit $29.90 + cost (288*0.06=$17.28) ≈ $47.18/day
+    const baselineRevenuePerDay = 47.18; // treat as € for simplicity
+    const dailyProfit = baselineRevenuePerDay - kWhPerDay * electricityCost;
+    const monthlyProfit = dailyProfit * 30;
+    const yearlyProfit = dailyProfit * 365;
+
+    const format = (n: number) => `€${Math.round(n).toLocaleString('fr-FR')}`;
+
+    return (
+        <div className="bg-[#0b0d12] p-6 md:p-7 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h4 className="text-white font-bold text-xl md:text-2xl mb-5">Profitability (France electricity)</h4>
+            <div className="flex flex-wrap items-center gap-3 mb-5">
+                <label className="text-sm text-white/70">Electricity cost (€/kWh)</label>
+                <input
+                    type="number"
+                    min={0}
+                    step={0.005}
+                    value={electricityCost}
+                    onChange={(e) => setElectricityCost(parseFloat(e.target.value || '0'))}
+                    className="bg-black border border-yellow-500/50 text-white p-2 w-28 focus:outline-none focus:border-yellow-500"
+                />
+                <span className="text-xs text-white/50">Default: 0.10 €/kWh</span>
+            </div>
+            <div className="grid md:grid-cols-3 gap-4">
+                <MetricCard title="Daily Profit" value={format(dailyProfit)} description="12 kW draw, baseline revenue" />
+                <MetricCard title="Monthly Profit" value={format(monthlyProfit)} description="30 days" />
+                <MetricCard title="Annual Profit" value={format(yearlyProfit)} description="365 days" />
+            </div>
+            <p className="text-xs text-white/50 mt-3">Approximation from vendor specs and public examples; revenue varies with BTC price and difficulty.</p>
+        </div>
+    );
+};
 
 export default function MiningPage() {
   return (
@@ -124,6 +164,54 @@ export default function MiningPage() {
             </p>
             <p>
               In a world where real-time energy markets dominate, miners have evolved into grid symbionts — stabilizing demand rather than distorting it. Their footprint is no longer purely physical. It&apos;s temporal, programmable, invisible.
+            </p>
+          </Section>
+
+          <Section title="Proto Rig Review: Block’s Open‑Source Revolution">
+            <p>
+              On August 14, 2025, Block unveiled <em>Proto Rig</em> at Core Scientific’s Dalton, Georgia facility — a durable, modular, and efficient mining chassis that reframes mining as long‑lived infrastructure rather than disposable appliances.
+            </p>
+            <div className="grid md:grid-cols-2 gap-6 mt-6">
+              <div className="space-y-4">
+                <h4 className="text-white font-bold text-xl">Why it matters</h4>
+                <ul className="space-y-3 list-none pl-0">
+                  <BulletPoint>Tool‑free, on‑rack repairs in under 90 seconds</BulletPoint>
+                  <BulletPoint>Replaceable hashboards: upgrade performance without replacing the whole system</BulletPoint>
+                  <BulletPoint>Fan modules and control board are pull‑and‑replace for minimal downtime</BulletPoint>
+                  <BulletPoint>Fanless PSU design and three‑phase power balancing for efficient infrastructure</BulletPoint>
+                  <BulletPoint>Open‑source firmware, software, and APIs with Proto Fleet management</BulletPoint>
+                </ul>
+                <p className="text-sm text-white/60">Source: <a className="text-yellow-400 underline" href="https://proto.xyz/products/rig" target="_blank" rel="noopener noreferrer">proto.xyz/products/rig</a></p>
+              </div>
+              <div>
+                <FinancialsTable
+                  data={[
+                    { metric: 'Hashrate', value: 'Up to 819 TH/s (9 hashboards)' },
+                    { metric: 'Efficiency', value: 'As low as 14.1 J/TH (air‑cooled)' },
+                    { metric: 'Power', value: 'Up to 12,000 W (3× 4,000 W PSUs)' },
+                    { metric: 'Power Density', value: 'Up to 9.4 kW/ft' },
+                    { metric: 'Repair Time', value: 'Under 90 seconds (on‑rack)' },
+                    { metric: 'Cooling', value: 'Air‑cooled standard, immersion‑ready' },
+                    { metric: 'Chassis', value: '390 × 290 × 500 mm; ~110 lbs (9 boards)' },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div className="mt-8 grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="text-white font-bold text-xl">The economics of modularity</h4>
+                <ul className="space-y-3 list-none pl-0">
+                  <BulletPoint>15–20% savings per upgrade cycle by replacing hashboards instead of full systems</BulletPoint>
+                  <BulletPoint>Transforms 3–5 year replacement into 10+ year infrastructure life</BulletPoint>
+                  <BulletPoint>Downtime minimized; failed modules do not halt the entire chassis</BulletPoint>
+                </ul>
+              </div>
+              <ProtoRigProfitability />
+            </div>
+
+            <p className="mt-6 text-white/80">
+              Bottom line: Proto Rig matches premium air‑cooled alternatives on efficiency while shifting value to uptime, serviceability, and open tooling — critical advantages in post‑halving economics.
             </p>
           </Section>
 
