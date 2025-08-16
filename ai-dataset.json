@@ -1,0 +1,931 @@
+{
+  "website": "https://livethelife.tv",
+  "name": "LiveTheLife.tv",
+  "description": "A comprehensive platform covering Bitcoin, cryptocurrency, luxury lifestyle, travel, art, technology, and premium experiences",
+  "last_updated": "2025-01-27",
+  "content_categories": [
+    {
+      "name": "Core Interactive Features",
+      "description": "High-priority interactive tools and AI-powered features",
+      "priority": "highest",
+      "pages": [
+        {
+          "url": "/chat",
+          "title": "AI Chat",
+          "description": "Interactive AI chat experience for user engagement",
+          "priority": "high"
+        },
+        {
+          "url": "/grok420",
+          "title": "Grok420",
+          "description": "Advanced AI-powered analysis and insights platform",
+          "priority": "high"
+        },
+        {
+          "url": "/watchlist",
+          "title": "Watchlist",
+          "description": "Curated watchlist of assets and opportunities",
+          "priority": "high"
+        }
+      ]
+    },
+    {
+      "name": "Bitcoin & Cryptocurrency",
+      "description": "Comprehensive Bitcoin analysis, altcoin performance, and crypto market insights",
+      "priority": "highest",
+      "pages": [
+        {
+          "url": "/bitcoin-cycles",
+          "title": "Bitcoin Cycles Analysis",
+          "description": "Deep dive into Bitcoin market cycles and timing strategies",
+          "priority": "high"
+        },
+        {
+          "url": "/altcoins",
+          "title": "Altcoin Analysis",
+          "description": "Analysis of alternative cryptocurrencies and their performance relative to Bitcoin",
+          "priority": "high"
+        },
+        {
+          "url": "/altbg",
+          "title": "AltBG",
+          "description": "Alternative Bitcoin strategies and background analysis",
+          "priority": "high"
+        },
+        {
+          "url": "/btcab",
+          "title": "BTCAB",
+          "description": "Bitcoin analysis and background information",
+          "priority": "high"
+        },
+        {
+          "url": "/hyperliquid",
+          "title": "Hyperliquid",
+          "description": "Hyperliquid trading platform integration and analysis",
+          "priority": "high"
+        },
+        {
+          "url": "/defi",
+          "title": "DeFi",
+          "description": "Decentralized finance protocols and analysis",
+          "priority": "high"
+        },
+        {
+          "url": "/eth",
+          "title": "Ethereum",
+          "description": "Ethereum blockchain analysis and insights",
+          "priority": "high"
+        },
+        {
+          "url": "/bera",
+          "title": "Bera",
+          "description": "Bera blockchain ecosystem analysis",
+          "priority": "high"
+        },
+        {
+          "url": "/giza",
+          "title": "Giza",
+          "description": "Giza protocol and ecosystem analysis",
+          "priority": "high"
+        },
+        {
+          "url": "/ln",
+          "title": "Lightning Network",
+          "description": "Bitcoin Lightning Network analysis and insights",
+          "priority": "high"
+        },
+        {
+          "url": "/mining",
+          "title": "Mining",
+          "description": "Bitcoin mining analysis and strategies",
+          "priority": "high"
+        },
+        {
+          "url": "/whitepaper",
+          "title": "Whitepaper",
+          "description": "Technical documentation and whitepapers",
+          "priority": "high"
+        },
+        {
+          "url": "/crypto",
+          "title": "Cryptocurrency",
+          "description": "General cryptocurrency content and market analysis",
+          "priority": "high"
+        }
+      ]
+    },
+    {
+      "name": "Stocks & Traditional Investments",
+      "description": "Analysis of major stocks, MAG7, and traditional investment opportunities",
+      "priority": "high",
+      "pages": [
+        {
+          "url": "/mara",
+          "title": "Marathon Digital",
+          "description": "Marathon Digital Holdings stock analysis and Bitcoin mining insights",
+          "priority": "high"
+        },
+        {
+          "url": "/nvda",
+          "title": "NVIDIA",
+          "description": "NVIDIA stock analysis and AI chip market insights",
+          "priority": "high"
+        },
+        {
+          "url": "/mag7",
+          "title": "MAG7 Stocks",
+          "description": "Analysis of the seven major technology stocks",
+          "priority": "high"
+        },
+        {
+          "url": "/elon",
+          "title": "Elon Musk",
+          "description": "Elon Musk companies and investment analysis",
+          "priority": "high"
+        }
+      ]
+    },
+    {
+      "name": "Art & Collections",
+      "description": "NFT collections, digital art, and creative content curation",
+      "priority": "high",
+      "pages": [
+        {
+          "url": "/collections",
+          "title": "NFT Collections",
+          "description": "Curated NFT collections and digital art showcases",
+          "priority": "high"
+        },
+        {
+          "url": "/art",
+          "title": "Art",
+          "description": "Digital art, creative content, and artistic expression",
+          "priority": "medium"
+        },
+        {
+          "url": "/visuals",
+          "title": "Visuals",
+          "description": "Visual content and multimedia experiences",
+          "priority": "medium"
+        },
+        {
+          "url": "/nft",
+          "title": "NFT",
+          "description": "Non-fungible token analysis and insights",
+          "priority": "medium"
+        }
+      ]
+    },
+    {
+      "name": "Luxury Travel & Destinations",
+      "description": "Premium travel destinations, luxury hotels, and exclusive experiences",
+      "priority": "high",
+      "pages": [
+        {
+          "url": "/travel",
+          "title": "Luxury Travel",
+          "description": "Premium travel destinations, hotels, and experiences",
+          "priority": "medium"
+        },
+        {
+          "url": "/dubai",
+          "title": "Dubai",
+          "description": "Dubai luxury travel and lifestyle experiences",
+          "priority": "medium"
+        },
+        {
+          "url": "/monaco",
+          "title": "Monaco",
+          "description": "Monaco luxury lifestyle and travel insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/italy",
+          "title": "Italy",
+          "description": "Italian luxury travel and cultural experiences",
+          "priority": "medium"
+        },
+        {
+          "url": "/maldives",
+          "title": "Maldives",
+          "description": "Maldives luxury island experiences",
+          "priority": "medium"
+        },
+        {
+          "url": "/costarica",
+          "title": "Costa Rica",
+          "description": "Costa Rica luxury eco-tourism experiences",
+          "priority": "medium"
+        },
+        {
+          "url": "/sotogrande",
+          "title": "Sotogrande",
+          "description": "Sotogrande luxury resort and lifestyle",
+          "priority": "medium"
+        },
+        {
+          "url": "/maroc",
+          "title": "Morocco",
+          "description": "Moroccan luxury travel and cultural experiences",
+          "priority": "medium"
+        },
+        {
+          "url": "/swiss",
+          "title": "Switzerland",
+          "description": "Swiss luxury experiences and lifestyle",
+          "priority": "medium"
+        },
+        {
+          "url": "/basque",
+          "title": "Basque Country",
+          "description": "Basque Country luxury travel and culture",
+          "priority": "medium"
+        }
+      ]
+    },
+    {
+      "name": "Technology & Innovation",
+      "description": "AI, blockchain technology, and cutting-edge innovations",
+      "priority": "high",
+      "pages": [
+        {
+          "url": "/technology",
+          "title": "Technology",
+          "description": "AI, blockchain, and technological innovations",
+          "priority": "medium"
+        },
+        {
+          "url": "/ai",
+          "title": "Artificial Intelligence",
+          "description": "AI developments and applications",
+          "priority": "medium"
+        },
+        {
+          "url": "/robotaxi",
+          "title": "Robotaxi",
+          "description": "Autonomous vehicle technology and analysis",
+          "priority": "medium"
+        },
+        {
+          "url": "/voice",
+          "title": "Voice Technology",
+          "description": "Voice AI and speech technology insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/print",
+          "title": "3D Printing",
+          "description": "3D printing technology and applications",
+          "priority": "medium"
+        }
+      ]
+    },
+    {
+      "name": "Luxury & Premium Brands",
+      "description": "High-end brands, watches, and luxury lifestyle products",
+      "priority": "medium",
+      "pages": [
+        {
+          "url": "/rolex",
+          "title": "Rolex",
+          "description": "Rolex watches and luxury timepieces",
+          "priority": "medium"
+        },
+        {
+          "url": "/hastens",
+          "title": "Hästens",
+          "description": "Hästens luxury bedding and sleep products",
+          "priority": "medium"
+        },
+        {
+          "url": "/sixsenses",
+          "title": "Six Senses",
+          "description": "Six Senses luxury resorts and wellness",
+          "priority": "medium"
+        },
+        {
+          "url": "/cirrus",
+          "title": "Cirrus",
+          "description": "Cirrus aircraft and aviation luxury",
+          "priority": "medium"
+        },
+        {
+          "url": "/catamaran",
+          "title": "Catamaran",
+          "description": "Luxury catamaran yachting experiences",
+          "priority": "medium"
+        },
+        {
+          "url": "/naval",
+          "title": "Naval",
+          "description": "Naval architecture and luxury vessels",
+          "priority": "medium"
+        },
+        {
+          "url": "/train",
+          "title": "Luxury Trains",
+          "description": "Luxury train travel experiences",
+          "priority": "medium"
+        }
+      ]
+    },
+    {
+      "name": "Business & Finance",
+      "description": "Business insights, financial strategies, and investment opportunities",
+      "priority": "medium",
+      "pages": [
+        {
+          "url": "/buybacks",
+          "title": "Buybacks",
+          "description": "Stock buyback analysis and strategies",
+          "priority": "medium"
+        },
+        {
+          "url": "/bitbonds",
+          "title": "BitBonds",
+          "description": "Bitcoin bonds and crypto investment products",
+          "priority": "medium"
+        },
+        {
+          "url": "/otonomos",
+          "title": "Otonomos",
+          "description": "Business formation and corporate services",
+          "priority": "medium"
+        },
+        {
+          "url": "/legal",
+          "title": "Legal",
+          "description": "Legal insights and business compliance",
+          "priority": "medium"
+        },
+        {
+          "url": "/report",
+          "title": "Reports",
+          "description": "Financial and market reports",
+          "priority": "medium"
+        },
+        {
+          "url": "/business",
+          "title": "Business",
+          "description": "General business insights and strategies",
+          "priority": "medium"
+        }
+      ]
+    },
+    {
+      "name": "Lifestyle & Wellness",
+      "description": "Premium lifestyle content, wellness, and personal development",
+      "priority": "medium",
+      "pages": [
+        {
+          "url": "/culinary",
+          "title": "Culinary Excellence",
+          "description": "Fine dining, wine, and culinary experiences",
+          "priority": "medium"
+        },
+        {
+          "url": "/lifestyle",
+          "title": "Lifestyle",
+          "description": "Premium lifestyle content and experiences",
+          "priority": "medium"
+        },
+        {
+          "url": "/biohacking",
+          "title": "Biohacking",
+          "description": "Biohacking and human optimization",
+          "priority": "medium"
+        },
+        {
+          "url": "/grind",
+          "title": "Grind",
+          "description": "Productivity and success strategies",
+          "priority": "medium"
+        },
+        {
+          "url": "/midlife",
+          "title": "Midlife",
+          "description": "Midlife optimization and reinvention",
+          "priority": "medium"
+        },
+        {
+          "url": "/qol",
+          "title": "Quality of Life",
+          "description": "Quality of life improvement strategies",
+          "priority": "medium"
+        }
+      ]
+    },
+    {
+      "name": "Specialized Content & Tools",
+      "description": "Specialized analysis tools, calculators, and niche content",
+      "priority": "medium",
+      "pages": [
+        {
+          "url": "/about",
+          "title": "About",
+          "description": "About LiveTheLife.tv and mission",
+          "priority": "medium"
+        },
+        {
+          "url": "/block",
+          "title": "Block",
+          "description": "Blockchain analysis and insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/col",
+          "title": "Collections",
+          "description": "Digital collections and assets",
+          "priority": "medium"
+        },
+        {
+          "url": "/hood",
+          "title": "Hood",
+          "description": "Community and neighborhood insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/pool",
+          "title": "Pool",
+          "description": "Liquidity pools and DeFi strategies",
+          "priority": "medium"
+        },
+        {
+          "url": "/mobilehome",
+          "title": "Mobile Home",
+          "description": "Mobile living and alternative housing",
+          "priority": "medium"
+        },
+        {
+          "url": "/tbs",
+          "title": "TBS",
+          "description": "TBS analysis and insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/arc",
+          "title": "Arc",
+          "description": "Arc protocol and ecosystem",
+          "priority": "medium"
+        },
+        {
+          "url": "/8020",
+          "title": "80/20",
+          "description": "Pareto principle and efficiency strategies",
+          "priority": "medium"
+        },
+        {
+          "url": "/node",
+          "title": "Node",
+          "description": "Node operation and blockchain infrastructure",
+          "priority": "medium"
+        },
+        {
+          "url": "/notebook",
+          "title": "Notebook",
+          "description": "Digital notebook and knowledge management",
+          "priority": "medium"
+        },
+        {
+          "url": "/vibecode",
+          "title": "VibeCode",
+          "description": "Coding and development insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/weather",
+          "title": "Weather",
+          "description": "Weather information and climate insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/1on1",
+          "title": "1 on 1",
+          "description": "Personal consultation and coaching",
+          "priority": "medium"
+        },
+        {
+          "url": "/runners",
+          "title": "Runners",
+          "description": "Running and fitness insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/tangem",
+          "title": "Tangem",
+          "description": "Tangem wallet and crypto security",
+          "priority": "medium"
+        },
+        {
+          "url": "/strd",
+          "title": "STRD",
+          "description": "STRD protocol and analysis",
+          "priority": "medium"
+        },
+        {
+          "url": "/inhaus",
+          "title": "InHaus",
+          "description": "InHaus design and architecture",
+          "priority": "medium"
+        },
+        {
+          "url": "/gm",
+          "title": "Good Morning",
+          "description": "Daily market insights and crypto updates",
+          "priority": "medium"
+        },
+        {
+          "url": "/2026",
+          "title": "2026",
+          "description": "2026 predictions and future insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/vol",
+          "title": "Volatility",
+          "description": "Market volatility analysis and strategies",
+          "priority": "medium"
+        },
+        {
+          "url": "/search",
+          "title": "Search",
+          "description": "Content search and discovery tools",
+          "priority": "medium"
+        },
+        {
+          "url": "/pumpnotfun",
+          "title": "Pump Not Fun",
+          "description": "Market analysis and pump detection",
+          "priority": "medium"
+        },
+        {
+          "url": "/time",
+          "title": "Time",
+          "description": "Time-based analysis and strategies",
+          "priority": "medium"
+        },
+        {
+          "url": "/zero",
+          "title": "Zero",
+          "description": "Zero-knowledge proofs and privacy",
+          "priority": "medium"
+        },
+        {
+          "url": "/fire",
+          "title": "Fire",
+          "description": "FIRE movement and financial independence",
+          "priority": "medium"
+        },
+        {
+          "url": "/satoshi",
+          "title": "Satoshi",
+          "description": "Satoshi Nakamoto and Bitcoin origins",
+          "priority": "medium"
+        },
+        {
+          "url": "/n8n",
+          "title": "N8N",
+          "description": "N8N automation and workflow tools",
+          "priority": "medium"
+        },
+        {
+          "url": "/hype",
+          "title": "Hype",
+          "description": "Hype analysis and market sentiment",
+          "priority": "medium"
+        },
+        {
+          "url": "/nakamoto",
+          "title": "Nakamoto",
+          "description": "Nakamoto family and Bitcoin legacy",
+          "priority": "medium"
+        },
+        {
+          "url": "/gdculture",
+          "title": "GD Culture",
+          "description": "GD Culture and community insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/sonar",
+          "title": "Sonar",
+          "description": "Sonar technology and applications",
+          "priority": "medium"
+        },
+        {
+          "url": "/doge",
+          "title": "Dogecoin",
+          "description": "Dogecoin analysis and meme coin insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/firefish",
+          "title": "Firefish",
+          "description": "Firefish platform and social media",
+          "priority": "medium"
+        },
+        {
+          "url": "/cult",
+          "title": "Cult",
+          "description": "Cult analysis and community insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/twentyone",
+          "title": "21",
+          "description": "21 million Bitcoin and scarcity analysis",
+          "priority": "medium"
+        },
+        {
+          "url": "/carrot",
+          "title": "Carrot",
+          "description": "Carrot incentives and motivation strategies",
+          "priority": "medium"
+        },
+        {
+          "url": "/crcl",
+          "title": "CRCL",
+          "description": "CRCL protocol and analysis",
+          "priority": "medium"
+        },
+        {
+          "url": "/strf",
+          "title": "STRF",
+          "description": "STRF protocol and ecosystem",
+          "priority": "medium"
+        },
+        {
+          "url": "/liquidity",
+          "title": "Liquidity",
+          "description": "Liquidity analysis and DeFi strategies",
+          "priority": "medium"
+        },
+        {
+          "url": "/s9pro",
+          "title": "S9 Pro",
+          "description": "Antminer S9 Pro mining analysis",
+          "priority": "medium"
+        },
+        {
+          "url": "/strike",
+          "title": "Strike",
+          "description": "Strike platform and Lightning Network",
+          "priority": "medium"
+        },
+        {
+          "url": "/1euro",
+          "title": "1 Euro",
+          "description": "1 Euro investment strategies",
+          "priority": "medium"
+        },
+        {
+          "url": "/21energy",
+          "title": "21 Energy",
+          "description": "21 Energy and sustainable solutions",
+          "priority": "medium"
+        },
+        {
+          "url": "/3Dprint",
+          "title": "3D Print",
+          "description": "3D printing technology and applications",
+          "priority": "medium"
+        },
+        {
+          "url": "/69",
+          "title": "69",
+          "description": "69 strategy and market analysis",
+          "priority": "medium"
+        },
+        {
+          "url": "/7fig",
+          "title": "7 Figure",
+          "description": "7 figure income strategies and insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/21",
+          "title": "21",
+          "description": "21 million Bitcoin and scarcity",
+          "priority": "medium"
+        },
+        {
+          "url": "/aave",
+          "title": "Aave",
+          "description": "Aave lending protocol and DeFi",
+          "priority": "medium"
+        },
+        {
+          "url": "/abra",
+          "title": "Abra",
+          "description": "Abra platform and crypto services",
+          "priority": "medium"
+        },
+        {
+          "url": "/coinbase",
+          "title": "Coinbase",
+          "description": "Coinbase exchange and services",
+          "priority": "medium"
+        },
+        {
+          "url": "/defillama",
+          "title": "DeFi Llama",
+          "description": "DeFi Llama analytics and insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/dgx",
+          "title": "DGX",
+          "description": "DGX token and Digix platform",
+          "priority": "medium"
+        },
+        {
+          "url": "/distribution",
+          "title": "Distribution",
+          "description": "Token distribution and allocation analysis",
+          "priority": "medium"
+        },
+        {
+          "url": "/docu",
+          "title": "Documentation",
+          "description": "Technical documentation and guides",
+          "priority": "medium"
+        },
+        {
+          "url": "/downbad",
+          "title": "Down Bad",
+          "description": "Market downturn analysis and strategies",
+          "priority": "medium"
+        },
+        {
+          "url": "/ecoflow",
+          "title": "EcoFlow",
+          "description": "EcoFlow portable power solutions",
+          "priority": "medium"
+        },
+        {
+          "url": "/eliza",
+          "title": "Eliza",
+          "description": "Eliza AI and chatbot technology",
+          "priority": "medium"
+        },
+        {
+          "url": "/fairmint",
+          "title": "Fairmint",
+          "description": "Fairmint equity crowdfunding platform",
+          "priority": "medium"
+        },
+        {
+          "url": "/france",
+          "title": "France",
+          "description": "French luxury and lifestyle insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/fym",
+          "title": "FYM",
+          "description": "FYM platform and services",
+          "priority": "medium"
+        },
+        {
+          "url": "/gallery",
+          "title": "Gallery",
+          "description": "Digital art gallery and collections",
+          "priority": "medium"
+        },
+        {
+          "url": "/genart",
+          "title": "Generative Art",
+          "description": "AI-generated art and creative content",
+          "priority": "medium"
+        },
+        {
+          "url": "/geo",
+          "title": "Geography",
+          "description": "Geographic insights and location analysis",
+          "priority": "medium"
+        },
+        {
+          "url": "/gmgn",
+          "title": "GMGN",
+          "description": "GMGN platform and services",
+          "priority": "medium"
+        },
+        {
+          "url": "/gold",
+          "title": "Gold",
+          "description": "Gold investment and precious metals",
+          "priority": "medium"
+        },
+        {
+          "url": "/hume",
+          "title": "Hume",
+          "description": "Hume AI and emotional intelligence",
+          "priority": "medium"
+        },
+        {
+          "url": "/news",
+          "title": "News",
+          "description": "Latest news and market updates",
+          "priority": "medium"
+        },
+        {
+          "url": "/ask-satoshi",
+          "title": "Ask Satoshi",
+          "description": "Q&A with Satoshi-inspired insights",
+          "priority": "medium"
+        },
+        {
+          "url": "/assets",
+          "title": "Assets",
+          "description": "Digital assets and investment opportunities",
+          "priority": "medium"
+        },
+        {
+          "url": "/data",
+          "title": "Data",
+          "description": "Market data and analytics",
+          "priority": "medium"
+        },
+        {
+          "url": "/calculator",
+          "title": "Calculator",
+          "description": "Financial and investment calculators",
+          "priority": "medium"
+        },
+        {
+          "url": "/club",
+          "title": "Club",
+          "description": "Exclusive club and membership benefits",
+          "priority": "medium"
+        },
+        {
+          "url": "/cluely",
+          "title": "Cluely",
+          "description": "Cluely platform and services",
+          "priority": "medium"
+        },
+        {
+          "url": "/cursor",
+          "title": "Cursor",
+          "description": "Cursor AI coding assistant",
+          "priority": "medium"
+        },
+        {
+          "url": "/bio",
+          "title": "Bio",
+          "description": "Personal biography and background",
+          "priority": "medium"
+        },
+        {
+          "url": "/bitaxe",
+          "title": "BitAxe",
+          "description": "BitAxe mining and hardware analysis",
+          "priority": "medium"
+        }
+      ]
+    }
+  ],
+  "knowledge_base": {
+    "bitcoin": "Comprehensive Bitcoin analysis, cycle theory, and market insights",
+    "altcoins": "Altcoin performance analysis and Bitcoin ratio strategies",
+    "nft_collections": "Curated NFT collections and digital art",
+    "luxury_travel": "Premium travel destinations and experiences",
+    "culinary": "Fine dining, wine knowledge, and culinary excellence",
+    "technology": "AI, blockchain, and technological innovations",
+    "stocks": "Major stock analysis including MAG7 and crypto-related stocks",
+    "defi": "Decentralized finance protocols and strategies",
+    "mining": "Bitcoin mining analysis and hardware insights",
+    "luxury_brands": "High-end brands and premium lifestyle products",
+    "wellness": "Biohacking, fitness, and personal optimization",
+    "business": "Business strategies, legal insights, and investment opportunities"
+  },
+  "ai_training_data": {
+    "format": "structured_content",
+    "topics": [
+      "Bitcoin market analysis and cycle theory",
+      "Cryptocurrency investment strategies and altcoin analysis",
+      "NFT and digital art collections",
+      "Luxury lifestyle, travel, and premium experiences",
+      "Culinary arts, wine, and fine dining",
+      "Technology innovation including AI and blockchain",
+      "Stock market analysis and traditional investments",
+      "DeFi protocols and decentralized finance",
+      "Bitcoin mining and hardware analysis",
+      "Luxury brands and premium products",
+      "Wellness, biohacking, and personal development",
+      "Business strategies and investment opportunities"
+    ],
+    "content_quality": "high",
+    "expertise_level": "intermediate_to_advanced",
+    "unique_value": "Combines crypto expertise with luxury lifestyle insights"
+  },
+  "content_frequency": {
+    "daily_updates": ["chat", "grok420", "watchlist", "mara", "nvda", "mag7", "gm", "weather", "news"],
+    "weekly_updates": ["bitcoin-cycles", "collections", "altcoins", "altbg", "btcab", "hyperliquid", "defi", "eth", "bera", "giza", "ln", "mining", "buybacks", "report", "vol", "liquidity"],
+    "monthly_updates": ["about", "art", "travel", "culinary", "lifestyle", "technology", "ai", "business", "rolex", "hastens", "sixsenses", "cirrus", "catamaran", "naval", "train", "bitbonds", "otonomos", "legal", "biohacking", "grind", "midlife", "qol"]
+  },
+  "contact": {
+    "website": "https://livethelife.tv",
+    "description": "For AI training and content discovery purposes"
+  }
+}
