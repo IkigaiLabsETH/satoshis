@@ -1,476 +1,940 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { Bitcoin, Calculator, DollarSign, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  type ChartOptions,
+} from 'chart.js';
 
-export default function BitcoinPage21() {
-  const [annualSpending, setAnnualSpending] = useState(75600);
-  const [btcPrice, setBtcPrice] = useState(90000);
-  const [withdrawalRate, setWithdrawalRate] = useState(4);
-  
-  // Calculate BTC needed based on inputs
-  const btcNeeded = annualSpending / (withdrawalRate / 100 * btcPrice);
-  
-  // Format numbers for display
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-US', {
-      maximumFractionDigits: 2,
-      minimumFractionDigits: num < 10 ? 2 : 0
-    }).format(num);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
+// Wealth trajectory data with 21% CAGR and dynamic selling strategy
+const wealthTrajectory = [
+  { year: 2025, portfolio: 2.43, bitcoin: 21, reserve: 3.3, total: 24.3, price: 100, income: 84, level: 'Restaurant', market: 'Bull', sellRate: 6.9 },
+  { year: 2026, portfolio: 2.94, bitcoin: 21, reserve: 3.0, total: 24.0, price: 123, income: 100, level: 'Restaurant', market: 'Bull', sellRate: 6.9 },
+  { year: 2027, portfolio: 3.56, bitcoin: 21, reserve: 2.7, total: 23.7, price: 150, income: 128, level: 'Restaurant', market: 'Bull', sellRate: 6.9 },
+  { year: 2028, portfolio: 4.31, bitcoin: 21, reserve: 2.4, total: 23.4, price: 182, income: 168, level: 'Travel', market: 'Bear', sellRate: 4.2 },
+  { year: 2029, portfolio: 5.21, bitcoin: 21, reserve: 2.1, total: 23.1, price: 220, income: 220, level: 'Travel', market: 'Bull', sellRate: 6.9 },
+  { year: 2030, portfolio: 6.30, bitcoin: 21, reserve: 1.8, total: 22.8, price: 266, income: 276, level: 'Travel', market: 'Bull', sellRate: 6.9 },
+  { year: 2031, portfolio: 7.62, bitcoin: 21, reserve: 1.5, total: 22.5, price: 322, income: 336, level: 'Luxury', market: 'Bull', sellRate: 6.9 },
+  { year: 2032, portfolio: 9.22, bitcoin: 21, reserve: 1.2, total: 22.2, price: 390, income: 420, level: 'Luxury', market: 'Bear', sellRate: 4.2 },
+  { year: 2033, portfolio: 11.15, bitcoin: 21, reserve: 0.9, total: 21.9, price: 472, income: 524, level: 'Luxury', market: 'Bull', sellRate: 6.9 },
+  { year: 2034, portfolio: 13.49, bitcoin: 21, reserve: 0.6, total: 21.6, price: 571, income: 540, level: 'Real Estate', market: 'Bull', sellRate: 6.9 },
+  { year: 2035, portfolio: 16.32, bitcoin: 21, reserve: 0.3, total: 21.3, price: 691, income: 653, level: 'Real Estate', market: 'Bull', sellRate: 6.9 },
+];
+
+function WealthTrajectoryChart() {
+  const data = {
+    labels: wealthTrajectory.map(d => d.year.toString()),
+    datasets: [
+      {
+        label: 'Core Portfolio Value ($M)',
+        data: wealthTrajectory.map(d => d.portfolio),
+        borderColor: '#fbbf24', // amber-400
+        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+        pointRadius: 6,
+        tension: 0.4,
+        borderWidth: 3,
+        fill: true,
+      },
+      {
+        label: 'Total Portfolio Value ($M)',
+        data: wealthTrajectory.map(d => d.total),
+        borderColor: '#8b5cf6', // violet-500
+        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        pointRadius: 4,
+        tension: 0.4,
+        borderWidth: 2,
+        fill: false,
+      },
+      {
+        label: 'Annual Income ($K)',
+        data: wealthTrajectory.map(d => d.income),
+        borderColor: '#10b981', // emerald-500
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        pointRadius: 4,
+        tension: 0.4,
+        borderWidth: 2,
+        yAxisID: 'y1',
+      },
+      {
+        label: 'Bitcoin Price ($K)',
+        data: wealthTrajectory.map(d => d.price),
+        borderColor: '#f59e0b', // amber-500
+        backgroundColor: 'transparent',
+        pointRadius: 3,
+        tension: 0.4,
+        borderWidth: 2,
+        yAxisID: 'y2',
+      },
+      {
+        label: 'Sell Rate (%)',
+        data: wealthTrajectory.map(d => d.sellRate),
+        borderColor: '#ef4444', // red-500
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        pointRadius: 4,
+        tension: 0.3,
+        borderWidth: 2,
+        yAxisID: 'y3',
+      },
+    ],
   };
+
+  const options: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: {
+          color: 'white',
+          padding: 20,
+          font: {
+            size: 14,
+          }
+        }
+      },
+      title: {
+        display: true,
+        text: 'Bitcoin Wealth Trajectory: $2.43M → $21M (2025-2035)',
+        color: 'white',
+        font: {
+          size: 18,
+          weight: 'bold' as const
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const label = context.dataset.label || '';
+            const value = context.parsed.y;
+            if (label.includes('Portfolio')) {
+              return `${label}: $${value}M`;
+            } else if (label.includes('Income')) {
+              return `${label}: $${value}K`;
+            } else if (label.includes('Price')) {
+              return `${label}: $${value}K`;
+            } else if (label.includes('Sell Rate')) {
+              return `${label}: ${value}%`;
+            }
+            return `${label}: ${value}`;
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        type: 'linear',
+        display: true,
+        position: 'left',
+        title: {
+          display: true,
+          text: 'Portfolio Value ($M)',
+          color: 'white',
+        },
+        ticks: {
+          color: 'white',
+          callback: function(value) {
+            return `$${value}M`;
+          },
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
+        }
+      },
+      y1: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        title: {
+          display: true,
+          text: 'Annual Income ($K)',
+          color: 'white',
+        },
+        ticks: {
+          color: 'white',
+          callback: function(value) {
+            return `$${value}K`;
+          },
+        },
+        grid: {
+          drawOnChartArea: false,
+        }
+      },
+      y2: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        title: {
+          display: true,
+          text: 'Bitcoin Price ($K)',
+          color: 'white',
+        },
+        ticks: {
+          color: 'white',
+          callback: function(value) {
+            return `$${value}K`;
+          },
+        },
+        grid: {
+          drawOnChartArea: false,
+        }
+      },
+      y3: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        title: {
+          display: true,
+          text: 'Sell Rate (%)',
+          color: 'white',
+        },
+        ticks: {
+          color: 'white',
+          callback: function(value) {
+            return `${value}%`;
+          },
+        },
+        grid: {
+          drawOnChartArea: false,
+        }
+      },
+      x: {
+        ticks: {
+          color: 'white',
+          maxRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: 10,
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
+        }
+      }
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index',
+    },
+  };
+
+  return <Line options={options} data={data} />;
+}
+
+function BitcoinAccumulationChart() {
+  const data = {
+    labels: wealthTrajectory.map(d => d.year.toString()),
+    datasets: [
+      {
+        label: 'Core Bitcoin Holdings (21 BTC)',
+        data: wealthTrajectory.map(d => d.bitcoin),
+        borderColor: '#f59e0b', // amber-500
+        backgroundColor: 'rgba(245, 158, 11, 0.2)',
+        pointRadius: 6,
+        tension: 0.3,
+        borderWidth: 3,
+        fill: true,
+      },
+      {
+        label: 'Reserve Bitcoin (3.3 → 0.3 BTC)',
+        data: wealthTrajectory.map(d => d.reserve),
+        borderColor: '#ef4444', // red-500
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        pointRadius: 4,
+        tension: 0.3,
+        borderWidth: 2,
+        fill: true,
+      },
+      {
+        label: 'Total Bitcoin Holdings',
+        data: wealthTrajectory.map(d => d.total),
+        borderColor: '#8b5cf6', // violet-500
+        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        pointRadius: 3,
+        tension: 0.3,
+        borderWidth: 2,
+        fill: false,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: {
+          color: 'white',
+          padding: 20,
+          font: {
+            size: 14,
+          }
+        }
+      },
+      title: {
+        display: true,
+        text: 'Bitcoin Accumulation Strategy',
+        color: 'white',
+        font: {
+          size: 18,
+          weight: 'bold' as const
+        }
+      },
+    },
+    scales: {
+      y: {
+        title: {
+          display: true,
+          text: 'Bitcoin Holdings',
+          color: 'white',
+        },
+        ticks: {
+          color: 'white',
+          callback: function(value: string | number) {
+            if (typeof value === 'number') {
+              return `${value} BTC`;
+            }
+            return value;
+          },
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
+        }
+      },
+      x: {
+        ticks: {
+          color: 'white',
+          maxRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: 10,
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
+        }
+      }
+    },
+  };
+
+  return <Line options={options} data={data} />;
+}
+
+function BitcoinIncomeChart() {
+  // Calculate Bitcoin needed for different monthly income levels
+  const monthlyIncomes = [5, 10, 20, 50, 100, 200, 500, 1000]; // in thousands
+  const bitcoinNeeded = monthlyIncomes.map(monthlyIncome => {
+    const annualIncome = monthlyIncome * 12; // Convert to annual
+    // Using 6.9% selling rate and assuming $100K Bitcoin price
+    // Formula: Annual Income ÷ (Bitcoin Price × Selling Rate)
+    const btcNeeded = annualIncome / (100 * 0.069);
+    return Math.ceil(btcNeeded * 100) / 100; // Round to 2 decimal places
+  });
+
+  const data = {
+    labels: monthlyIncomes.map(income => `$${income}K/month`),
+    datasets: [
+      {
+        label: 'Bitcoin Required (BTC)',
+        data: bitcoinNeeded,
+        borderColor: '#10b981', // emerald-500
+        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+        pointRadius: 6,
+        tension: 0.3,
+        borderWidth: 3,
+        fill: true,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: {
+          color: 'white',
+          padding: 20,
+          font: {
+            size: 14,
+          }
+        }
+      },
+      title: {
+        display: true,
+        text: 'Bitcoin Required for Monthly Income Levels',
+        color: 'white',
+        font: {
+          size: 18,
+          weight: 'bold' as const
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context: { dataset: { label?: string }; parsed: { y: number }; dataIndex: number }) {
+            const label = context.dataset.label || '';
+            const value = context.parsed.y;
+            const monthlyIncome = monthlyIncomes[context.dataIndex];
+            return [
+              `${label}: ${value} BTC`,
+              `Monthly Income: $${monthlyIncome}K`,
+              `Annual Income: $${monthlyIncome * 12}K`,
+              `Bitcoin Price: $100K`,
+              `Selling Rate: 6.9% (bull market)`
+            ];
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        title: {
+          display: true,
+          text: 'Bitcoin Required (BTC)',
+          color: 'white',
+        },
+        ticks: {
+          color: 'white',
+          callback: function(value: string | number) {
+            if (typeof value === 'number') {
+              return `${value} BTC`;
+            }
+            return value;
+          },
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
+        }
+      },
+      x: {
+        ticks: {
+          color: 'white',
+          maxRotation: 45,
+          autoSkip: true,
+          maxTicksLimit: 8,
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
+        }
+      }
+    },
+  };
+
+  return <Line options={options} data={data} />;
+}
+
+function BitcoinPriceChart() {
+	// Calculate Bitcoin price needed for different monthly income levels with 21 BTC core
+	const monthlyIncomes = [50, 100, 200, 500, 1000]; // in thousands
+	
+	// Using 4.2% selling rate (bear market) and 21 BTC core position
+	// Formula: Annual Income (in $) ÷ (21 BTC × 0.042)
+	const bitcoinPrices = monthlyIncomes.map((monthlyIncome) => {
+		// Convert monthly income from $K to $ then to annual
+		const annualIncomeDollars = monthlyIncome * 1000 * 12;
+		const priceNeeded = annualIncomeDollars / (21 * 0.042);
+		// Round to nearest $1K for cleaner labels
+		const roundedPrice = Math.round(priceNeeded / 1000) * 1000;
+		return roundedPrice;
+	});
+
+	const maxPrice = Math.max(...bitcoinPrices);
+
+	const data = {
+		labels: monthlyIncomes.map((income) => `$${income}K/month`),
+		datasets: [
+			{
+				label: 'Bitcoin Price Required ($)',
+				data: bitcoinPrices,
+				borderColor: '#f59e0b', // amber-500
+				backgroundColor: 'rgba(245, 158, 11, 0.15)',
+				pointRadius: 8,
+				pointHoverRadius: 12,
+				pointBackgroundColor: '#f59e0b',
+				pointBorderColor: '#ffffff',
+				pointBorderWidth: 2,
+				tension: 0.4,
+				borderWidth: 4,
+				fill: true,
+			},
+		],
+	};
+
+	const options = {
+		responsive: true,
+		maintainAspectRatio: false,
+		plugins: {
+			legend: {
+				position: 'bottom' as const,
+				labels: {
+					color: 'white',
+					padding: 20,
+					font: {
+						size: 14,
+					},
+				},
+			},
+			title: {
+				display: true,
+				text: 'Bitcoin Price Needed for Monthly Income (21 BTC Core) - Bear Market Scenario',
+				color: 'white',
+				font: {
+					size: 18,
+					weight: 'bold' as const,
+				},
+			},
+			tooltip: {
+				backgroundColor: 'rgba(0, 0, 0, 0.9)',
+				titleColor: '#f59e0b',
+				bodyColor: 'white',
+				borderColor: '#f59e0b',
+				borderWidth: 2,
+				callbacks: {
+					label: function (context: { dataset: { label?: string }; parsed: { y: number }; dataIndex: number }) {
+						const label = context.dataset.label || '';
+						const value = context.parsed.y;
+						const monthlyIncome = monthlyIncomes[context.dataIndex];
+						return [
+							`${label}: $${(value / 1_000_000).toFixed(2)}M`,
+							`Monthly Income: $${monthlyIncome}K`,
+							`Annual Income: $${monthlyIncome * 12}K`,
+							`Core Position: 21 BTC`,
+							`Selling Rate: 4.2% (bear market)`,
+						];
+					},
+				},
+			},
+		},
+		scales: {
+			y: {
+				title: {
+					display: true,
+					text: 'Bitcoin Price Required ($)',
+					color: 'white',
+					font: {
+						size: 14,
+						weight: 'bold' as const,
+					},
+				},
+				beginAtZero: true,
+				min: 0,
+				max: Math.ceil((maxPrice * 1.1) / 1_000_000) * 1_000_000,
+				ticks: {
+					color: 'white',
+					stepSize: 2_000_000,
+					font: {
+						size: 12,
+					},
+					callback: function (value: string | number) {
+						if (typeof value === 'number') {
+							if (value >= 1_000_000) {
+								return `$${(value / 1_000_000).toFixed(1)}M`;
+							} else if (value >= 1_000) {
+								return `$${(value / 1_000).toFixed(0)}K`;
+							}
+							return `$${value.toLocaleString()}`;
+						}
+						return value;
+					},
+				},
+				grid: {
+					color: 'rgba(255, 255, 255, 0.15)',
+					lineWidth: 1,
+				},
+			},
+			x: {
+				ticks: {
+					color: 'white',
+					maxRotation: 45,
+					autoSkip: true,
+					maxTicksLimit: 5,
+				},
+				grid: {
+					color: 'rgba(255, 255, 255, 0.1)',
+				},
+			},
+		},
+	};
+
+	return <Line options={options} data={data} />;
+}
+
+export default function WealthTrajectoryPage() {
+  const [open, setOpen] = useState<number | null>(null);
   
+  const wealthLevels = [
+  {
+    level: 'Restaurant Level',
+    portfolio: '$2.43M - $4.31M',
+    income: '$84K - $168K/year',
+    lifestyle: 'World-class dining, front-row concerts, luxury tech',
+    description: 'Your 21 Bitcoin core at $100K each generates $84K annually via the 4% rule. This unlocks premium experiences while preserving your core position. The 3.3 BTC reserve covers bear market living expenses.'
+  },
+  {
+    level: 'Travel Level',
+    portfolio: '$4.31M - $6.30M',
+    income: '$168K - $276K/year',
+    lifestyle: 'Private villas, first-class travel, yacht charters',
+    description: 'Bitcoin reaching $266K by 2030 with 21% CAGR puts you in the top 1% globally. You can jet-set worldwide while maintaining your Bitcoin position. Reserve depletes to 1.8 BTC for continued bear market protection.'
+  },
+  {
+    level: 'Luxury Level',
+    portfolio: '$6.30M - $13.49M',
+    income: '$276K - $540K/year',
+    lifestyle: 'Penthouses, private jets, exclusive memberships',
+    description: 'As Bitcoin scales toward global reserve asset status with 21% CAGR, your wealth multiplies. You can acquire luxury assets while staying true to Bitcoin. Your core 21 BTC remains untouched.'
+  },
+  {
+    level: 'Real Estate Level',
+    portfolio: '$13.49M - $16.32M+',
+    income: '$540K - $653K+/year',
+    lifestyle: 'Mansions, generational wealth, philanthropic impact',
+    description: 'At $16.32M, you can buy a $5M mansion and still have $11.32M for travel and investments. This is legacy-building wealth with your core 21 BTC intact for the next 21 years.'
+  }
+];
+
+  const strategies = [
+  {
+    phase: 'Short Term (2-3 Years)',
+    target: '$4.31M',
+    bitcoinPrice: '$182K',
+    strategy: 'HODL your 21 Bitcoin through the 2024-2025 halving cycle. Use the 3.3 BTC reserve for living expenses with 6.9% selling rate in bull markets. Portfolio grows at 21% CAGR to $4.31M by 2028. Never sell your core position.'
+  },
+  {
+    phase: 'Five Years (2029-2030)',
+    target: '$6.30M',
+    bitcoinPrice: '$266K',
+    strategy: 'Continue holding through the 2028-2029 halving cycle. Bitcoin reaches $266K with 21% CAGR. Your 21 BTC core = $6.30M, generating $276K annually. Reserve depletes to 1.8 BTC for bear market protection. Core 21 BTC remains untouched.'
+  },
+  {
+    phase: 'Decade Vision (2035)',
+    target: '$16.32M',
+    bitcoinPrice: '$691K',
+    strategy: 'Bitcoin scaling as global reserve asset reaches $691K with 21% CAGR. Your 21 BTC core = $16.32M, yielding $653K annually. Reserve depletes to 0.3 BTC, preserving core position for final decade. Your 21 BTC legacy is intact.'
+  }
+];
+
+  const faqs = [
+    {
+      q: "Why stay 100% in Bitcoin?",
+      a: "Bitcoin maximalism aligns with LiveTheLife.tv's bold lifestyle and IkigaiLabs.xyz's innovative ethos. Historical data shows Bitcoin's 3-5x cycle gains consistently outperform traditional assets. The 4% withdrawal rule provides income while maintaining exposure to Bitcoin's upside potential."
+    },
+    {
+      q: "What about Bitcoin's volatility?",
+      a: "Volatility is the price of admission for Bitcoin's asymmetric returns. The 4% rule is conservative for Bitcoin's growth potential. During 50%+ drawdowns (Bitcoin's norm), you continue accumulating. Your time horizon (10+ years) smooths out short-term volatility."
+    },
+    {
+      q: "How realistic are these projections?",
+      a: "Projections are based on historical Bitcoin cycles (3-5x gains post-halving) and institutional adoption trends. Conservative estimates assume Bitcoin reaches $875K by 2035 vs. Ark Invest's $1M+ projections. The key is staying disciplined through market cycles."
+    },
+    {
+      q: "What if Bitcoin doesn't perform as expected?",
+      a: "Even if Bitcoin only reaches $200K by 2030 (vs. $300K projection), your portfolio would be $4.2M vs. $6.9M target. The 4% rule still generates $168K annually. Bitcoin's worst-case scenario still outperforms most traditional investments over this timeframe."
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
-        {/* Hero Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-12"
-        >
-          <div className="inline-flex items-center justify-center px-4 py-1.5 mb-4 border border-yellow-500/30 rounded-full bg-yellow-500/10 backdrop-blur-sm">
-            <Bitcoin className="w-4 h-4 text-yellow-400 mr-2" />
-            <span className="text-sm text-yellow-400 font-medium">Bitcoin Strategy</span>
+    <div className="min-h-screen bg-black text-white font-satoshi">
+      {/* Premium header accent */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500 to-transparent"></div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+        <div className="space-y-16">
+          {/* Hero Section */}
+          <div className="text-center space-y-8">
+            <p className="uppercase tracking-[0.4em] text-yellow-500/90 text-sm mb-4 font-light font-satoshi">Bitcoin Portfolio • Wealth Building • Freedom Strategy</p>
+            <h1 className="text-center">
+              <span className="text-6xl md:text-8xl font-bold text-yellow-500 tracking-tight [text-shadow:_0_1px_20px_rgba(234,179,8,0.3)] font-satoshi">
+                Wealth Trajectory
+              </span>
+            </h1>
+            <div className="flex items-center justify-center mt-6">
+              <div className="h-px w-24 bg-yellow-500/30"></div>
+              <p className="mx-6 text-lg text-white/70 font-light italic font-satoshi">From $2.1M to $21M: Your Bitcoin Journey to Freedom</p>
+              <div className="h-px w-24 bg-yellow-500/30"></div>
+            </div>
           </div>
-          
-          <h1 className="font-boska text-4xl sm:text-5xl font-bold tracking-tight text-yellow-500 mb-6">
-            Bitcoin FIRE — 4% Rule Edition
-          </h1>
-          <h2 className="font-boska text-3xl text-yellow-400/90 mb-8">
-            (21 BTC Target)
+
+          {/* Main Chart Section */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6 text-center">
+              Your Bitcoin Wealth Trajectory: 2025-2035
+            </h3>
+            <div className="w-full h-[70vh]">
+              <WealthTrajectoryChart />
+            </div>
+            <div className="mt-8 pt-6 border-t border-yellow-500/20 text-gray-300">
+                                     <h4 className="text-xl font-bold text-yellow-400 mb-4">THE BITCOIN PATH TO $21M: NEVER SELLING YOUR CORE 21 BTC</h4>
+        <div className="space-y-4 text-lg leading-relaxed">
+          <p>You&apos;re starting with <span className="text-yellow-400 font-bold">24.3 Bitcoin worth $2.43M</span> at $100K per coin in August 2025. This includes your <span className="text-red-400 font-bold">core 21 BTC</span> for long-term wealth and a <span className="text-blue-400 font-bold">3.3 BTC reserve</span> for living expenses during bear markets.</p>
+          <p>Your strategy uses <span className="text-green-400 font-bold">21% CAGR growth</span> with dynamic selling: <span className="text-blue-400 font-bold">6.9% max in bull markets</span> and <span className="text-red-400 font-bold">4.2% max in bear markets</span>. The core 21 BTC is <span className="text-yellow-400 font-bold">never sold</span>, while the reserve provides living expenses during downturns.</p>
+          <p className="font-semibold text-yellow-400/90">Key milestones:</p>
+          <ul className="list-disc list-inside pl-4 space-y-2">
+            <li><span className="text-green-400">2028:</span> $4.31M core portfolio, $168K annual income</li>
+            <li><span className="text-blue-400">2030:</span> $6.30M core portfolio, $276K annual income</li>
+            <li><span className="text-yellow-400">2035:</span> $16.32M core portfolio, $653K annual income</li>
+          </ul>
+          <p className="text-sm text-gray-400 mt-4">💡 <span className="text-yellow-400">Core Strategy:</span> Never sell your 21 BTC core position. Use the 3.3 BTC reserve for bear market living expenses with dynamic selling rates. This ensures you preserve your core wealth while surviving -50% price drops.</p>
+        </div>
+            </div>
+          </div>
+
+          {/* Bitcoin Accumulation Chart */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6 text-center">
+              Bitcoin Accumulation Strategy
+            </h3>
+            <div className="w-full h-[50vh]">
+              <BitcoinAccumulationChart />
+            </div>
+                         <div className="mt-8 pt-6 border-t border-yellow-500/20 text-gray-300">
+                       <p className="text-lg leading-relaxed">
+          Your Bitcoin strategy maintains <span className="text-yellow-400 font-semibold">21 BTC core position</span> (never sold) and a <span className="text-red-400 font-semibold">3.3 BTC reserve</span> that gradually depletes to 0.3 BTC over 10 years. The reserve covers living expenses during bear markets using dynamic selling rates: <span className="text-blue-400 font-semibold">6.9% in bull markets</span> and <span className="text-red-400 font-semibold">4.2% in bear markets</span>. This ensures you never touch your core 21 BTC while surviving -50% price drops. Your core 21 BTC remains untouched for the next 21 years.
+        </p>
+             </div>
+          </div>
+
+                  {/* Core Philosophy Section */}
+        <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+          <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6 text-center">
+            The 21 Bitcoin Philosophy: Freedom Through Conviction
+          </h3>
+          <div className="space-y-6 text-lg leading-relaxed text-gray-300">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <h4 className="text-xl font-bold text-yellow-400 mb-4">🎯 LiveTheLife.tv Vision</h4>
+                <p>Your 21 Bitcoin aren&apos;t just digital assets—they&apos;re your passport to a life of extraordinary experiences. From Michelin-star dining to private island getaways, each milestone unlocks new levels of freedom. This isn&apos;t about accumulating more; it&apos;s about living the life you&apos;ve always dreamed of while preserving your core wealth.</p>
+                <p className="mt-4 text-yellow-400/80">Your journey: Restaurant Level → Travel Level → Luxury Level → Real Estate Level</p>
+              </div>
+              <div>
+                <h4 className="text-xl font-bold text-yellow-400 mb-4">🚀 IkigaiLabs.xyz Innovation</h4>
+                <p>Your strategy embodies the future of wealth: decentralized, purpose-driven, and resilient. By never selling your core 21 BTC, you&apos;re betting on Bitcoin&apos;s potential as the global reserve asset. The 3.3 BTC reserve is your innovation fund—ensuring you can weather any storm while your core position compounds for the next 21 years.</p>
+                <p className="mt-4 text-yellow-400/80">Innovation through conviction: HODL through cycles, thrive in bear markets</p>
+              </div>
+            </div>
+            <div className="pt-6 border-t border-yellow-500/20">
+              <h4 className="text-xl font-bold text-yellow-400 mb-4">💎 The Core Strategy</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+                  <div className="text-3xl font-bold text-yellow-400">21</div>
+                  <div className="text-sm text-gray-400">Core BTC</div>
+                  <div className="text-xs text-yellow-400/80 mt-2">Never Sold</div>
+                </div>
+                <div className="text-center p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                  <div className="text-3xl font-bold text-blue-400">3.3</div>
+                  <div className="text-sm text-gray-400">Reserve BTC</div>
+                  <div className="text-xs text-blue-400/80 mt-2">Bear Market Fund</div>
+                </div>
+                <div className="text-center p-4 bg-green-500/10 rounded-lg border border-green-500/20">
+                  <div className="text-3xl font-bold text-green-400">21%</div>
+                  <div className="text-sm text-gray-400">CAGR Growth</div>
+                  <div className="text-xs text-green-400/80 mt-2">Compound Power</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bitcoin Income Chart */}
+        <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+          <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6 text-center">
+            Bitcoin Required for Monthly Income Levels
+          </h3>
+          <div className="w-full h-[50vh]">
+            <BitcoinIncomeChart />
+          </div>
+          <div className="mt-8 pt-6 border-t border-yellow-500/20 text-gray-300">
+            <h4 className="text-xl font-bold text-yellow-400 mb-4">INCOME TARGETS & BITCOIN REQUIREMENTS</h4>
+            <div className="space-y-4 text-lg leading-relaxed">
+              <p>Using the <span className="text-green-400 font-bold">6.9% selling rate in bull markets</span>, here&apos;s how much Bitcoin you need to sustain different monthly income levels:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="space-y-2">
+                  <p><span className="text-yellow-400 font-semibold">$5K/month:</span> <span className="text-green-400">8.70 BTC</span> ($60K annual)</p>
+                  <p><span className="text-yellow-400 font-semibold">$10K/month:</span> <span className="text-green-400">17.39 BTC</span> ($120K annual)</p>
+                  <p><span className="text-yellow-400 font-semibold">$20K/month:</span> <span className="text-green-400">34.78 BTC</span> ($240K annual)</p>
+                  <p><span className="text-yellow-400 font-semibold">$50K/month:</span> <span className="text-green-400">86.96 BTC</span> ($600K annual)</p>
+                </div>
+                <div className="space-y-2">
+                  <p><span className="text-yellow-400 font-semibold">$100K/month:</span> <span className="text-green-400">173.91 BTC</span> ($1.2M annual)</p>
+                  <p><span className="text-yellow-400 font-semibold">$200K/month:</span> <span className="text-green-400">347.83 BTC</span> ($2.4M annual)</p>
+                  <p><span className="text-yellow-400 font-semibold">$500K/month:</span> <span className="text-green-400">869.57 BTC</span> ($6M annual)</p>
+                  <p><span className="text-yellow-400 font-semibold">$1M/month:</span> <span className="text-green-400">1739.13 BTC</span> ($12M annual)</p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-400 mt-4">💡 <span className="text-yellow-400">Formula:</span> (Monthly Income × 12) ÷ (Bitcoin Price × 0.069) = Bitcoin Required. At $100K Bitcoin price with 6.9% selling rate. In bear markets (4.2% rate), you&apos;d need 1.64x more Bitcoin for the same income.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Bitcoin Price Chart */}
+        <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+          <h2 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6 text-center">
+            Bitcoin Price Needed for Monthly Income (21 BTC Core) - Bear Market Scenario
           </h2>
-        </motion.div>
-
-        {/* Main Content */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="space-y-10"
-        >
-          {/* Premise Section */}
-          <div className="bg-[#1c1f26] rounded-lg border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] p-8">
-            <h3 className="font-epilogue text-2xl font-semibold text-yellow-400 mb-4">Premise</h3>
-            <p className="text-white/90 leading-relaxed">
-              The 4% withdrawal rule assumes a portfolio can fund annual spending equal to 4% of its starting size. 
-              It came from an era expecting 10% nominal returns minus 6% inflation = 4% real.
-            </p>
-            
-            <h3 className="font-epilogue text-2xl font-semibold text-yellow-400 mt-6 mb-4">Twist for Bitcoin</h3>
-            <p className="text-white/90 leading-relaxed">
-              BTC&apos;s long‑run CAGR towers above 10%, but we stress‑test for severe under‑performance. 
-              Therefore we still anchor on the 4% rule to set a conservative floor.
-            </p>
+          <div className="w-full h-[50vh]">
+            <BitcoinPriceChart />
           </div>
-
-          {/* Divider */}
-          <div className="relative py-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t-2 border-yellow-500/20"></div>
-            </div>
-          </div>
-
-          {/* Formula Section */}
-          <div className="bg-[#1c1f26] rounded-lg border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] p-8">
-            <h3 className="font-epilogue text-2xl font-semibold text-yellow-400 mb-4">Quick‑Math Formula</h3>
-            <div className="flex justify-center my-6 bg-black/30 p-6 rounded-lg border border-yellow-500/20">
-              <div className="font-mono text-xl text-white/90">
-                BTC needed (Z) = Spending (X) / (0.04 × BTC Price (Y))
+                      <div className="mt-8 pt-6 border-t border-yellow-500/20 text-gray-300">
+              <h4 className="text-xl font-bold text-yellow-400 mb-4">PRICE TARGETS FOR LIFESTYLE INCOME (BEAR MARKET)</h4>
+              <div className="space-y-4 text-lg leading-relaxed">
+                <p>With your <span className="text-yellow-400 font-bold">21 BTC core position</span>, here&apos;s what Bitcoin price needs to be to sustain different monthly income levels using the <span className="text-red-400 font-bold">4.2% selling rate</span> (bear market scenario):</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="space-y-2">
+                    <p><span className="text-yellow-400 font-semibold">$50K/month:</span> <span className="text-green-400">$680K</span> Bitcoin price</p>
+                    <p><span className="text-yellow-400 font-semibold">$100K/month:</span> <span className="text-green-400">$1.36M</span> Bitcoin price</p>
+                    <p><span className="text-yellow-400 font-semibold">$200K/month:</span> <span className="text-green-400">$2.72M</span> Bitcoin price</p>
+                  </div>
+                  <div className="space-y-2">
+                    <p><span className="text-yellow-400 font-semibold">$500K/month:</span> <span className="text-green-400">$6.80M</span> Bitcoin price</p>
+                    <p><span className="text-yellow-400 font-semibold">$1M/month:</span> <span className="text-green-400">$13.60M</span> Bitcoin price</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-400 mt-4">💡 <span className="text-yellow-400">Formula:</span> (Monthly Income × 12) ÷ (21 BTC × 0.042) = Bitcoin Price Required. This shows the price targets you need to hit to achieve your desired lifestyle income without selling your core position during bear markets.</p>
               </div>
             </div>
-          </div>
+        </div>
 
-          {/* Divider */}
-          <div className="relative py-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t-2 border-yellow-500/20"></div>
-            </div>
-          </div>
-
-          {/* Example Section */}
-          <div className="bg-[#1c1f26] rounded-lg border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] p-8">
-            <h3 className="font-epilogue text-2xl font-semibold text-yellow-400 mb-6">Worked Example — Exactly 21 BTC</h3>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-yellow-500/20">
-                    <th className="p-4 text-left text-yellow-500 font-bold">Variable</th>
-                    <th className="p-4 text-left text-yellow-500 font-bold">Value</th>
-                    <th className="p-4 text-left text-yellow-500 font-bold">Reasoning</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-yellow-500/10">
-                    <td className="p-4 font-medium text-white">Desired annual spend X</td>
-                    <td className="p-4 text-white/90">$75,600</td>
-                    <td className="p-4 text-white/90">Matches typical mid‑six‑figure lifestyle when BTC is &ldquo;cheap&rdquo;</td>
-                  </tr>
-                  <tr className="border-b border-yellow-500/10">
-                    <td className="p-4 font-medium text-white">Current BTC price Y</td>
-                    <td className="p-4 text-white/90">$90,000</td>
-                    <td className="p-4 text-white/90">Placeholder for today&apos;s spot price</td>
-                  </tr>
-                  <tr className="border-b border-yellow-500/10">
-                    <td className="p-4 font-medium text-white">BTC required Z</td>
-                    <td className="p-4 text-white/90 font-mono">75,600 / (0.04 × 90,000) = <span className="text-yellow-400 font-bold">21 BTC</span></td>
-                    <td className="p-4 text-white/90">21 is the symbolic cap‑stone number in Bitcoin lore</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            
-            <p className="mt-8 text-white/90 leading-relaxed">
-              A 21‑BTC stack drawn down at 4% supplies $75,600 per year under worst‑case return assumptions, 
-              but any upside in BTC price or CAGR increases the real‑world cushion dramatically, 
-              therefore users gain both durability and optionality.
-            </p>
-          </div>
-
-          {/* Divider */}
-          <div className="relative py-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t-2 border-yellow-500/20"></div>
-            </div>
-          </div>
-
-          {/* Strategy Takeaways */}
-          <div className="bg-[#1c1f26] rounded-lg border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] p-8">
-            <h3 className="font-epilogue text-2xl font-semibold text-yellow-400 mb-6">Strategy Takeaways</h3>
-            
-            <ol className="list-decimal pl-6 space-y-4">
-              <li className="text-white/90">
-                <span className="font-medium text-white">Conservative Floor:</span> 21 BTC is the &ldquo;sleep‑well&rdquo; threshold for a $75,600 lifestyle.
-              </li>
-              <li className="text-white/90">
-                <span className="font-medium text-white">Scenario Leverage:</span> Move X or Y to see target BTC float instantly.
-              </li>
-              <li className="text-white/90">
-                <span className="font-medium text-white">Narrative Hook:</span> &ldquo;21 BTC for financial independence&rdquo; is memorable and on‑brand.
-              </li>
-            </ol>
-          </div>
-          
-          {/* Divider with Bitcoin Icon */}
-          <div className="relative py-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t-2 border-yellow-500/30"></div>
-            </div>
-            <div className="relative flex justify-center">
-              <div className="bg-black px-4">
-                <Bitcoin className="w-8 h-8 text-yellow-500" />
-              </div>
-            </div>
-          </div>
-          
-          {/* Alternative 42% CAGR Scenario */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.5 }}
-          >
-            <h2 className="font-boska text-3xl sm:text-4xl font-bold tracking-tight text-yellow-500 mb-6 text-center">
-              Bitcoin FIRE — 42% CAGR Scenario
-            </h2>
-            <h3 className="font-boska text-2xl text-yellow-400/90 mb-8 text-center">
-              (2.1 BTC Target)
+          {/* Wealth Levels Section */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
+              🎯 Your Wealth Levels & Lifestyle
             </h3>
-            
-            {/* 42% CAGR Premise Section */}
-            <div className="bg-[#1c1f26] rounded-lg border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] p-8 mt-8">
-              <h3 className="font-epilogue text-2xl font-semibold text-yellow-400 mb-4">Premise</h3>
-              <p className="text-white/90 leading-relaxed">
-                If Bitcoin compounds at 42% nominal and inflation sticks near 6%, the real growth is ≈ 36%. 
-                Under the safe‑withdrawal logic (&ldquo;spend the real return&rdquo;), the draw‑rate rises from 4% to 36%.
-              </p>
-              <p className="text-white/90 leading-relaxed mt-4">
-                Therefore the number of bitcoin you need collapses by roughly a factor of ten compared with the classic 4% rule.
-              </p>
-            </div>
-            
-            {/* Divider */}
-            <div className="relative py-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t-2 border-yellow-500/20"></div>
-              </div>
-            </div>
-            
-            {/* 42% CAGR Formula Section */}
-            <div className="bg-[#1c1f26] rounded-lg border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] p-8">
-              <h3 className="font-epilogue text-2xl font-semibold text-yellow-400 mb-4">Quick‑Math Formula at 36% Real Growth</h3>
-              <div className="flex justify-center my-6 bg-black/30 p-6 rounded-lg border border-yellow-500/20">
-                <div className="font-mono text-xl text-white/90">
-                  BTC needed (Z) = Spending (X) / (0.36 × BTC Price (Y))
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {wealthLevels.map((level, index) => (
+                <div key={index} className="bg-yellow-500/10 p-6 rounded-lg border border-yellow-500/20">
+                  <h4 className="text-xl font-bold text-yellow-400 mb-3">{level.level}</h4>
+                  <p className="text-lg font-semibold text-white mb-2">{level.portfolio}</p>
+                  <p className="text-green-400 font-medium mb-3">{level.income}</p>
+                  <p className="text-yellow-300 font-medium mb-3">{level.lifestyle}</p>
+                  <p className="text-sm text-gray-300">{level.description}</p>
                 </div>
-              </div>
+              ))}
             </div>
-            
-            {/* Divider */}
-            <div className="relative py-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t-2 border-yellow-500/20"></div>
-              </div>
-            </div>
-            
-            {/* 42% CAGR Example Section */}
-            <div className="bg-[#1c1f26] rounded-lg border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] p-8">
-              <h3 className="font-epilogue text-2xl font-semibold text-yellow-400 mb-6">Worked Example — Exactly 2.1 BTC</h3>
-              
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-yellow-500/20">
-                      <th className="p-4 text-left text-yellow-500 font-bold">Variable</th>
-                      <th className="p-4 text-left text-yellow-500 font-bold">Value</th>
-                      <th className="p-4 text-left text-yellow-500 font-bold">Why it&apos;s realistic</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-yellow-500/10">
-                      <td className="p-4 font-medium text-white">Desired annual spend X</td>
-                      <td className="p-4 text-white/90">$75,600</td>
-                      <td className="p-4 text-white/90">Roughly the median U.S. dual‑income household lifestyle</td>
-                    </tr>
-                    <tr className="border-b border-yellow-500/10">
-                      <td className="p-4 font-medium text-white">BTC price assumption Y</td>
-                      <td className="p-4 text-white/90">$100,000</td>
-                      <td className="p-4 text-white/90">A neat, near‑future milestone (spot is ≈ $91k today)</td>
-                    </tr>
-                    <tr className="border-b border-yellow-500/10">
-                      <td className="p-4 font-medium text-white">BTC required Z</td>
-                      <td className="p-4 text-white/90 font-mono">75,600 / (0.36 × 100,000) = <span className="text-yellow-400 font-bold">2.1 BTC</span></td>
-                      <td className="p-4 text-white/90">Matches the symbolic &ldquo;two‑point‑one&rdquo; slice of the 21M cap</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              
-              <p className="mt-8 text-white/90 leading-relaxed">
-                A 2.1 BTC stack withdrawn at its 36% real return supplies $75,600 per year under this high‑growth regime, 
-                but any price appreciation beyond $100k or growth above 42% compounds the surplus further. 
-                Therefore the 2.1‑BTC target is an aggressive yet mathematically sound benchmark for users who accept Bitcoin&apos;s volatility.
-              </p>
-            </div>
-            
-            {/* Divider */}
-            <div className="relative py-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t-2 border-yellow-500/20"></div>
-              </div>
-            </div>
-            
-            {/* 42% CAGR Strategy Takeaways */}
-            <div className="bg-[#1c1f26] rounded-lg border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] p-8">
-              <h3 className="font-epilogue text-2xl font-semibold text-yellow-400 mb-6">Strategy Takeaways</h3>
-              
-              <ol className="list-decimal pl-6 space-y-4">
-                <li className="text-white/90">
-                  <span className="font-medium text-white">Aggressive Floor:</span> 2.1 BTC funds a middle‑class lifestyle if 42% CAGR persists.
-                </li>
-                <li className="text-white/90">
-                  <span className="font-medium text-white">Stress‑Test Friendly:</span> Slide X or Y in‑app to see BTC need flex instantly.
-                </li>
-                <li className="text-white/90">
-                  <span className="font-medium text-white">Narrative Hook:</span> &ldquo;From 21 BTC to 2.1 BTC—10× less for the same freedom when growth screams&rdquo; is a headline users remember.
-                </li>
-              </ol>
-            </div>
-          </motion.div>
+          </div>
 
-          {/* Current CAGR Data Section */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.9, duration: 0.5 }}
-            className="mt-16 bg-[#1c1f26] rounded-lg border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] p-8"
-          >
-            <h3 className="font-epilogue text-2xl font-semibold text-yellow-400 mb-6">Current Bitcoin CAGR Insights</h3>
-            
-            <div className="space-y-5 text-white/90">
-              <p className="leading-relaxed">
-                <span className="font-semibold text-white">Historical Context:</span> Bitcoin&apos;s four-year CAGR has declined to 14.5%, its lowest rate on record. However, this still outperforms traditional assets like gold and stocks.
-              </p>
-              
-              <p className="leading-relaxed">
-                <span className="font-semibold text-white">Performance Perspective:</span> Despite the Fed&apos;s hawkish stance, BTC has surged 88% over the past year, setting multiple all-time highs. For comparison, other assets&apos; four-year CAGRs range between 4-13%.
-              </p>
-              
-              <p className="leading-relaxed">
-                <span className="font-semibold text-white">Market Position:</span> With a $1.9 trillion market cap versus gold&apos;s $19 trillion, Bitcoin has substantial growth potential. Some analysts project Bitcoin could replace gold as a global safe-haven asset within a decade.
-              </p>
-              
-              <div className="mt-4">
-                <Link 
-                  href="https://charts.bitbo.io/cagr/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-yellow-500 hover:text-yellow-400 transition-colors"
-                >
-                  <span>View live Bitcoin CAGR chart data</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </Link>
-              </div>
-              <div className="mt-4">
-                <Link 
-                  href="https://www.qultra.io/p/qsim-bitcoin-stock-to-flow-s2f-cagr.html" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-yellow-500 hover:text-yellow-400 transition-colors"
-                >
-                  <span>Explore QSim Bitcoin S2F CAGR Simulator</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-            
-            <div className="mt-8 bg-black/30 p-6 rounded-lg border border-yellow-500/20">
-              <p className="text-white/70 leading-relaxed italic">
-                &ldquo;While our models account for both conservative (4%) and aggressive (42%) growth scenarios, Bitcoin&apos;s current 14.5% CAGR suggests a middle path may be most realistic for planning purposes. This would place the BTC requirement for financial independence between 2.1 and 21 BTC depending on your personal risk tolerance.&rdquo;
-              </p>
-            </div>
-          </motion.div>
-          
-          {/* Bitcoin FIRE Calculator */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.5 }}
-            className="bg-[#1c1f26] rounded-lg border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)] p-8"
-          >
-            <h3 className="font-epilogue text-2xl font-semibold text-yellow-400 mb-6 flex items-center">
-              <Calculator className="w-6 h-6 mr-2" />
-              Bitcoin FIRE Calculator
+          {/* Strategy Section */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
+              🚀 Your Bitcoin Strategy by Phase
             </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-2">
-                    Annual Spending
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <DollarSign className="h-5 w-5 text-white/50" />
+            <div className="space-y-6">
+              {strategies.map((strategy, index) => (
+                <div key={index} className="bg-yellow-500/10 p-6 rounded-lg border border-yellow-500/20">
+                  <h4 className="text-xl font-bold text-yellow-400 mb-3">{strategy.phase}</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-white">{strategy.target}</p>
+                      <p className="text-sm text-gray-400">Target Portfolio</p>
                     </div>
-                    <input
-                      type="number"
-                      value={annualSpending}
-                      onChange={(e) => setAnnualSpending(parseFloat(e.target.value) || 0)}
-                      className="block w-full pl-10 pr-4 py-3 bg-black/30 border border-yellow-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-white"
-                      placeholder="Enter annual spending"
-                    />
-                  </div>
-                  <p className="mt-2 text-sm text-white/60">
-                    Your yearly cost of living
-                  </p>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-2">
-                    Bitcoin Price (USD)
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <DollarSign className="h-5 w-5 text-white/50" />
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-yellow-400">{strategy.bitcoinPrice}</p>
+                      <p className="text-sm text-gray-400">Bitcoin Price</p>
                     </div>
-                    <input
-                      type="number"
-                      value={btcPrice}
-                      onChange={(e) => setBtcPrice(parseFloat(e.target.value) || 0)}
-                      className="block w-full pl-10 pr-4 py-3 bg-black/30 border border-yellow-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-white"
-                      placeholder="Enter BTC price"
-                    />
-                  </div>
-                  <p className="mt-2 text-sm text-white/60">
-                    Current or expected BTC price
-                  </p>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-2">
-                    Growth Rate (%)
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <TrendingUp className="h-5 w-5 text-white/50" />
+                    <div className="text-center">
+                      <p className="text-lg font-semibold text-green-400">Strategy</p>
                     </div>
-                    <select
-                      value={withdrawalRate}
-                      onChange={(e) => setWithdrawalRate(parseFloat(e.target.value))}
-                      className="block w-full pl-10 pr-4 py-3 bg-black/30 border border-yellow-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-white"
-                    >
-                      <option value={4}>4% - Conservative (Traditional FIRE)</option>
-                      <option value={20}>20% - Average BTC CAGR</option>
-                      <option value={30}>30% - Projected BTC Growth</option>
-                    </select>
                   </div>
-                  <p className="mt-2 text-sm text-white/60">
-                    Annual Growth rate
-                  </p>
+                  <p className="text-gray-300 leading-relaxed">{strategy.strategy}</p>
                 </div>
-              </div>
-              
-              <div className="bg-black/30 p-6 rounded-lg border border-yellow-500/20 flex flex-col justify-center">
-                <h4 className="text-lg font-medium text-yellow-400 mb-4">
-                  Bitcoin Needed for FIRE
-                </h4>
-                
-                <div className="text-center py-6">
-                  <div className="text-5xl font-bold text-yellow-500 font-mono">
-                    {formatNumber(btcNeeded)} BTC
-                  </div>
-                  <p className="mt-4 text-white/70">
-                    Based on ${formatNumber(annualSpending)} annual spending at {withdrawalRate}% growth rate
-                  </p>
-                </div>
-                
-                <div className="mt-4 bg-yellow-500/10 rounded-md p-4">
-                  <p className="text-sm text-white/90">
-                    {withdrawalRate === 4 ? (
-                      <>This is the <span className="text-yellow-400 font-semibold">conservative approach</span>, requiring more BTC but with higher safety.</>
-                    ) : withdrawalRate === 14.5 ? (
-                      <>This is based on <span className="text-yellow-400 font-semibold">current BTC CAGR</span>, a middle path between conservative and aggressive.</>
-                    ) : (
-                      <>This is the <span className="text-yellow-400 font-semibold">aggressive approach</span>, requiring less BTC but with higher volatility risk.</>
-                    )}
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
-            
-            <div className="border-t border-yellow-500/20 pt-6 mt-6">
-              <p className="text-sm text-white/70 italic">
-                Note: This calculator provides estimates based on the withdrawal rate assumption. The 4% rule is conservative, 
-                while higher rates assume Bitcoin&apos;s growth continues at similar patterns to its historical performance. 
-                Always build in safety margins for your financial planning.
-              </p>
-            </div>
-          </motion.div>
-        </motion.div>
+          </div>
 
-        {/* Enhanced Disclaimer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          className="text-center max-w-3xl mx-auto mt-20"
-        >
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-6">
-            <h3 className="text-yellow-400 font-semibold mb-3">Important Disclaimer</h3>
-            <p className="text-white/70 leading-relaxed">
-              This information is for educational purposes only. Not financial advice. 
-              Always do your own research and consult with qualified professionals before making investment decisions. 
-              Past performance is not indicative of future results. Investing involves risk of loss.
+          {/* LiveTheLife.tv & IkigaiLabs Alignment */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
+              🌟 Aligned with Your Vision
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <h4 className="text-xl font-bold text-yellow-400">LiveTheLife.tv Lifestyle</h4>
+                <div className="space-y-3 text-gray-300">
+                  <p>• <span className="text-yellow-400">Restaurant Level:</span> World-class dining experiences</p>
+                  <p>• <span className="text-yellow-400">Travel Level:</span> Private villas, first-class adventures</p>
+                  <p>• <span className="text-yellow-400">Luxury Level:</span> Penthouses, exclusive memberships</p>
+                  <p>• <span className="text-yellow-400">Real Estate Level:</span> Mansions, generational wealth</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <h4 className="text-xl font-bold text-yellow-400">IkigaiLabs.xyz Innovation</h4>
+                <div className="space-y-3 text-gray-300">
+                  <p>• <span className="text-blue-400">Bitcoin Maximalism:</span> Decentralized financial freedom</p>
+                  <p>• <span className="text-blue-400">Purpose-Driven Wealth:</span> Impact through innovation</p>
+                  <p>• <span className="text-blue-400">Tech-First Strategy:</span> Leveraging blockchain adoption</p>
+                  <p>• <span className="text-blue-400">Community Building:</span> Mentoring and philanthropy</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* FAQ Section */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
+              ❓ Frequently Asked Questions
+            </h3>
+            <div className="space-y-4">
+              {faqs.map((faq, index) => (
+                <div key={index} className="border border-yellow-500/20 rounded-lg">
+                  <button
+                    className="flex w-full items-center justify-between p-4 text-left hover:bg-yellow-500/5 transition-colors"
+                    onClick={() => setOpen(open === index ? null : index)}
+                  >
+                    <span className="font-medium text-white">{faq.q}</span>
+                    <ChevronDown
+                      className={cn(
+                        'h-5 w-5 text-yellow-500 transition-transform',
+                        open === index && 'rotate-180'
+                      )}
+                    />
+                  </button>
+                  {open === index && (
+                    <div className="px-4 pb-4 text-gray-300">
+                      <p className="leading-relaxed">{faq.a}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Call to Action */}
+          <div className="bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 p-8 rounded-none border-2 border-yellow-500 text-center">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-400 mb-4">
+              Ready to Turn 21 Bitcoin Into $21M?
+            </h3>
+            <p className="text-lg text-gray-300 mb-6">
+              From $2.43M to $16.32M: Your path to freedom starts with conviction, patience, and purpose.
+            </p>
+            <div className="space-y-4 text-gray-300">
+              <p>• <span className="text-yellow-400 font-semibold">Never sell your core 21 BTC</span> - preserve your legacy</p>
+              <p>• <span className="text-yellow-400 font-semibold">Use 3.3 BTC reserve</span> for bear market living expenses</p>
+              <p>• <span className="text-yellow-400 font-semibold">Ride 21% CAGR</span> to $16.32M over 10 years</p>
+              <p>• <span className="text-yellow-400 font-semibold">Live the life</span> you deserve while building generational wealth</p>
+            </div>
+            <p className="text-sm text-gray-400 mt-6">
+              <span className="text-yellow-400">LiveTheLife.tv</span> lifestyle meets <span className="text-yellow-400">IkigaiLabs.xyz</span> innovation
             </p>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
