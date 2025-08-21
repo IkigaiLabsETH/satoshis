@@ -1,0 +1,11 @@
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://livethelife.tv/sitemap.xml
+Data-source: https://livethelife.tv/ai-dataset.json
