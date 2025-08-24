@@ -8,7 +8,8 @@ import { toast } from "sonner";
 
 export default function YieldFarm() {
   const [amount, setAmount] = useState<string>("1");
-  const [result, setResult] = useState<any>(null);
+  type TradeCalcResult = { price: string; amountIn: string; amountOut: string } | null;
+  const [result, setResult] = useState<TradeCalcResult>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   // APY estimator inputs (percent values)
@@ -60,8 +61,9 @@ export default function YieldFarm() {
     try {
       const price = await rebalancePosition(WETH, DAI, 5);
       toast.success(`Rebalanced at price: ${price}`);
-    } catch (_err) {
-      setError("Error rebalancing position");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(`Error rebalancing position: ${msg}`);
     }
     setLoading(false);
   };
