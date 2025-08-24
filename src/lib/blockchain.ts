@@ -4,9 +4,10 @@ import { ChainId, Token, Fetcher, Route, Trade, TokenAmount, TradeType } from "@
 // Provider factory (server-safe)
 function getRpcProvider(): ethers.providers.BaseProvider {
   const projectId = process.env.NEXT_PUBLIC_INFURA_PROJECT_ID;
-  if (typeof window !== "undefined" && (window as any).ethereum) {
+  if (typeof window !== "undefined" && (window as unknown as { ethereum?: unknown }).ethereum) {
     try {
-      return new ethers.providers.Web3Provider((window as any).ethereum, "any");
+      const eth = (window as unknown as { ethereum?: unknown }).ethereum as ethers.providers.ExternalProvider;
+      return new ethers.providers.Web3Provider(eth, "any");
     } catch {
       // fall through to RPC
     }
@@ -35,9 +36,12 @@ export const DAI = new Token(
 );
 
 export async function connectWallet(): Promise<ethers.Signer> {
-  if (typeof window !== "undefined" && (window as any).ethereum) {
-    const web3Provider = new ethers.providers.Web3Provider((window as any).ethereum);
-    await (window as any).ethereum.request({ method: "eth_requestAccounts" });
+  if (typeof window !== "undefined" && (window as unknown as { ethereum?: ethers.providers.ExternalProvider & { request?: (args: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum) {
+    const ethereum = (window as unknown as { ethereum?: ethers.providers.ExternalProvider & { request?: (args: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum!;
+    const web3Provider = new ethers.providers.Web3Provider(ethereum);
+    if (typeof ethereum.request === "function") {
+      await ethereum.request({ method: "eth_requestAccounts" });
+    }
     return web3Provider.getSigner();
   }
   throw new Error("No Ethereum wallet detected");
@@ -45,14 +49,15 @@ export async function connectWallet(): Promise<ethers.Signer> {
 
 export async function getPairData(tokenA: Token, tokenB: Token) {
   const provider = getRpcProvider();
-  const pair = await Fetcher.fetchPairData(tokenA, tokenB, provider as any);
+  // @uniswap/sdk accepts an ethers BaseProvider
+  const pair = await Fetcher.fetchPairData(tokenA, tokenB, provider);
   return pair;
 }
 
 export async function calculateDeltaNeutral(tokenA: Token, tokenB: Token, amount: string) {
   try {
     const provider = getRpcProvider();
-    const pair = await Fetcher.fetchPairData(tokenA, tokenB, provider as any);
+    const pair = await Fetcher.fetchPairData(tokenA, tokenB, provider);
     const route = new Route([pair], tokenA);
     const parsed = amount && amount.trim() !== "" ? amount : "0";
     const wei = ethers.utils.parseUnits(parsed, tokenA.decimals);
@@ -74,7 +79,7 @@ export async function calculateDeltaNeutral(tokenA: Token, tokenB: Token, amount
 
 export async function rebalancePosition(tokenA: Token, tokenB: Token, thresholdPercent: number) {
   const provider = getRpcProvider();
-  const pair = await Fetcher.fetchPairData(tokenA, tokenB, provider as any);
+  const pair = await Fetcher.fetchPairData(tokenA, tokenB, provider);
   const price = pair.token0Price.toSignificant(6);
   // Placeholder for threshold-based rebalance logic
   // In production, compare current hedge ratio vs target and execute adjustments
