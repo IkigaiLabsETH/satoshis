@@ -318,19 +318,55 @@ export default function V12Page() {
             </div>
           </div>
 
-          {/* Rolls-Royce Ghost Comparison */}
+          {/* The Complete Luxury Sedan Comparison */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">Rolls‑Royce Ghost: The Ultimate V12 Benchmark</h3>
-            <div className="space-y-6">
-              <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
-                <h4 className="text-xl font-bold text-yellow-500 mb-3">Overview & Heritage</h4>
-                <p className="text-white/80 mb-4">
-                  The Rolls‑Royce Ghost represents the pinnacle of British luxury, embodying over a century of automotive excellence. As BMW&apos;s crown jewel (BMW owns Rolls‑Royce), the Ghost shares the same N74 V12 architecture as the M760i but tuned for ultimate refinement rather than performance. The 2025 Series II refresh brings updated styling and enhanced technology while maintaining the handcrafted elegance that defines the brand.
-                </p>
-                <p className="text-white/80 text-sm">
-                  <span className="text-yellow-400">Key insight:</span> The M760i&apos;s V12 is essentially a performance‑tuned version of the Ghost&apos;s engine, making it a unique bridge between BMW performance and Rolls‑Royce luxury.
-                </p>
-              </div>
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">The Complete Luxury Sedan Comparison</h3>
+            <p className="text-white/80 mb-6 text-lg">
+              From the efficient diesel S‑Class to the mighty V12 icons, here&apos;s your complete guide to luxury sedan ownership and investment potential.
+            </p>
+                          <div className="space-y-6">
+                {/* Mercedes S 350 d W222 */}
+                <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                  <h4 className="text-xl font-bold text-yellow-500 mb-3">Mercedes S 350 d W222: The Efficient Luxury Choice</h4>
+                  <p className="text-white/80 mb-4">
+                    The Mercedes‑Benz S 350 d W222 Executive (Phase 1, pre‑facelift) is a 2013‑2017 model from the sixth‑generation S‑Class lineup. Known for its refined diesel powertrain, advanced comfort features, and flagship luxury status, it offers tremendous value as a used buy with low initial cost but potentially high maintenance.
+                  </p>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <h5 className="text-yellow-400 font-semibold mb-2">Engine & Performance</h5>
+                      <ul className="text-white/80 space-y-1 text-sm">
+                        <li>• 3.0L turbo V6 diesel</li>
+                        <li>• 258 hp @ 3,600 rpm</li>
+                        <li>• 620 Nm torque @ 1,600‑2,400 rpm</li>
+                        <li>• 7‑speed automatic</li>
+                        <li>• 0‑100 km/h: ~6.8 seconds</li>
+                        <li>• Top speed: 250 km/h (limited)</li>
+                        <li>• Fuel economy: 6‑7 L/100km</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-yellow-400 font-semibold mb-2">Market Reality</h5>
+                      <ul className="text-white/80 space-y-1 text-sm">
+                        <li>• <span className="text-yellow-400">Original MSRP:</span> €100k‑€120k</li>
+                        <li>• <span className="text-yellow-400">Used price (100k km):</span> €25k‑€40k</li>
+                        <li>• <span className="text-yellow-400">Annual maintenance:</span> €1k‑€2k</li>
+                        <li>• <span className="text-yellow-400">Warranty:</span> 2‑3 years/unlimited km</li>
+                        <li>• <span className="text-yellow-400">Best for:</span> Daily luxury, efficiency</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rolls-Royce Ghost */}
+                <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                  <h4 className="text-xl font-bold text-yellow-500 mb-3">Rolls‑Royce Ghost: The Ultimate V12 Benchmark</h4>
+                  <p className="text-white/80 mb-4">
+                    The Rolls‑Royce Ghost represents the pinnacle of British luxury, embodying over a century of automotive excellence. As BMW&apos;s crown jewel (BMW owns Rolls‑Royce), the Ghost shares the same N74 V12 architecture as the M760i but tuned for ultimate refinement rather than performance. The 2025 Series II refresh brings updated styling and enhanced technology while maintaining the handcrafted elegance that defines the brand.
+                  </p>
+                  <p className="text-white/80 text-sm">
+                    <span className="text-yellow-400">Key insight:</span> The M760i&apos;s V12 is essentially a performance‑tuned version of the Ghost&apos;s engine, making it a unique bridge between BMW performance and Rolls‑Royce luxury.
+                  </p>
+                </div>
 
               <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
                 <h4 className="text-xl font-bold text-yellow-500 mb-3">Performance & Specifications</h4>
@@ -419,8 +455,17 @@ export default function V12Page() {
               </div>
 
               <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
-                <h4 className="text-xl font-bold text-yellow-500 mb-3">The Ultimate V12 Trinity: BMW vs Maybach vs Rolls‑Royce</h4>
-                <div className="grid md:grid-cols-3 gap-4">
+                <h4 className="text-xl font-bold text-yellow-500 mb-3">The Complete Luxury Sedan Quartet: S 350 d vs M760i vs Maybach vs Ghost</h4>
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-black/30 p-4 rounded-none border border-yellow-500/30">
+                    <h5 className="text-yellow-400 font-semibold mb-2 text-center">S 350 d W222</h5>
+                    <ul className="text-white/80 space-y-1 text-sm">
+                      <li>• <span className="text-yellow-400">Price:</span> €25k‑40k (used)</li>
+                      <li>• <span className="text-yellow-400">Focus:</span> Efficiency</li>
+                      <li>• <span className="text-yellow-400">Narrative:</span> Daily luxury</li>
+                      <li>• <span className="text-yellow-400">Best for:</span> Practical luxury</li>
+                    </ul>
+                  </div>
                   <div className="bg-black/30 p-4 rounded-none border border-yellow-500/30">
                     <h5 className="text-yellow-400 font-semibold mb-2 text-center">BMW M760i</h5>
                     <ul className="text-white/80 space-y-1 text-sm">
@@ -452,7 +497,7 @@ export default function V12Page() {
                 <div className="mt-4 bg-black/30 p-4 rounded-none border border-yellow-500/30">
                   <h5 className="text-yellow-400 font-semibold mb-2">Critical Insight</h5>
                   <p className="text-white/80 text-sm">
-                    The BMW M760i offers the best value proposition for V12 enthusiasts who want Rolls‑Royce DNA at a fraction of the cost. While the Maybach and Ghost provide superior luxury, the M760i&apos;s performance credentials and &ldquo;last of its kind&rdquo; narrative make it the smartest investment in the dying V12 era.
+                    The BMW M760i offers the best value proposition for V12 enthusiasts who want Rolls‑Royce DNA at a fraction of the cost. For daily luxury on a budget, the S 350 d W222 provides exceptional value at €25k‑40k. While the Maybach and Ghost provide superior luxury, the M760i&apos;s performance credentials and &ldquo;last of its kind&rdquo; narrative make it the smartest investment in the dying V12 era.
                   </p>
                 </div>
               </div>
@@ -547,14 +592,19 @@ export default function V12Page() {
               <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
                 <h4 className="text-xl font-bold text-yellow-500 mb-3">For the Smart Investor</h4>
                 <p className="text-white/80 mb-4">
-                  The BMW M760i offers the best value proposition in the dying V12 era. At €60k, you get Rolls‑Royce DNA, superior performance, and a compelling narrative that will only strengthen over time. While the Maybach (€100k‑€150k) and Ghost (€130k‑€250k) provide superior luxury, they come at 2–4x the price with similar depreciation curves.
+                  The BMW M760i offers the best value proposition in the dying V12 era. At €60k, you get Rolls‑Royce DNA, superior performance, and a compelling narrative that will only strengthen over time. For daily luxury on a budget, the S 350 d W222 at €25k‑€40k provides exceptional value. While the Maybach (€100k‑€150k) and Ghost (€130k‑€250k) provide superior luxury, they come at 2–4x the price with similar depreciation curves.
                 </p>
                 <p className="text-white/80">
                   <span className="text-yellow-400">Key advantage:</span> The M760i&apos;s performance credentials and &ldquo;last of its kind&rdquo; status make it the smartest investment in the ultra‑luxury V12 segment.
                 </p>
               </div>
               
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="text-center p-4 bg-black/30 rounded-none border border-yellow-500/30">
+                  <h5 className="text-yellow-400 font-bold mb-2">S 350 d W222</h5>
+                  <p className="text-white/80 text-sm">Efficiency • Value • Daily Use</p>
+                  <p className="text-yellow-400 font-bold mt-2">€25k‑40k</p>
+                </div>
                 <div className="text-center p-4 bg-black/30 rounded-none border border-yellow-500/30">
                   <h5 className="text-yellow-400 font-bold mb-2">BMW M760i</h5>
                   <p className="text-white/80 text-sm">Best Value • Performance • Investment</p>
