@@ -14,7 +14,7 @@ export default function V12Page() {
         <div className="space-y-16">
           {/* Hero Section */}
           <div className="text-center space-y-8">
-            <p className="uppercase tracking-[0.4em] text-yellow-500/90 text-sm mb-4 font-light font-satoshi">Luxury V12 • BMW Heritage • Investment View</p>
+            <p className="uppercase tracking-[0.4em] text-yellow-500/90 text-sm mb-4 font-light font-satoshi">Luxury V12 • BMW Heritage • Investment Analysis</p>
             <h1 className="text-center">
               <span className="text-5xl md:text-7xl font-bold text-yellow-500 tracking-tight [text-shadow:_0_1px_20px_rgba(234,179,8,0.3)] font-satoshi">
                 M760i xDrive — The Last V12
@@ -41,7 +41,7 @@ export default function V12Page() {
 
           {/* Overview */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">What it is</h3>
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">What It Is</h3>
             <div className="space-y-4 text-gray-300">
               <p className="text-lg">
                 The pre‑2023 BMW M760i xDrive is BMW’s final production V12. Built through 2022 with a limited “Final V12” run of just 12 US cars, it uses the 6.6‑liter N74 twin‑turbo V12—shared DNA with Rolls‑Royce Ghost/Wraith/Dawn—tuned to ~600–610 hp and 627 lb‑ft. The 7‑Series platform shares roughly 20% of its components with the Rolls‑Royce Ghost, giving it legitimate luxury underpinnings.
@@ -53,21 +53,21 @@ export default function V12Page() {
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
               <div className="flex items-center justify-center gap-4 mb-2">
-                <span className="text-4xl">🧠</span>
+                <span className="text-4xl">⚡</span>
                 <h3 className="text-2xl md:text-3xl font-bold text-yellow-500">Engine</h3>
               </div>
               <p className="text-center text-white/80">6.6L N74 TT V12 • ~600–610 hp • 627 lb‑ft • xDrive</p>
             </div>
             <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
               <div className="flex items-center justify-center gap-4 mb-2">
-                <span className="text-4xl">🚀</span>
+                <span className="text-4xl">🏁</span>
                 <h3 className="text-2xl md:text-3xl font-bold text-yellow-500">Performance</h3>
               </div>
               <p className="text-center text-white/80">0–100 km/h ~3.6 s • Effortless Autobahn pace • Quiet luxury</p>
             </div>
             <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
               <div className="flex items-center justify-center gap-4 mb-2">
-                <span className="text-4xl">👑</span>
+                <span className="text-4xl">🏆</span>
                 <h3 className="text-2xl md:text-3xl font-bold text-yellow-500">Pedigree</h3>
               </div>
               <p className="text-center text-white/80">Final BMW V12 • Shared Rolls‑Royce architecture • Low‑volume swan song</p>
@@ -114,6 +114,33 @@ export default function V12Page() {
             <p className="mt-6 text-white/80">
               Short‑term flip: unlikely. Long‑hold (5–10+ years) as a well‑stored, low‑km example: reasonable chance of modest upside while you enjoy a truly special daily.
             </p>
+          </div>
+
+          {/* Maintenance & Running Costs */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">Maintenance & Running Costs</h3>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                <h4 className="text-xl font-bold text-yellow-500 mb-3">Service Intervals</h4>
+                <ul className="text-white/80 space-y-2">
+                  <li>• Oil changes: Every 15,000 km or annually</li>
+                  <li>• Spark plugs: Every 60,000 km</li>
+                  <li>• Brake fluid: Every 2 years</li>
+                  <li>• Transmission fluid: Every 80,000 km</li>
+                  <li>• Coolant: Every 4 years</li>
+                </ul>
+              </div>
+              <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                <h4 className="text-xl font-bold text-yellow-500 mb-3">Cost Considerations</h4>
+                <ul className="text-white/80 space-y-2">
+                  <li>• Annual service: €1,000–€2,000</li>
+                  <li>• Fuel consumption: 12–15 L/100 km</li>
+                  <li>• Insurance: Premium rates due to V12</li>
+                  <li>• Road tax: Higher in EU due to emissions</li>
+                  <li>• Parts availability: Generally good for 7‑Series</li>
+                </ul>
+              </div>
+            </div>
           </div>
 
           {/* Comparison Section */}
@@ -291,14 +318,185 @@ export default function V12Page() {
             </div>
           </div>
 
+          {/* Rolls-Royce Ghost Comparison */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">Rolls‑Royce Ghost: The Ultimate V12 Benchmark</h3>
+            <div className="space-y-6">
+              <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                <h4 className="text-xl font-bold text-yellow-500 mb-3">Overview & Heritage</h4>
+                <p className="text-white/80 mb-4">
+                  The Rolls‑Royce Ghost represents the pinnacle of British luxury, embodying over a century of automotive excellence. As BMW&apos;s crown jewel (BMW owns Rolls‑Royce), the Ghost shares the same N74 V12 architecture as the M760i but tuned for ultimate refinement rather than performance. The 2025 Series II refresh brings updated styling and enhanced technology while maintaining the handcrafted elegance that defines the brand.
+                </p>
+                <p className="text-white/80 text-sm">
+                  <span className="text-yellow-400">Key insight:</span> The M760i&apos;s V12 is essentially a performance‑tuned version of the Ghost&apos;s engine, making it a unique bridge between BMW performance and Rolls‑Royce luxury.
+                </p>
+              </div>
+
+              <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                <h4 className="text-xl font-bold text-yellow-500 mb-3">Performance & Specifications</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <h5 className="text-yellow-400 font-semibold mb-2">Engine & Performance</h5>
+                    <ul className="text-white/80 space-y-1 text-sm">
+                      <li>• 6.75L Twin‑Turbo V12 (N74)</li>
+                      <li>• 563 hp @ 5,000 rpm (standard)</li>
+                      <li>• 592 hp @ 5,000 rpm (Black Badge)</li>
+                      <li>• 627 lb‑ft torque @ 1,600 rpm</li>
+                      <li>• 664 lb‑ft torque @ 1,600 rpm (Black Badge)</li>
+                      <li>• 8‑speed automatic transmission</li>
+                      <li>• 0‑60 mph: ~4.6 seconds (4.3 Black Badge)</li>
+                      <li>• Top speed: 155 mph (electronically limited)</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h5 className="text-yellow-400 font-semibold mb-2">Dimensions & Chassis</h5>
+                    <ul className="text-white/80 space-y-1 text-sm">
+                      <li>• Length: 218.8 inches</li>
+                      <li>• Wheelbase: 129.7 inches</li>
+                      <li>• Curb weight: ~5,445 lbs</li>
+                      <li>• Cargo space: 17.3 cubic feet</li>
+                      <li>• Magic carpet ride suspension</li>
+                      <li>• Active noise cancellation</li>
+                      <li>• Starlight headliner (optional)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                <h4 className="text-xl font-bold text-yellow-500 mb-3">Luxury & Craftsmanship</h4>
+                <p className="text-white/80 mb-4">
+                  The Ghost&apos;s interior is a masterclass in British craftsmanship, featuring lambswool carpets, hand‑stitched leather, real wood veneers, and the iconic starlight headliner. Unlike the tech‑heavy Maybach, the Ghost focuses on timeless elegance with discreet technology integration.
+                </p>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <h5 className="text-yellow-400 font-semibold mb-2">Bespoke Features</h5>
+                    <ul className="text-white/80 space-y-1 text-sm">
+                      <li>• Hand‑painted coachlines</li>
+                      <li>• Custom embroidery options</li>
+                      <li>• Bespoke color palettes</li>
+                      <li>• Personalized door sills</li>
+                      <li>• Custom picnic tables</li>
+                      <li>• Individual rear seat configuration</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h5 className="text-yellow-400 font-semibold mb-2">Technology Suite</h5>
+                    <ul className="text-white/80 space-y-1 text-sm">
+                      <li>• 10.3‑inch touchscreen (discreet)</li>
+                      <li>• High‑end audio system</li>
+                      <li>• Night vision system</li>
+                      <li>• Head‑up display</li>
+                      <li>• 360‑degree camera</li>
+                      <li>• Adaptive cruise control</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                <h4 className="text-xl font-bold text-yellow-500 mb-3">Pricing & Market Reality</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <h5 className="text-yellow-400 font-semibold mb-2">2025 Pricing</h5>
+                    <ul className="text-white/80 space-y-2">
+                      <li>• <span className="text-yellow-400">Base MSRP:</span> ~$350,000 (US)</li>
+                      <li>• <span className="text-yellow-400">As‑tested range:</span> $400k‑$450k+</li>
+                      <li>• <span className="text-yellow-400">EU pricing:</span> €350k‑€450k+</li>
+                      <li>• <span className="text-yellow-400">Warranty:</span> 4 years/unlimited miles</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h5 className="text-yellow-400 font-semibold mb-2">Investment Profile</h5>
+                    <ul className="text-white/80 space-y-2">
+                      <li>• <span className="text-yellow-400">Depreciation:</span> Slower than Maybach</li>
+                      <li>• <span className="text-yellow-400">Value retention:</span> Excellent due to rarity</li>
+                      <li>• <span className="text-yellow-400">Maintenance:</span> Very high (bespoke parts)</li>
+                      <li>• <span className="text-yellow-400">Fuel economy:</span> 14 mpg combined</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                <h4 className="text-xl font-bold text-yellow-500 mb-3">The Ultimate V12 Trinity: BMW vs Maybach vs Rolls‑Royce</h4>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="bg-black/30 p-4 rounded-none border border-yellow-500/30">
+                    <h5 className="text-yellow-400 font-semibold mb-2 text-center">BMW M760i</h5>
+                    <ul className="text-white/80 space-y-1 text-sm">
+                      <li>• <span className="text-yellow-400">Price:</span> €60k (used)</li>
+                      <li>• <span className="text-yellow-400">Focus:</span> Performance</li>
+                      <li>• <span className="text-yellow-400">Narrative:</span> Last BMW V12</li>
+                      <li>• <span className="text-yellow-400">Best for:</span> Driving enthusiasts</li>
+                    </ul>
+                  </div>
+                  <div className="bg-black/30 p-4 rounded-none border border-yellow-500/30">
+                    <h5 className="text-yellow-400 font-semibold mb-2 text-center">Maybach S680</h5>
+                    <ul className="text-white/80 space-y-1 text-sm">
+                      <li>• <span className="text-yellow-400">Price:</span> €250k+ (new)</li>
+                      <li>• <span className="text-yellow-400">Focus:</span> Technology</li>
+                      <li>• <span className="text-yellow-400">Narrative:</span> German luxury</li>
+                      <li>• <span className="text-yellow-400">Best for:</span> Tech lovers</li>
+                    </ul>
+                  </div>
+                  <div className="bg-black/30 p-4 rounded-none border border-yellow-500/30">
+                    <h5 className="text-yellow-400 font-semibold mb-2 text-center">Rolls‑Royce Ghost</h5>
+                    <ul className="text-white/80 space-y-1 text-sm">
+                      <li>• <span className="text-yellow-400">Price:</span> €350k+ (new)</li>
+                      <li>• <span className="text-yellow-400">Focus:</span> Craftsmanship</li>
+                      <li>• <span className="text-yellow-400">Narrative:</span> British heritage</li>
+                      <li>• <span className="text-yellow-400">Best for:</span> Prestige seekers</li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="mt-4 bg-black/30 p-4 rounded-none border border-yellow-500/30">
+                  <h5 className="text-yellow-400 font-semibold mb-2">Critical Insight</h5>
+                  <p className="text-white/80 text-sm">
+                    The BMW M760i offers the best value proposition for V12 enthusiasts who want Rolls‑Royce DNA at a fraction of the cost. While the Maybach and Ghost provide superior luxury, the M760i&apos;s performance credentials and &ldquo;last of its kind&rdquo; narrative make it the smartest investment in the dying V12 era.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Due Diligence & Links */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">Due Diligence</h3>
-            <ul className="list-disc list-inside space-y-2 text-white/80">
-              <li>Pre‑purchase inspection: engine health, turbos, cooling, xDrive system, electronics</li>
-              <li>Service history: consistent maintenance, coils/plugs, fluids, battery health</li>
-              <li>Local taxes/emissions rules; insurance and road‑tax impact</li>
-            </ul>
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">Due Diligence & Research</h3>
+            <div className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="text-xl font-bold text-yellow-500 mb-3">Pre‑Purchase Inspection</h4>
+                  <ul className="list-disc list-inside space-y-2 text-white/80">
+                    <li>Engine health: compression test, turbo condition, oil analysis</li>
+                    <li>xDrive system: transfer case, differential fluids, driveshafts</li>
+                    <li>Cooling system: radiator, water pump, thermostat, hoses</li>
+                    <li>Electronics: iDrive system, sensors, battery condition</li>
+                    <li>Suspension: air springs, shocks, bushings, alignment</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-yellow-500 mb-3">Service History Analysis</h4>
+                  <ul className="list-disc list-inside space-y-2 text-white/80">
+                    <li>Complete service records with BMW dealer stamps</li>
+                    <li>Regular oil changes (every 15,000 km or annually)</li>
+                    <li>Spark plug replacement (every 60,000 km)</li>
+                    <li>Transmission and differential fluid changes</li>
+                    <li>Brake fluid and coolant replacement history</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                <h4 className="text-xl font-bold text-yellow-500 mb-3">Legal & Financial Considerations</h4>
+                <ul className="list-disc list-inside space-y-2 text-white/80">
+                  <li>EU emissions compliance and road tax implications</li>
+                  <li>Insurance costs (V12 engines command premium rates)</li>
+                  <li>Import duties if sourcing from non‑EU markets</li>
+                  <li>Registration requirements and documentation</li>
+                  <li>Warranty transfer and extended coverage options</li>
+                </ul>
+              </div>
+            </div>
             <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
               <Link href="https://www.autoscout24.com/" target="_blank">
                 <Button className="bg-yellow-500 text-black font-bold px-4 py-2 rounded-none hover:bg-yellow-400 transition-all duration-300 w-full">Browse AutoScout24</Button>
@@ -312,12 +510,68 @@ export default function V12Page() {
             </div>
           </div>
 
+          {/* Call to Action */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">Ready to Invest in the Last BMW V12?</h3>
+            <div className="text-center space-y-6">
+              <p className="text-white/80 text-lg">
+                The BMW M760i represents a unique opportunity to own a piece of automotive history while potentially building long‑term value. With production ended and values stabilizing, now might be the perfect time to secure your example.
+              </p>
+              <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                <Link href="https://www.autoscout24.com/" target="_blank">
+                  <Button className="bg-yellow-500 text-black font-bold px-6 py-3 rounded-none hover:bg-yellow-400 transition-all duration-300 w-full">
+                    Browse EU Listings
+                  </Button>
+                </Link>
+                <Link href="https://www.mobile.de/" target="_blank">
+                  <Button className="bg-black text-yellow-500 font-bold px-6 py-3 rounded-none border-2 border-yellow-500 hover:bg-yellow-500 hover:text-black transition-all duration-300 w-full">
+                    Search German Market
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+
           {/* Bottom Line */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
-            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-4">Bottom line</h3>
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-4">Bottom Line</h3>
             <p className="text-white/80 text-lg">
               If you can secure a low‑km, well‑kept M760i around €60k, it’s a buy—enjoy now, preserve carefully, and let the “last BMW V12” narrative compound. As an alternative, an S‑Class V12 majors in comfort and brand prestige but usually at a higher entry price in comparable condition.
             </p>
+          </div>
+
+          {/* Final Verdict */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">The V12 Trinity: Final Verdict</h3>
+            <div className="space-y-6">
+              <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
+                <h4 className="text-xl font-bold text-yellow-500 mb-3">For the Smart Investor</h4>
+                <p className="text-white/80 mb-4">
+                  The BMW M760i offers the best value proposition in the dying V12 era. At €60k, you get Rolls‑Royce DNA, superior performance, and a compelling narrative that will only strengthen over time. While the Maybach and Ghost provide superior luxury, they come at 4–6x the price with similar depreciation curves.
+                </p>
+                <p className="text-white/80">
+                  <span className="text-yellow-400">Key advantage:</span> The M760i&apos;s performance credentials and &ldquo;last of its kind&rdquo; status make it the smartest investment in the ultra‑luxury V12 segment.
+                </p>
+              </div>
+              
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="text-center p-4 bg-black/30 rounded-none border border-yellow-500/30">
+                  <h5 className="text-yellow-400 font-bold mb-2">BMW M760i</h5>
+                  <p className="text-white/80 text-sm">Best Value • Performance • Investment</p>
+                  <p className="text-yellow-400 font-bold mt-2">€60k</p>
+                </div>
+                <div className="text-center p-4 bg-black/30 rounded-none border border-yellow-500/30">
+                  <h5 className="text-yellow-400 font-bold mb-2">Maybach S680</h5>
+                  <p className="text-white/80 text-sm">Technology • Luxury • Comfort</p>
+                  <p className="text-yellow-400 font-bold mt-2">€250k+</p>
+                </div>
+                <div className="text-center p-4 bg-black/30 rounded-none border border-yellow-500/30">
+                  <h5 className="text-yellow-400 font-bold mb-2">Rolls‑Royce Ghost</h5>
+                  <p className="text-white/80 text-sm">Prestige • Craftsmanship • Heritage</p>
+                  <p className="text-yellow-400 font-bold mt-2">€350k+</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
