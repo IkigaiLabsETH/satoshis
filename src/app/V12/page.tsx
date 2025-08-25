@@ -398,11 +398,11 @@ export default function V12Page() {
                 <h4 className="text-xl font-bold text-yellow-500 mb-3">Pricing & Market Reality</h4>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <h5 className="text-yellow-400 font-semibold mb-2">2025 Pricing</h5>
+                    <h5 className="text-yellow-400 font-semibold mb-2">2025 Used Market Reality</h5>
                     <ul className="text-white/80 space-y-2">
-                      <li>• <span className="text-yellow-400">Base MSRP:</span> ~$350,000 (US)</li>
-                      <li>• <span className="text-yellow-400">As‑tested range:</span> $400k‑$450k+</li>
-                      <li>• <span className="text-yellow-400">EU pricing:</span> €350k‑€450k+</li>
+                      <li>• <span className="text-yellow-400">2014‑2016 Ghost:</span> €130k‑€180k (low mileage)</li>
+                      <li>• <span className="text-yellow-400">2017‑2019 Ghost:</span> €180k‑€250k</li>
+                      <li>• <span className="text-yellow-400">2020+ Ghost:</span> €250k‑€350k+</li>
                       <li>• <span className="text-yellow-400">Warranty:</span> 4 years/unlimited miles</li>
                     </ul>
                   </div>
@@ -433,7 +433,7 @@ export default function V12Page() {
                   <div className="bg-black/30 p-4 rounded-none border border-yellow-500/30">
                     <h5 className="text-yellow-400 font-semibold mb-2 text-center">Maybach S680</h5>
                     <ul className="text-white/80 space-y-1 text-sm">
-                      <li>• <span className="text-yellow-400">Price:</span> €250k+ (new)</li>
+                      <li>• <span className="text-yellow-400">Price:</span> €100k‑€150k (used)</li>
                       <li>• <span className="text-yellow-400">Focus:</span> Technology</li>
                       <li>• <span className="text-yellow-400">Narrative:</span> German luxury</li>
                       <li>• <span className="text-yellow-400">Best for:</span> Tech lovers</li>
@@ -442,7 +442,7 @@ export default function V12Page() {
                   <div className="bg-black/30 p-4 rounded-none border border-yellow-500/30">
                     <h5 className="text-yellow-400 font-semibold mb-2 text-center">Rolls‑Royce Ghost</h5>
                     <ul className="text-white/80 space-y-1 text-sm">
-                      <li>• <span className="text-yellow-400">Price:</span> €350k+ (new)</li>
+                      <li>• <span className="text-yellow-400">Price:</span> €130k‑€250k (used)</li>
                       <li>• <span className="text-yellow-400">Focus:</span> Craftsmanship</li>
                       <li>• <span className="text-yellow-400">Narrative:</span> British heritage</li>
                       <li>• <span className="text-yellow-400">Best for:</span> Prestige seekers</li>
@@ -547,7 +547,7 @@ export default function V12Page() {
               <div className="bg-black/50 p-6 rounded-none border border-yellow-500/20">
                 <h4 className="text-xl font-bold text-yellow-500 mb-3">For the Smart Investor</h4>
                 <p className="text-white/80 mb-4">
-                  The BMW M760i offers the best value proposition in the dying V12 era. At €60k, you get Rolls‑Royce DNA, superior performance, and a compelling narrative that will only strengthen over time. While the Maybach and Ghost provide superior luxury, they come at 4–6x the price with similar depreciation curves.
+                  The BMW M760i offers the best value proposition in the dying V12 era. At €60k, you get Rolls‑Royce DNA, superior performance, and a compelling narrative that will only strengthen over time. While the Maybach (€100k‑€150k) and Ghost (€130k‑€250k) provide superior luxury, they come at 2–4x the price with similar depreciation curves.
                 </p>
                 <p className="text-white/80">
                   <span className="text-yellow-400">Key advantage:</span> The M760i&apos;s performance credentials and &ldquo;last of its kind&rdquo; status make it the smartest investment in the ultra‑luxury V12 segment.
@@ -563,12 +563,12 @@ export default function V12Page() {
                 <div className="text-center p-4 bg-black/30 rounded-none border border-yellow-500/30">
                   <h5 className="text-yellow-400 font-bold mb-2">Maybach S680</h5>
                   <p className="text-white/80 text-sm">Technology • Luxury • Comfort</p>
-                  <p className="text-yellow-400 font-bold mt-2">€250k+</p>
+                  <p className="text-yellow-400 font-bold mt-2">€100k‑150k</p>
                 </div>
                 <div className="text-center p-4 bg-black/30 rounded-none border border-yellow-500/30">
                   <h5 className="text-yellow-400 font-bold mb-2">Rolls‑Royce Ghost</h5>
                   <p className="text-white/80 text-sm">Prestige • Craftsmanship • Heritage</p>
-                  <p className="text-yellow-400 font-bold mt-2">€350k+</p>
+                  <p className="text-yellow-400 font-bold mt-2">€130k‑250k</p>
                 </div>
               </div>
             </div>
