@@ -1,0 +1,65 @@
+I’ve seen a lot of people get excited about building AI agents but end up stuck because everything sounds either too abstract or too hyped. If you’re serious about making your first AI agent, here’s a path you can actually follow. This isn’t (another) theory it’s the same process I’ve used multiple times to build working agents.
+
+Pick a very small and very clear problem Forget about building a “general agent” right now. Decide on one specific job you want the agent to do. Examples: – Book a doctor’s appointment from a hospital website – Monitor job boards and send you matching jobs – Summarize unread emails in your inbox The smaller and clearer the problem, the easier it is to design and debug.
+
+Choose a base LLM Don’t waste time training your own model in the beginning. Use something that’s already good enough. GPT, Claude, Gemini, or open-source options like LLaMA and Mistral if you want to self-host. Just make sure the model can handle reasoning and structured outputs, because that’s what agents rely on.
+
+Decide how the agent will interact with the outside world This is the core part people skip. An agent isn’t just a chatbot but it needs tools. You’ll need to decide what APIs or actions it can use. A few common ones: – Web scraping or browsing (Playwright, Puppeteer, or APIs if available) – Email API (Gmail API, Outlook API) – Calendar API (Google Calendar, Outlook Calendar) – File operations (read/write to disk, parse PDFs, etc.)
+
+Build the skeleton workflow Don’t jump into complex frameworks yet. Start by wiring the basics: – Input from the user (the task or goal) – Pass it through the model with instructions (system prompt) – Let the model decide the next step – If a tool is needed (API call, scrape, action), execute it – Feed the result back into the model for the next step – Continue until the task is done or the user gets a final output
+
+This loop - model --> tool --> result --> model is the heartbeat of every agent.
+
+Add memory carefully Most beginners think agents need massive memory systems right away. Not true. Start with just short-term context (the last few messages). If your agent needs to remember things across runs, use a database or a simple JSON file. Only add vector databases or fancy retrieval when you really need them.
+
+Wrap it in a usable interface CLI is fine at first. Once it works, give it a simple interface: – A web dashboard (Next.js) – A Slack/Discord bot – Or even just a script that runs on your machine The point is to make it usable beyond your terminal so you see how it behaves in a real workflow.
+
+Iterate in small cycles Don’t expect it to work perfectly the first time. Run real tasks, see where it breaks, patch it, run again. Every agent I’ve built has gone through dozens of these cycles before becoming reliable.
+
+Keep the scope under control It’s tempting to keep adding more tools and features. Resist that. A single well-functioning agent that can book an appointment or manage your email is worth way more than a “universal agent” that keeps failing.
+
+The fastest way to learn is to build one specific agent, end-to-end. Once you’ve done that, making the next one becomes ten times easier because you already understand the full pipeline.
+
+## here’s how we’re starting to use AI for prod code.
+
+You still always start with a technical design document. 
+
+This is where a bulk of the work happens. 
+
+# The design doc starts off as a proposal doc. 
+
+If you can get enough stakeholders to agree that your proposal has merit, you move on to developing out the system design itself. 
+
+This includes the full architecture, integrations with other teams, etc.
+
+# Design review before launching into the development effort. 
+
+This is where you have your teams design doc absolutely shredded by Senior Engineers. 
+
+This is good. I think of it as front loading the pain.
+
+If you pass review, you can now launch into the development effort. 
+
+The first few weeks are spent doing more documentation on each subsystem that will be built by the individual dev teams.
+
+# Backlog development and sprint planning. 
+
+This is where the devs work with the PMs and TPMs to hammer out discrete tasks that individual devs will work on and the order.
+
+# Software development. 
+
+Finally, we can now get hands on keyboard and start crushing task tickets. 
+
+This is where AI has been a force multiplier. 
+
+We use Test Driven Development, so I have the AI coding agent write the tests first for the feature I’m going to build. 
+
+Only then do I start using the agent to build out the feature.
+
+# Code submission review. 
+
+We have a two dev approval process before code can get merged into man. 
+
+AI is also showing great promise in assisting with the review.
+
+Test in staging. If staging is good to go, we push to prod.
