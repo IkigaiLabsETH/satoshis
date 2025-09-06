@@ -99,7 +99,6 @@ export function useRoboticsPrices() {
         }
       });
     } catch (err) {
-      console.error('Error fetching robotics prices:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch robotics prices');
     } finally {
       setIsLoading(false);
