@@ -521,6 +521,154 @@ export default function TeslaPage() {
             </motion.div>
           </div>
         </motion.section>
+
+        {/* Tesla Supercharger for Business Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.9 }}
+          className="mb-20"
+        >
+          <div className="flex items-center mb-8">
+            <h2 className="text-3xl font-bold text-yellow-500">Tesla Supercharger for Business</h2>
+            <div className="h-px flex-grow bg-yellow-500/20 ml-6"></div>
+          </div>
+          
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <p className="mb-8 text-white/90 text-lg">
+              Based on available information from Tesla&apos;s Supercharger for Business program and related industry data, here&apos;s an estimate for setting up a minimum order of 4 white-labeled V4 Superchargers. Note that Tesla does not publicly disclose exact pricing (you&apos;ll need to contact them directly via their website for a custom quote), so these figures are derived from recent deals (e.g., BP&apos;s $100M purchase implying ~$43,000 per stall), historical benchmarks, and general EV charging station costs.
+            </p>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 1.0 }}
+                className="bg-black/50 p-6 rounded-none border border-yellow-500/20"
+              >
+                <h3 className="text-xl font-bold text-yellow-500 mb-4">Estimated Costs</h3>
+                <div className="space-y-4 text-white/90">
+                  <div>
+                    <h4 className="font-semibold text-white mb-2">Hardware (4 Supercharger posts + shared cabinet)</h4>
+                    <p className="text-lg">$160,000–$220,000 ($40,000–$55,000 per post)</p>
+                    <p className="text-sm text-white/70">Includes ultra-reliable V4 hardware with up to 500 kW output, software for pricing controls, and integration into Tesla&apos;s management portal. White-labeling allows your branding on the units.</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold text-white mb-2">Installation and Site Preparation</h4>
+                    <p className="text-lg">$100,000–$200,000</p>
+                    <p className="text-sm text-white/70">Includes electrical infrastructure, permitting, construction, and any utility upgrades. Costs are higher in remote or urban areas with complex grid connections.</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold text-white mb-2">Other Upfront Costs</h4>
+                    <p className="text-lg">$20,000–$50,000</p>
+                    <p className="text-sm text-white/70">Optional payment terminals, signage, initial maintenance setup, and Tesla&apos;s onboarding.</p>
+                  </div>
+                  
+                  <div className="bg-yellow-500/10 p-4 rounded-none border border-yellow-500/30">
+                    <h4 className="font-bold text-yellow-500 mb-2">Total Initial Investment</h4>
+                    <p className="text-xl font-bold text-white">$280,000–$470,000</p>
+                    <p className="text-sm text-white/70">for a basic 4-unit setup</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 1.1 }}
+                className="bg-black/50 p-6 rounded-none border border-yellow-500/20"
+              >
+                <h3 className="text-xl font-bold text-yellow-500 mb-4">Ongoing Operations</h3>
+                <div className="space-y-4 text-white/90">
+                  <div>
+                    <h4 className="font-semibold text-white mb-2">Tesla Service Fee</h4>
+                    <p className="text-lg">~5% of gross revenue</p>
+                    <p className="text-sm text-white/70">For network operations, maintenance, and software updates. Tesla handles maintenance and uptime (reported at 99.97% reliability).</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold text-white mb-2">Electricity Costs</h4>
+                    <p className="text-lg">$0.15–$0.25/kWh</p>
+                    <p className="text-sm text-white/70">Your responsibility, depending on location and time-of-use rates.</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold text-white mb-2">Pricing Control</h4>
+                    <p className="text-lg">You set your own rates</p>
+                    <p className="text-sm text-white/70">Common rates: $0.40–$0.60/kWh or $0.20–$0.50/min. Stations appear on Tesla&apos;s app for visibility.</p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 1.2 }}
+              className="bg-black/50 p-6 rounded-none border border-yellow-500/30"
+            >
+              <h3 className="text-xl font-bold text-yellow-500 mb-4">Estimated Returns and ROI</h3>
+              <div className="space-y-4 text-white/90">
+                <p className="text-lg">
+                  Returns depend heavily on location, utilization rates, pricing strategy, and local EV adoption. Here&apos;s a conservative estimate for a moderately busy site (e.g., near a mall or highway rest stop) with 20–30% average utilization:
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold text-white mb-2">Revenue Projection</h4>
+                    <ul className="space-y-2 text-sm">
+                      <li>• 4–8 charging sessions per stall per day</li>
+                      <li>• 30–45 min each, delivering 50–100 kWh per session</li>
+                      <li>• At $0.50/kWh pricing: ~$150–$300 daily per stall</li>
+                      <li>• Annual gross: $220,000–$440,000</li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold text-white mb-2">Operating Costs</h4>
+                    <ul className="space-y-2 text-sm">
+                      <li>• Electricity: ~50% of revenue</li>
+                      <li>• Maintenance/Tesla fee: $10,000–$20,000 annually</li>
+                      <li>• Other (insurance, monitoring): $5,000–$10,000 annually</li>
+                      <li>• Net annual profit: $50,000–$150,000</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="bg-yellow-500/10 p-4 rounded-none border border-yellow-500/30 mt-4">
+                  <h4 className="font-bold text-yellow-500 mb-2">ROI Summary</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div>
+                      <p className="text-2xl font-bold text-white">2–5 years</p>
+                      <p className="text-sm text-white/70">Payback period</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-white">15–35%</p>
+                      <p className="text-sm text-white/70">Annual ROI</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-white">2–3%</p>
+                      <p className="text-sm text-white/70">Property value increase</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 1.3 }}
+              className="mt-6 p-4 bg-yellow-500/5 border-l-4 border-yellow-500 rounded-none"
+            >
+              <p className="text-white/90 text-sm">
+                <strong>Note:</strong> For high-traffic sites, ROI can exceed 40%, but low-usage areas might take 5+ years to break even. Industry reports note profitability is challenging without subsidies, but Tesla&apos;s reliability and brand draw help. To get precise numbers, apply at tesla.com/supercharger-for-business or contact their sales team for a site assessment.
+              </p>
+            </motion.div>
+          </div>
+        </motion.section>
       </div>
     </div>
   );
