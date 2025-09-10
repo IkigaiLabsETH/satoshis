@@ -13,17 +13,9 @@ interface Price {
 
 const TICKERS: Price[] = [
   { symbol: 'BTC', tradingViewSymbol: 'COINBASE:BTCUSD', exchange: 'COINBASE', color: 'text-yellow-500' },
-  { symbol: 'MSTR', tradingViewSymbol: 'NASDAQ:MSTR', exchange: 'NASDAQ', color: 'text-yellow-500' },
-  { symbol: 'STRF', tradingViewSymbol: 'NASDAQ:STRF', exchange: 'NASDAQ', color: 'text-yellow-500' },
-  { symbol: 'STRK', tradingViewSymbol: 'NASDAQ:STRK', exchange: 'NASDAQ', color: 'text-yellow-500' },
-  { symbol: 'MTPLF', tradingViewSymbol: 'OTC:MTPLF', exchange: 'OTC', color: 'text-yellow-500' },
-  { symbol: 'BMNR', tradingViewSymbol: 'AMEX:BMNR', exchange: 'AMEX', color: 'text-yellow-500' },
+
   { symbol: 'COIN', tradingViewSymbol: 'NASDAQ:COIN', exchange: 'NASDAQ', color: 'text-yellow-500' },
-  { symbol: 'CRCL', tradingViewSymbol: 'NYSE:CRCL', exchange: 'NYSE', color: 'text-yellow-500' },
   { symbol: 'HOOD', tradingViewSymbol: 'NASDAQ:HOOD', exchange: 'NASDAQ', color: 'text-yellow-500' },
-  { symbol: 'SBET', tradingViewSymbol: 'NASDAQ:SBET', exchange: 'NASDAQ', color: 'text-yellow-500' },
-  { symbol: 'SQNS', tradingViewSymbol: 'NYSE:SQNS', exchange: 'NYSE', color: 'text-yellow-500' },
-  { symbol: 'MBAV', tradingViewSymbol: 'NASDAQ:MBAV', exchange: 'NASDAQ', color: 'text-yellow-500' },
 ];
 
 export default function PriceTicker() {
