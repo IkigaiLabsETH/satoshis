@@ -886,6 +886,155 @@ export default function WealthTrajectoryPage() {
             </div>
           </div>
 
+          {/* Action Plan Section */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
+              📋 Action Plan: Managing 21 BTC Through 2025-2026 Cycle Peak
+            </h3>
+            <div className="space-y-6">
+              <div className="bg-yellow-500/10 p-6 rounded-lg border border-yellow-500/20">
+                <p className="text-gray-300 leading-relaxed mb-4">
+                  Based on BowTiedBull&apos;s qualitative strategy for Q4 2025/Q1 2026, this action plan tailors their approach to your 21 BTC position. The cycle isn&apos;t over, with potential upside driven by Fed rate cuts, but the rally could start as early as late September if dovish or delay to later Q4 otherwise.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
+                  <div>
+                    <p className="text-yellow-400 font-semibold mb-2">Key Themes:</p>
+                    <ul className="space-y-1">
+                      <li>• Write down objectives today to remove emotion</li>
+                      <li>• Use 85% rule to take profits early</li>
+                      <li>• Focus on majors like BTC for final run-up</li>
+                      <li>• Play &quot;singles&quot; (steady gains over scams)</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="text-yellow-400 font-semibold mb-2">End-of-Cycle Signals:</p>
+                    <ul className="space-y-1">
+                      <li>• Hype IPOs at 200x earnings</li>
+                      <li>• Parents messaging about buys</li>
+                      <li>• Ego inflation & congratulations</li>
+                      <li>• Meaningless hype everywhere</li>
+                    </ul>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-4 italic">
+                  This is not financial advice—it&apos;s a synthesized strategy. Adjust for your risk tolerance, taxes, and full portfolio.
+                </p>
+              </div>
+
+              {/* Step 1 */}
+              <div className="bg-yellow-500/10 p-6 rounded-lg border border-yellow-500/20">
+                <h4 className="text-xl font-bold text-yellow-400 mb-4">Step 1: Define and Document Your Cycle Objective (Do This Today)</h4>
+                <div className="space-y-4 text-gray-300">
+                  <p className="font-semibold text-yellow-300">Why?</p>
+                  <p>Without a written goal, you&apos;ll FOMO into the bear market. 99% gloss over this; don&apos;t be them. Your 21 BTC gives leverage—time is your asset as a larger holder.</p>
+                  
+                  <div className="bg-black/20 p-4 rounded border border-yellow-500/30">
+                    <p className="font-semibold text-yellow-400 mb-3">Action Items:</p>
+                    <ul className="space-y-2 text-sm">
+                      <li>• <span className="text-yellow-300">Calculate current value:</span> 21 BTC × $90K = ~$1.89M</li>
+                      <li>• <span className="text-yellow-300">Set realistic goal:</span> Aim for $3M+ total net worth from crypto</li>
+                      <li>• <span className="text-yellow-300">Apply 85% Rule:</span> Lower target to $2.55M (85% of $3M)</li>
+                      <li>• <span className="text-yellow-300">For your size:</span> Plan to sell ~half (10-11 BTC) near peak to derisk</li>
+                      <li>• <span className="text-yellow-300">Document it:</span> &quot;Goal: $3M peak / $2.55M secured. Sell 10.5 BTC at $180K+ or $200K+&quot;</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 2 */}
+              <div className="bg-yellow-500/10 p-6 rounded-lg border border-yellow-500/20">
+                <h4 className="text-xl font-bold text-yellow-400 mb-4">Step 2: Position for the Run-Up (Heavy Majors Focus)</h4>
+                <div className="space-y-4 text-gray-300">
+                  <p className="font-semibold text-yellow-300">Why?</p>
+                  <p>Doc advises &quot;heavy position in majors for the last run up&quot; + buy confirmed narratives for 1-2 months. With BTC as your core, stay 80-90% allocated here.</p>
+                  
+                  <div className="bg-black/20 p-4 rounded border border-yellow-500/30">
+                    <p className="font-semibold text-yellow-400 mb-3">Action Items:</p>
+                    <ul className="space-y-2 text-sm">
+                      <li>• <span className="text-yellow-300">Hold Core BTC:</span> Keep all 21 BTC in cold storage</li>
+                      <li>• <span className="text-yellow-300">Monitor Macro Triggers:</span> Fed this week, unemployment data, QT rate</li>
+                      <li>• <span className="text-yellow-300">Add Lightly:</span> Allocate 1-2 BTC equivalent to ETH or confirmed narratives</li>
+                      <li>• <span className="text-yellow-300">Risk Management:</span> Set stop-loss at -15% from current (~$76.5K/BTC)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="bg-yellow-500/10 p-6 rounded-lg border border-yellow-500/20">
+                <h4 className="text-xl font-bold text-yellow-400 mb-4">Step 3: Identify and Execute Peak Selling (Sell Some Near Top)</h4>
+                <div className="space-y-4 text-gray-300">
+                  <p className="font-semibold text-yellow-300">Why?</p>
+                  <p>End-of-cycle = heaviest returns, but mania signs signal over. Don&apos;t go to zero. As larger player, sell half early to avoid -60-80% majors drop.</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-black/20 p-4 rounded border border-yellow-500/30">
+                      <p className="font-semibold text-yellow-400 mb-3">Selling Signals:</p>
+                      <ul className="space-y-2 text-sm">
+                        <li>• <span className="text-yellow-300">Early Warnings:</span> Short-duration bonds collapsing; job openings dead</li>
+                        <li>• <span className="text-yellow-300">Peak Confirmation:</span> 25-50% manic pop; parents messaging buys</li>
+                        <li>• <span className="text-yellow-300">Hard Exit:</span> BTC hits $200K+; unemployment &gt;8% risk</li>
+                      </ul>
+                    </div>
+                    <div className="bg-black/20 p-4 rounded border border-yellow-500/30">
+                      <p className="font-semibold text-yellow-400 mb-3">Target Price Tiers:</p>
+                      <ul className="space-y-2 text-sm">
+                        <li>• <span className="text-yellow-300">Tier 1 ($150K-$180K):</span> Sell 5 BTC (~$750K-$900K)</li>
+                        <li>• <span className="text-yellow-300">Tier 2 ($180K-$220K):</span> Sell additional 5-6 BTC</li>
+                        <li>• <span className="text-yellow-300">Post-Sell:</span> Hold remaining 10-11 BTC through drop</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 4 */}
+              <div className="bg-yellow-500/10 p-6 rounded-lg border border-yellow-500/20">
+                <h4 className="text-xl font-bold text-yellow-400 mb-4">Step 4: Post-Peak Management and Re-Entry</h4>
+                <div className="space-y-4 text-gray-300">
+                  <p className="font-semibold text-yellow-300">Why?</p>
+                  <p>Peak to bottom = -60-80%; BTC $70K worse-case. But cycles repeat—rebuy low. Use time as asset; build non-crypto income.</p>
+                  
+                  <div className="bg-black/20 p-4 rounded border border-yellow-500/30">
+                    <p className="font-semibold text-yellow-400 mb-3">Action Items:</p>
+                    <ul className="space-y-2 text-sm">
+                      <li>• <span className="text-yellow-300">Bear Prep:</span> 50% cash/stable for RE; 30% WiFi biz; 20% dry powder</li>
+                      <li>• <span className="text-yellow-300">Re-Entry Signals:</span> Unemployment stabilizes; QT ends; inventory builds</li>
+                      <li>• <span className="text-yellow-300">Target Rebuy:</span> BTC $70K-$80K (post-80% drop from $200K peak)</li>
+                      <li>• <span className="text-yellow-300">Longer-Term:</span> Pivot to hot markets: lifestyle/mobility, self-defense, DTC luxury</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Risks and Reminders */}
+              <div className="bg-red-500/10 p-6 rounded-lg border border-red-500/20">
+                <h4 className="text-xl font-bold text-red-400 mb-4">⚠️ Risks and Reminders</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
+                  <div>
+                    <p className="text-red-400 font-semibold mb-2">Downside:</p>
+                    <ul className="space-y-1">
+                      <li>• Delayed rally (neutral Powell) = sideways Q4</li>
+                      <li>• Broader RE crash if unemployment spikes</li>
+                      <li>• Low BTC liquidity in mania</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="text-green-400 font-semibold mb-2">Upside:</p>
+                    <ul className="space-y-1">
+                      <li>• Dovish Fed = immediate pop</li>
+                      <li>• Your 21 BTC could 2x+ to $4M+ peak</li>
+                      <li>• Escape &quot;corporate handcuffs&quot;</li>
+                    </ul>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-4 italic">
+                  Review plan monthly; update post-Sept 22 Treasury post. This plan positions you to capture 85%+ of upside while derisking.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* FAQ Section */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_rgba(234,179,8,1)]">
             <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
