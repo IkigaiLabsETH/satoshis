@@ -14,7 +14,7 @@ export default function DeRiskingStrategy() {
           Your strategy is a classic way to de-risk while maintaining directional exposure—essentially cashing out most of your holdings into stables for safety, then using a small portion as collateral for a leveraged long to keep the upside potential.
         </p>
         <p className="text-gray-300 leading-relaxed">
-          It's particularly relevant if you believe we're at or near the end of the current Bitcoin halving cycle (which many analysts still see as intact for 2025, with potential peaks around October-November before any major downturn). Based on current market conditions (BTC around $115,000-$116,000), selling 2 BTC would net you roughly $230,000 in USDC, and you'd only need about $5,750-$5,800 in margin for a 40x long to replicate that 2 BTC exposure.
+          It&apos;s particularly relevant if you believe we&apos;re at or near the end of the current Bitcoin halving cycle (which many analysts still see as intact for 2025, with potential peaks around October-November before any major downturn). Based on current market conditions (BTC around $115,000-$116,000), selling 2 BTC would net you roughly $230,000 in USDC, and you&apos;d only need about $5,750-$5,800 in margin for a 40x long to replicate that 2 BTC exposure.
         </p>
       </div>
 
@@ -26,7 +26,7 @@ export default function DeRiskingStrategy() {
           <ul className="space-y-3 text-gray-300">
             <li className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-              <span>Locks in gains from the cycle's run-up</span>
+              <span>Locks in gains from the cycle&apos;s run-up</span>
             </li>
             <li className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
@@ -49,7 +49,7 @@ export default function DeRiskingStrategy() {
           <ul className="space-y-3 text-gray-300">
             <li className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
-              <span>40x is extremely aggressive; BTC's volatility (often 2-5% daily swings) means liquidation can happen on a minor pullback</span>
+              <span>40x is extremely aggressive; BTC&apos;s volatility (often 2-5% daily swings) means liquidation can happen on a minor pullback</span>
             </li>
             <li className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
@@ -65,7 +65,7 @@ export default function DeRiskingStrategy() {
             </li>
             <li className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
-              <span>Opportunity cost—if BTC moons without liquidating you, great, but you've capped your "safe" capital's yield</span>
+              <span>Opportunity cost—if BTC moons without liquidating you, great, but you&apos;ve capped your &quot;safe&quot; capital&apos;s yield</span>
             </li>
           </ul>
         </div>
@@ -112,7 +112,7 @@ export default function DeRiskingStrategy() {
       <div className="mb-8 p-6 bg-purple-500/10 border border-purple-500/30 rounded-xl">
         <h4 className="text-xl font-bold text-purple-400 mb-4">🎯 Stop Loss & Take Profit Strategy</h4>
         <p className="text-gray-300 mb-4">
-          Yes, absolutely recommend both, especially on high leverage where you can't afford to "hodl" through drawdowns. Tight stops (e.g., 1-2% below entry) often fail in BTC due to noise/wick hunting, as you've experienced—volatility triggers them too easily, leading to premature exits. Go wider for efficiency.
+          Yes, absolutely recommend both, especially on high leverage where you can&apos;t afford to &quot;hodl&quot; through drawdowns. Tight stops (e.g., 1-2% below entry) often fail in BTC due to noise/wick hunting, as you&apos;ve experienced—volatility triggers them too easily, leading to premature exits. Go wider for efficiency.
         </p>
         
         <div className="grid md:grid-cols-2 gap-6">
