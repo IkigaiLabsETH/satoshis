@@ -11,6 +11,7 @@ import FarmingSection from '@/components/hyperliquid/FarmingSection';
 import CautionaryTale from '@/components/hyperliquid/CautionaryTale';
 import ValuationSection from '@/components/hyperliquid/ValuationSection';
 import CTASection from '@/components/hyperliquid/CTASection';
+import DeRiskingStrategy from '@/components/hyperliquid/DeRiskingStrategy';
 
 export default function HyperliquidPage() {
   const [btcPrice, setBtcPrice] = useState<number | null>(null);
@@ -174,6 +175,7 @@ export default function HyperliquidPage() {
           <EcosystemSection />
           <FarmingSection />
           <CautionaryTale />
+          <DeRiskingStrategy />
           <ValuationSection />
           <CTASection />
         </div>
