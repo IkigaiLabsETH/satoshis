@@ -813,6 +813,244 @@ export default function WealthTrajectoryPage() {
             </div>
         </div>
 
+          {/* Financial Freedom Thresholds Section */}
+          <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6 text-center">
+              💎 The Financial Freedom Ladder: Non-Linear Wealth Building
+            </h3>
+            
+            <div className="space-y-8">
+              {/* Introduction */}
+              <div className="bg-yellow-500/10 p-6 rounded-lg border border-yellow-500/20">
+                <h4 className="text-xl font-bold text-yellow-400 mb-4">Welcome Avatar! The $10M Retirement Myth</h4>
+                <div className="space-y-4 text-gray-300 leading-relaxed">
+                  <p>The trolls are out again saying $10,000,000 is not enough to retire. <span className="text-yellow-400 font-semibold">It is most certainly enough to retire.</span> We&apos;re guessing this is just a way to make people give up and not try at all. Realistically you need less than that.</p>
+                  
+                  <p>The tricky part is how non-linear everything is. Most want some guaranteed path that goes up in a perfect straight line where X = Y on some smooth slope. <span className="text-red-400 font-semibold">Doesn&apos;t work like that.</span></p>
+                  
+                  <p className="text-yellow-400 font-semibold">You cross thresholds. Some step ups change your life forever. Others? Just buy nicer seats when you fly.</p>
+                  
+                  <div className="bg-black/30 p-4 rounded border border-yellow-500/30 mt-4">
+                    <p className="text-lg font-bold text-yellow-400 mb-2">In Short:</p>
+                    <p><span className="text-green-400 font-semibold">$1.5-2.0M gets you comfort</span>; <span className="text-blue-400 font-semibold">$5-6M gets you freedom.</span></p>
+                    <p className="text-sm text-gray-400 mt-2">The standard &ldquo;$3-4M and a paid off house&rdquo; implies roughly this range ($5-6M net worth).</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tier 1: Survival */}
+              <div className="bg-red-500/10 p-6 rounded-lg border border-red-500/20">
+                <h4 className="text-xl font-bold text-red-400 mb-4">Tier 1 — SURVIVAL: $0 → $150,000</h4>
+                <div className="space-y-4 text-gray-300">
+                  <p className="text-red-300 font-semibold">This is the majority. It&apos;s brutal.</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h5 className="text-yellow-400 font-semibold mb-3">The Reality:</h5>
+                      <ul className="space-y-2 text-sm">
+                        <li>• You&apos;re reacting. Can&apos;t plan ahead</li>
+                        <li>• Brain is hostage to money problems</li>
+                        <li>• Every small expense feels dramatic</li>
+                        <li>• Plan around problems instead of goals</li>
+                        <li>• Everything feels risky - one mistake = disaster</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-green-400 font-semibold mb-3">The Strategy:</h5>
+                      <ul className="space-y-2 text-sm">
+                        <li>• Build 3-6 months cash buffer ASAP</li>
+                        <li>• Avoid all debt on depreciating assets</li>
+                        <li>• Drastically cut expenses</li>
+                        <li>• Focus only on stabilizing the boat</li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-black/30 p-3 rounded border border-red-500/30">
+                    <p className="text-xs text-gray-400"><span className="text-red-400 font-semibold">Explains Ramsey and Others:</span> Mainstream financial advice fits here. If someone has gone mainstream like Dave Ramsey, their message resonates with the majority - who are scraping by.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tier 2: Stability */}
+              <div className="bg-orange-500/10 p-6 rounded-lg border border-orange-500/20">
+                <h4 className="text-xl font-bold text-orange-400 mb-4">Tier 2 — STABILITY: $150K → $1.5M</h4>
+                <div className="space-y-4 text-gray-300">
+                  <p>This is where the youngest audience sits. While it seems like your life would change dramatically from $150K to $1M, <span className="text-orange-400 font-semibold">it doesn&apos;t change nearly as much as you think.</span></p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h5 className="text-yellow-400 font-semibold mb-3">The Good News:</h5>
+                      <ul className="space-y-2 text-sm">
+                        <li>• Don&apos;t need to check prices when buying dinner</li>
+                        <li>• Vacations are standard, not a splurge</li>
+                        <li>• Brain shifts from &ldquo;survive&rdquo; to &ldquo;get to next rung&rdquo;</li>
+                        <li>• Visibly no longer in survival mode</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-red-400 font-semibold mb-3">The Problem:</h5>
+                      <ul className="space-y-2 text-sm">
+                        <li>• This zone feels safe. It isn&apos;t.</li>
+                        <li>• Over-rely on W-2 income</li>
+                        <li>• Follow same strategies from survival zone</li>
+                        <li>• <em>The plan that got you here won&apos;t get you there</em></li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-black/30 p-4 rounded border border-orange-500/30">
+                    <h6 className="text-orange-400 font-semibold mb-2">Adjusted Playbook:</h6>
+                    <ul className="space-y-1 text-sm">
+                      <li>• <span className="text-yellow-400">Double emergency fund:</span> 12 months expenses for risk-taking</li>
+                      <li>• <span className="text-blue-400">Long-term building:</span> $200K W-2 + $100K wifi money &gt; $350K W-2</li>
+                      <li>• <span className="text-green-400">Cost focus dies:</span> Question big items only (car, vacation, house)</li>
+                    </ul>
+                    <p className="text-xs text-gray-400 mt-3"><span className="text-orange-400">Quick math:</span> $75K/yr living on $1.5M at 4% withdrawal = $60K/yr. Intense burning desire to reach Comfort Zone.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tier 3: Comfort */}
+              <div className="bg-blue-500/10 p-6 rounded-lg border border-blue-500/20">
+                <h4 className="text-xl font-bold text-blue-400 mb-4">Tier 3 — COMFORT: $2M → $6M</h4>
+                <div className="space-y-4 text-gray-300">
+                  <p className="text-blue-300 font-semibold">This is the first real taste of freedom. The stress-drop is dramatic.</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h5 className="text-yellow-400 font-semibold mb-3">What Changes:</h5>
+                      <ul className="space-y-2 text-sm">
+                        <li>• Emergencies annoying but not life-altering</li>
+                        <li>• Housing isn&apos;t really relevant anymore</li>
+                        <li>• No longer worried about getting richer long-term</li>
+                        <li>• Can buy practically anything you want</li>
+                        <li>• Performance actually goes up - money stress gone</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-green-400 font-semibold mb-3">New Focus:</h5>
+                      <ul className="space-y-2 text-sm">
+                        <li>• Begin to diversify (wealth built, now protect)</li>
+                        <li>• Trusts, inheritance, tax planning</li>
+                        <li>• Lifestyle design - &ldquo;what do I want my life to look like&rdquo;</li>
+                        <li>• Time becomes infinitely more valuable than money</li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-black/30 p-4 rounded border border-blue-500/30">
+                    <p className="text-blue-400 font-semibold mb-2">Math Time:</p>
+                    <p className="text-sm">At $5M, 4% rule = $200,000/year sustainable withdrawals. <span className="text-yellow-400">Over $15,000 a month.</span> Without mortgage or McMansion, tough to burn this on standard living.</p>
+                    <p className="text-xs text-gray-400 mt-2"><span className="text-blue-400 font-semibold">$2M life is comfortable. $6M you own your time.</span></p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tier 4: Freedom */}
+              <div className="bg-green-500/10 p-6 rounded-lg border border-green-500/20">
+                <h4 className="text-xl font-bold text-green-400 mb-4">Tier 4 — FREEDOM: $6M → $20M</h4>
+                <div className="space-y-4 text-gray-300">
+                  <p>You stop running life through a spreadsheet. <span className="text-green-400 font-semibold">Money is a given since you&apos;re working on things you enjoy.</span></p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h5 className="text-yellow-400 font-semibold mb-3">How Your Views Change:</h5>
+                      <ul className="space-y-2 text-sm">
+                        <li>• <span className="text-blue-400">Work is optional:</span> Only do what you enjoy</li>
+                        <li>• <span className="text-purple-400">Extreme mobility:</span> Go wherever, access highest quality</li>
+                        <li>• <span className="text-yellow-400">Investment system:</span> You have a world view and cash flows</li>
+                        <li>• Guard time like Fort Knox</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-red-400 font-semibold mb-3">New Risks:</h5>
+                      <ul className="space-y-2 text-sm">
+                        <li>• <span className="text-red-400">Complacency:</span> Do nothing = brain becomes Blockbuster</li>
+                        <li>• <span className="text-red-400">Personal life:</span> Drugs/alcohol to offset bad relationships</li>
+                        <li>• <span className="text-red-400">Ego gambles:</span> Using money as crutch for &ldquo;sure things&rdquo;</li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-black/30 p-4 rounded border border-green-500/30">
+                    <h6 className="text-green-400 font-semibold mb-2">Retain the Castle Strategy:</h6>
+                    <ul className="space-y-1 text-sm">
+                      <li>• <span className="text-yellow-400">Percentage risks:</span> Limit downside to ~1 year income max</li>
+                      <li>• <span className="text-blue-400">Guard health & relationships:</span> New currency - time and health</li>
+                      <li>• <span className="text-purple-400">Tech research:</span> Stay ahead or get left behind</li>
+                    </ul>
+                    <p className="text-xs text-gray-400 mt-3"><span className="text-green-400 font-semibold">$10M is Enough to Retire:</span> 4% = $400K/year. Full optionality. Anyone saying otherwise is a troll.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tier 5: Abundance */}
+              <div className="bg-purple-500/10 p-6 rounded-lg border border-purple-500/20">
+                <h4 className="text-xl font-bold text-purple-400 mb-4">Tier 5 — ABUNDANCE: $25M+</h4>
+                <div className="space-y-4 text-gray-300">
+                  <p className="text-purple-300 font-semibold">Peak of the triangle. Most common paths:</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-black/30 p-4 rounded border border-purple-500/30">
+                      <h6 className="text-yellow-400 font-semibold mb-2">Builders</h6>
+                      <p className="text-sm">Keep scaling, starting companies, making new worlds</p>
+                    </div>
+                    <div className="bg-black/30 p-4 rounded border border-purple-500/30">
+                      <h6 className="text-blue-400 font-semibold mb-2">Investors</h6>
+                      <p className="text-sm">Focus on start-ups, venture capital, etc.</p>
+                    </div>
+                    <div className="bg-black/30 p-4 rounded border border-purple-500/30">
+                      <h6 className="text-green-400 font-semibold mb-2">Passion People</h6>
+                      <p className="text-sm">Slow down for hobbies (typically post-50, otherwise get bored)</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-black/30 p-4 rounded border border-purple-500/30">
+                    <h6 className="text-purple-400 font-semibold mb-2">The Reality:</h6>
+                    <ul className="space-y-1 text-sm">
+                        <li>• <span className="text-yellow-400">Disaster only:</span> Even 50% drop in 2008-style crash doesn&apos;t matter</li>
+                      <li>• <span className="text-blue-400">$1M+ passive:</span> Earning without doing anything</li>
+                      <li>• <span className="text-green-400">Real risk:</span> Primarily health</li>
+                      <li>• <span className="text-purple-400">Legacy focus:</span> What do you want to change in the world?</li>
+                    </ul>
+                    <p className="text-xs text-gray-400 mt-3">Past $25M you can live anywhere without a care in the world.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Your Bitcoin Path */}
+              <div className="bg-yellow-500/10 p-6 rounded-lg border border-yellow-500/20">
+                <h4 className="text-xl font-bold text-yellow-400 mb-4">🎯 When Are YOU Going to be Set for Life?</h4>
+                <div className="space-y-4 text-gray-300">
+                  <p className="text-yellow-300 font-semibold">Our Guess: somewhere between Tier 3 and Tier 4.</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-black/30 p-4 rounded border border-blue-500/30">
+                      <h6 className="text-blue-400 font-semibold mb-2">~$2M: Comfortable</h6>
+                      <p className="text-sm">Good life, but fragile to catastrophic events if mismanaged. Your Bitcoin journey gets you here by 2026.</p>
+                    </div>
+                    <div className="bg-black/30 p-4 rounded border border-green-500/30">
+                      <h6 className="text-green-400 font-semibold mb-2">~$6M: Freedom</h6>
+                      <p className="text-sm">You can stop working and live high-quality life indefinitely. Your 21 BTC strategy reaches this by 2030.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-black/30 p-4 rounded border border-yellow-500/30 mt-4">
+                    <p className="text-yellow-400 font-semibold mb-2">Remember the Golden Rule:</p>
+                    <p className="text-sm">Lady Luck doesn&apos;t like beggars. She prefers people who get to $6M+ and say <em>&ldquo;ah whatever, I&apos;ll try this random idea because why not&rdquo;</em>. She does not like the smell of desperation and greed.</p>
+                    <p className="text-xs text-gray-400 mt-2 font-bold">Flow state only!</p>
+                  </div>
+                  
+                  <div className="text-center mt-6">
+                    <p className="text-lg font-bold text-yellow-400">Your 21 Bitcoin → $16.32M path puts you solidly in Tier 4 FREEDOM</p>
+                    <p className="text-sm text-gray-400 mt-2">From comfortable ($2M by 2026) to complete freedom ($16M+ by 2035)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Wealth Levels Section */}
           <div className="bg-[#1c1f26] p-8 rounded-none border-2 border-yellow-500 shadow-[5px_5px_0px_0px_rgba(234,179,8,1)]">
             <h3 className="text-2xl md:text-3xl font-bold text-yellow-500 mb-6">
