@@ -1,6 +1,5 @@
 'use client'
 
-import dynamic from 'next/dynamic';
 import HumeService from "@/services/hume";
 import { Loader } from '@/components/ai/Loader';
 import { StartCall } from '@/components/ai/StartCall';
@@ -9,11 +8,20 @@ import { clientLogger } from '@/utils/clientLogger';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-// Dynamic import for Controls component to avoid SSR issues
-const Controls = dynamic(
-  () => import('@/components/ai/Controls').then(mod => mod.Controls),
-  { ssr: false }
-);
+import { Controls } from '@/components/ai/Controls';
+
+// Client-side only Controls wrapper
+function ClientControls() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+  
+  return <Controls />;
+}
 
 function VoiceExperience() {
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -184,7 +192,7 @@ function VoiceExperience() {
       </div>
 
       {/* Controls - only rendered when connected */}
-      <Controls />
+      <ClientControls />
     </VoiceProvider>
   );
 }
