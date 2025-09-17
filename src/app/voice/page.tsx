@@ -177,15 +177,14 @@ function VoiceExperience() {
           >
             <StartCall />
           </motion.div>
-          
-          <div className="mt-8">
-            <Controls />
-          </div>
         </div>
 
         {/* Bottom Gradient */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent" />
       </div>
+
+      {/* Controls - only rendered when connected */}
+      <Controls />
     </VoiceProvider>
   );
 }
