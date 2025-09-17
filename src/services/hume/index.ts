@@ -76,15 +76,32 @@ export const getAccessToken = async (): Promise<string> => {
   try {
     const { apiKey, secretKey } = validateCredentials();
     
+    logger.info('Fetching access token from Hume AI...', {
+      apiKeyLength: apiKey.length,
+      secretKeyLength: secretKey.length,
+      apiKeyPrefix: apiKey.substring(0, 8) + '...'
+    });
+    
     const accessToken = await fetchAccessToken({
       apiKey,
       secretKey,
     });
 
-    if (!accessToken || accessToken === 'undefined' || typeof accessToken !== 'string') {
-      throw new Error('Invalid access token received from Hume AI');
+    logger.info('Raw access token received:', {
+      tokenType: typeof accessToken,
+      tokenLength: accessToken?.length || 0,
+      tokenValue: accessToken,
+      isString: typeof accessToken === 'string',
+      isUndefined: accessToken === undefined,
+      isNull: accessToken === null,
+      isUndefinedString: accessToken === 'undefined'
+    });
+
+    if (!accessToken || accessToken === 'undefined' || typeof accessToken !== 'string' || accessToken.length === 0) {
+      throw new Error(`Invalid access token received from Hume AI: ${JSON.stringify(accessToken)}`);
     }
 
+    logger.info('Access token validation passed');
     return accessToken;
   } catch (error) {
     logger.error('Failed to get Hume access token:', error);
