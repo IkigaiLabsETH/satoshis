@@ -222,16 +222,38 @@ function VoiceExperience() {
       auth={{ type: "accessToken", value: accessToken }}
       configId={HumeService.defaultVoiceConfig.configId}
       hostname="api.hume.ai"
-      debug={false}
-      verboseTranscription={false}
+      debug={true}
+      verboseTranscription={true}
       clearMessagesOnDisconnect={true}
+      resumeOnDisconnect={false}
       onMessage={(message) => {
-        clientLogger.info('Voice message received:', message);
+        clientLogger.info('Voice message received:', {
+          type: message?.type,
+          message: message,
+          messageKeys: message ? Object.keys(message) : [],
+        });
+        
+        // Handle different message types
+        if (message?.type) {
+          switch (message.type) {
+            case 'user_message':
+            case 'assistant_message':
+            case 'audio_input':
+            case 'audio_output':
+              clientLogger.info(`Handling ${message.type} message`);
+              break;
+            default:
+              clientLogger.warn(`Unknown message type: ${message.type}`, message);
+              break;
+          }
+        }
       }}
       onError={(error) => {
         clientLogger.error('Voice connection error:', error);
         // Check for specific audio errors
-        if (error?.message?.includes('decodeAudioData')) {
+        if (error?.message?.includes('unknown message type')) {
+          setError('Voice protocol error. Please try refreshing the page.');
+        } else if (error?.message?.includes('decodeAudioData')) {
           setError('Audio system error. Please refresh the page and try again.');
         } else if (error?.message?.includes('AudioContext')) {
           setError('Browser audio not supported. Please try a different browser.');
