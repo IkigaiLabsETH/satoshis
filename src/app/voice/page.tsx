@@ -2,60 +2,65 @@
 
 import HumeService from "@/services/hume";
 import { Loader } from '@/components/ai/Loader';
-import { StartCall } from '@/components/ai/StartCall';
-import { VoiceProvider } from "@humeai/voice-react";
+import { VoiceProvider, useVoice } from "@humeai/voice-react";
 import { clientLogger } from '@/utils/clientLogger';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Mic } from 'lucide-react';
+import { Mic, Phone } from 'lucide-react';
 
-import { Controls } from '@/components/ai/Controls';
+// Simple inline StartCall component that doesn't import external useVoice components
+function InlineStartCall() {
+  const { connect, status } = useVoice();
+  const [isConnecting, setIsConnecting] = useState(false);
 
-// Client-side only Controls wrapper
-function ClientControls() {
-  const [mounted, setMounted] = useState(false);
+  const handleConnect = async () => {
+    setIsConnecting(true);
+    try {
+      await connect();
+    } catch (err) {
+      clientLogger.error('Connection failed:', err);
+    } finally {
+      setIsConnecting(false);
+    }
+  };
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  if (status?.value === 'connected') {
+    return null;
+  }
 
-  if (!mounted) return null;
-  
-  return <Controls />;
+  return (
+    <Button
+      size="lg"
+      className="relative w-full gap-3 font-semibold text-base py-4 sm:py-6 bg-gradient-to-r from-black via-zinc-900 to-black hover:bg-[#F7B500] hover:from-[#F7B500] hover:via-[#F7B500] hover:to-[#F7B500] text-[#F7B500] hover:text-black transition-all duration-300 ease-out border border-[#F7B500] shadow-[5px_5px_0px_0px_#F7B500] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] disabled:opacity-70 disabled:cursor-not-allowed rounded-md"
+      onClick={handleConnect}
+      disabled={isConnecting}
+    >
+      <Mic className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
+      {isConnecting ? 'Connecting...' : 'Start Call'}
+    </Button>
+  );
 }
 
-// Safe StartCall wrapper that doesn't use useVoice hook
-function SafeStartCall() {
-  const [mounted, setMounted] = useState(false);
+// Simple inline Controls component
+function InlineControls() {
+  const { disconnect, status } = useVoice();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    // Return a loading state that doesn't use useVoice
-    return (
-      <div className="relative w-full">
-        <motion.div
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          className="relative"
-        >
-          <Button
-            size="lg"
-            className="relative w-full gap-3 font-semibold text-base py-4 sm:py-6 bg-gradient-to-r from-black via-zinc-900 to-black text-[#F7B500] border border-[#F7B500] shadow-[5px_5px_0px_0px_#F7B500] rounded-md opacity-50"
-            disabled
-          >
-            <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
-            Loading...
-          </Button>
-        </motion.div>
-      </div>
-    );
+  if (status?.value !== 'connected') {
+    return null;
   }
-  
-  return <StartCall />;
+
+  return (
+    <div className="fixed bottom-0 left-0 w-full pb-6 sm:pb-8 px-4 sm:px-6 flex items-end justify-center z-50">
+      <Button
+        onClick={() => disconnect()}
+        className="relative gap-3 font-semibold text-base py-4 sm:py-6 bg-gradient-to-r from-black via-zinc-900 to-black hover:bg-[#F7B500] hover:from-[#F7B500] hover:via-[#F7B500] hover:to-[#F7B500] text-[#F7B500] hover:text-black transition-all duration-300 ease-out border border-[#F7B500] shadow-[5px_5px_0px_0px_#F7B500] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] disabled:opacity-70 disabled:cursor-not-allowed rounded-md"
+      >
+        <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
+        End Call
+      </Button>
+    </div>
+  );
 }
 
 function VoiceExperience() {
@@ -133,7 +138,14 @@ function VoiceExperience() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black" />
         <div className="relative z-10 max-w-md p-8 rounded-sm bg-black/50 backdrop-blur-xl border border-[#F7B500]/10">
           <p className="text-red-500 mb-6 text-center">{error || 'Unable to initialize voice interface'}</p>
-          <SafeStartCall />
+          <Button
+            size="lg"
+            className="relative w-full gap-3 font-semibold text-base py-4 sm:py-6 bg-gradient-to-r from-black via-zinc-900 to-black text-[#F7B500] border border-[#F7B500] shadow-[5px_5px_0px_0px_#F7B500] rounded-md opacity-50"
+            disabled
+          >
+            <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+            Retry
+          </Button>
         </div>
       </div>
     );
@@ -218,7 +230,7 @@ function VoiceExperience() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <SafeStartCall />
+            <InlineStartCall />
           </motion.div>
         </div>
 
@@ -227,7 +239,7 @@ function VoiceExperience() {
       </div>
 
       {/* Controls - only rendered when connected */}
-      <ClientControls />
+      <InlineControls />
     </VoiceProvider>
   );
 }
