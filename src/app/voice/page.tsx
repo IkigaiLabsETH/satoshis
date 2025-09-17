@@ -1,6 +1,6 @@
 'use client'
 
-import HumeService from "@/services/hume";
+// import HumeService from "@/services/hume";
 import { Loader } from '@/components/ai/Loader';
 import { VoiceProvider, useVoice } from "@humeai/voice-react";
 import { clientLogger } from '@/utils/clientLogger';
@@ -220,7 +220,6 @@ function VoiceExperience() {
   return (
     <VoiceProvider
       auth={{ type: "accessToken", value: accessToken }}
-      configId={HumeService.defaultVoiceConfig.configId}
       hostname="api.hume.ai"
       debug={true}
       verboseTranscription={true}
