@@ -7,6 +7,8 @@ import { VoiceProvider } from "@humeai/voice-react";
 import { clientLogger } from '@/utils/clientLogger';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Mic } from 'lucide-react';
 
 import { Controls } from '@/components/ai/Controls';
 
@@ -21,6 +23,39 @@ function ClientControls() {
   if (!mounted) return null;
   
   return <Controls />;
+}
+
+// Safe StartCall wrapper that doesn't use useVoice hook
+function SafeStartCall() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    // Return a loading state that doesn't use useVoice
+    return (
+      <div className="relative w-full">
+        <motion.div
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          className="relative"
+        >
+          <Button
+            size="lg"
+            className="relative w-full gap-3 font-semibold text-base py-4 sm:py-6 bg-gradient-to-r from-black via-zinc-900 to-black text-[#F7B500] border border-[#F7B500] shadow-[5px_5px_0px_0px_#F7B500] rounded-md opacity-50"
+            disabled
+          >
+            <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+            Loading...
+          </Button>
+        </motion.div>
+      </div>
+    );
+  }
+  
+  return <StartCall />;
 }
 
 function VoiceExperience() {
@@ -98,7 +133,7 @@ function VoiceExperience() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black" />
         <div className="relative z-10 max-w-md p-8 rounded-sm bg-black/50 backdrop-blur-xl border border-[#F7B500]/10">
           <p className="text-red-500 mb-6 text-center">{error || 'Unable to initialize voice interface'}</p>
-          <StartCall />
+          <SafeStartCall />
         </div>
       </div>
     );
@@ -183,7 +218,7 @@ function VoiceExperience() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <StartCall />
+            <SafeStartCall />
           </motion.div>
         </div>
 
