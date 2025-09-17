@@ -225,7 +225,6 @@ function VoiceExperience() {
       debug={true}
       verboseTranscription={true}
       clearMessagesOnDisconnect={true}
-      resumeOnDisconnect={false}
       onMessage={(message) => {
         clientLogger.info('Voice message received:', {
           type: message?.type,
@@ -234,16 +233,19 @@ function VoiceExperience() {
         });
         
         // Handle different message types
-        if (message?.type) {
-          switch (message.type) {
+        if (message && typeof message === 'object' && 'type' in message) {
+          const messageType = (message as { type: string }).type;
+          switch (messageType) {
             case 'user_message':
             case 'assistant_message':
             case 'audio_input':
             case 'audio_output':
-              clientLogger.info(`Handling ${message.type} message`);
+            case 'assistant_end':
+            case 'error':
+              clientLogger.info(`Handling ${messageType} message`);
               break;
             default:
-              clientLogger.warn(`Unknown message type: ${message.type}`, message);
+              clientLogger.warn(`Unknown message type: ${messageType}`, message);
               break;
           }
         }
