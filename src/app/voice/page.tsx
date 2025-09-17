@@ -17,29 +17,62 @@ function InlineStartCall() {
   const handleConnect = async () => {
     setIsConnecting(true);
     try {
+      clientLogger.info('Starting voice connection...');
+      
+      // Check browser compatibility
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Browser does not support audio recording');
+      }
+      
       // Initialize AudioContext before connecting to prevent decodeAudioData issues
-      if (typeof window !== 'undefined' && window.AudioContext) {
+      if (typeof window !== 'undefined') {
         const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
         if (AudioContextClass) {
+          clientLogger.info('Initializing AudioContext...');
           const audioContext = new AudioContextClass();
           if (audioContext.state === 'suspended') {
+            clientLogger.info('Resuming suspended AudioContext...');
             await audioContext.resume();
           }
+          clientLogger.info('AudioContext state:', audioContext.state);
+        } else {
+          clientLogger.warn('AudioContext not supported in this browser');
         }
       }
       
       // Request microphone permission explicitly
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      clientLogger.info('Requesting microphone permission...');
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
+      clientLogger.info('Microphone permission granted');
       
+      // Stop the stream since Hume will handle it
+      stream.getTracks().forEach(track => track.stop());
+      
+      clientLogger.info('Connecting to Hume voice service...');
       await connect();
+      clientLogger.info('Successfully connected to voice service');
     } catch (err) {
       clientLogger.error('Connection failed:', err);
       if (err instanceof Error) {
-        if (err.message.includes('Permission denied')) {
-          clientLogger.error('Microphone permission denied');
+        if (err.message.includes('Permission denied') || err.message.includes('NotAllowedError')) {
+          throw new Error('Microphone permission denied. Please allow microphone access and try again.');
+        } else if (err.message.includes('NotFoundError')) {
+          throw new Error('No microphone found. Please check your audio devices.');
         } else if (err.message.includes('decodeAudioData')) {
-          clientLogger.error('Audio decoding error - browser compatibility issue');
+          throw new Error('Audio system error. Please try refreshing the page or use a different browser.');
+        } else if (err.message.includes('AudioContext')) {
+          throw new Error('Browser audio not supported. Please try Chrome, Firefox, or Safari.');
+        } else {
+          throw new Error(`Connection failed: ${err.message}`);
         }
+      } else {
+        throw new Error('Unknown connection error occurred');
       }
     } finally {
       setIsConnecting(false);
@@ -94,18 +127,24 @@ function VoiceExperience() {
     const fetchToken = async () => {
       try {
         setLoading(true);
+        clientLogger.info('Fetching Hume access token...');
+        
         const response = await fetch('/api/hume');
         
         if (!response.ok) {
-          throw new Error(`Failed to fetch access token: ${response.status}`);
+          const errorText = await response.text();
+          clientLogger.error('API response error:', { status: response.status, text: errorText });
+          throw new Error(`Failed to fetch access token: ${response.status} - ${errorText}`);
         }
         
         const data = await response.json();
+        clientLogger.info('API response received:', data);
         
         if (!data.accessToken) {
-          throw new Error('Invalid access token received');
+          throw new Error('Invalid access token received from API');
         }
         
+        clientLogger.info('Access token received successfully');
         setAccessToken(data.accessToken);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to initialize voice';
@@ -161,8 +200,14 @@ function VoiceExperience() {
           <p className="text-red-500 mb-6 text-center">{error || 'Unable to initialize voice interface'}</p>
           <Button
             size="lg"
-            className="relative w-full gap-3 font-semibold text-base py-4 sm:py-6 bg-gradient-to-r from-black via-zinc-900 to-black text-[#F7B500] border border-[#F7B500] shadow-[5px_5px_0px_0px_#F7B500] rounded-md opacity-50"
-            disabled
+            className="relative w-full gap-3 font-semibold text-base py-4 sm:py-6 bg-gradient-to-r from-black via-zinc-900 to-black hover:bg-[#F7B500] hover:from-[#F7B500] hover:via-[#F7B500] hover:to-[#F7B500] text-[#F7B500] hover:text-black transition-all duration-300 ease-out border border-[#F7B500] shadow-[5px_5px_0px_0px_#F7B500] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] rounded-md"
+            onClick={() => {
+              setError(null);
+              setAccessToken(null);
+              setLoading(true);
+              // Trigger a re-fetch by reloading the page
+              window.location.reload();
+            }}
           >
             <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
             Retry
@@ -177,16 +222,40 @@ function VoiceExperience() {
       auth={{ type: "accessToken", value: accessToken }}
       configId={HumeService.defaultVoiceConfig.configId}
       hostname="api.hume.ai"
-      debug={false}
-      verboseTranscription={false}
+      debug={true}
+      verboseTranscription={true}
       clearMessagesOnDisconnect={true}
       onMessage={(message) => {
-        clientLogger.info('Voice message received:', message);
+        clientLogger.info('Voice message received:', {
+          type: message?.type,
+          message: message,
+          messageKeys: message ? Object.keys(message) : [],
+        });
+        
+        // Handle different message types
+        if (message && typeof message === 'object' && 'type' in message) {
+          const messageType = (message as { type: string }).type;
+          switch (messageType) {
+            case 'user_message':
+            case 'assistant_message':
+            case 'audio_input':
+            case 'audio_output':
+            case 'assistant_end':
+            case 'error':
+              clientLogger.info(`Handling ${messageType} message`);
+              break;
+            default:
+              clientLogger.warn(`Unknown message type: ${messageType}`, message);
+              break;
+          }
+        }
       }}
       onError={(error) => {
         clientLogger.error('Voice connection error:', error);
         // Check for specific audio errors
-        if (error?.message?.includes('decodeAudioData')) {
+        if (error?.message?.includes('unknown message type')) {
+          setError('Voice protocol error. Please try refreshing the page.');
+        } else if (error?.message?.includes('decodeAudioData')) {
           setError('Audio system error. Please refresh the page and try again.');
         } else if (error?.message?.includes('AudioContext')) {
           setError('Browser audio not supported. Please try a different browser.');
