@@ -19,6 +19,7 @@ function VoiceExperience() {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [tokenRefreshInterval, setTokenRefreshInterval] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -46,8 +47,31 @@ function VoiceExperience() {
       }
     };
 
+    // Initial token fetch
     fetchToken();
+
+    // Set up token refresh every 4 minutes (tokens typically expire in 5-10 minutes)
+    const interval = setInterval(() => {
+      clientLogger.info('Refreshing access token...');
+      fetchToken();
+    }, 4 * 60 * 1000);
+
+    setTokenRefreshInterval(interval);
+
+    // Cleanup interval on unmount
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, []);
+
+  // Cleanup interval when component unmounts
+  useEffect(() => {
+    return () => {
+      if (tokenRefreshInterval) {
+        clearInterval(tokenRefreshInterval);
+      }
+    };
+  }, [tokenRefreshInterval]);
 
   if (loading) {
     return (
@@ -79,6 +103,20 @@ function VoiceExperience() {
       hostname="api.hume.ai"
       debug={true}
       verboseTranscription={true}
+      onMessage={(message) => {
+        clientLogger.info('Voice message received:', message);
+      }}
+      onError={(error) => {
+        clientLogger.error('Voice connection error:', error);
+        setError(error?.message || 'Voice connection error');
+      }}
+      onOpen={() => {
+        clientLogger.info('Voice connection opened');
+        setError(null);
+      }}
+      onClose={() => {
+        clientLogger.info('Voice connection closed');
+      }}
     >
       <div className="relative min-h-screen flex flex-col items-center justify-center bg-black overflow-hidden">
         {/* Background Elements */}
