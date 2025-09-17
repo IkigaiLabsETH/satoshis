@@ -17,9 +17,30 @@ function InlineStartCall() {
   const handleConnect = async () => {
     setIsConnecting(true);
     try {
+      // Initialize AudioContext before connecting to prevent decodeAudioData issues
+      if (typeof window !== 'undefined' && window.AudioContext) {
+        const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        if (AudioContextClass) {
+          const audioContext = new AudioContextClass();
+          if (audioContext.state === 'suspended') {
+            await audioContext.resume();
+          }
+        }
+      }
+      
+      // Request microphone permission explicitly
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      
       await connect();
     } catch (err) {
       clientLogger.error('Connection failed:', err);
+      if (err instanceof Error) {
+        if (err.message.includes('Permission denied')) {
+          clientLogger.error('Microphone permission denied');
+        } else if (err.message.includes('decodeAudioData')) {
+          clientLogger.error('Audio decoding error - browser compatibility issue');
+        }
+      }
     } finally {
       setIsConnecting(false);
     }
@@ -156,14 +177,22 @@ function VoiceExperience() {
       auth={{ type: "accessToken", value: accessToken }}
       configId={HumeService.defaultVoiceConfig.configId}
       hostname="api.hume.ai"
-      debug={true}
-      verboseTranscription={true}
+      debug={false}
+      verboseTranscription={false}
+      clearMessagesOnDisconnect={true}
       onMessage={(message) => {
         clientLogger.info('Voice message received:', message);
       }}
       onError={(error) => {
         clientLogger.error('Voice connection error:', error);
-        setError(error?.message || 'Voice connection error');
+        // Check for specific audio errors
+        if (error?.message?.includes('decodeAudioData')) {
+          setError('Audio system error. Please refresh the page and try again.');
+        } else if (error?.message?.includes('AudioContext')) {
+          setError('Browser audio not supported. Please try a different browser.');
+        } else {
+          setError(error?.message || 'Voice connection error');
+        }
       }}
       onOpen={() => {
         clientLogger.info('Voice connection opened');
